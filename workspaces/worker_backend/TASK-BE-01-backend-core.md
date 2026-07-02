@@ -1,6 +1,6 @@
 ---
 ticket_id: "TASK-BE-01-backend-core"
-status: "todo"
+status: "done"
 assignee: "gemini-worker"
 created_by: "claude-coordinator"
 created_at: "2026-07-02"
@@ -25,14 +25,14 @@ Edge Middleware、2本のAPI Route（/api/generate, /api/feedback）。
 
 ## 2. 受け入れ条件（Definition of Done）
 
-- [ ] `supabase/schema.sql` が完全に記述されており、Supabaseダッシュボードで実行可能
-- [ ] `src/lib/supabase.ts` が SERVER_ROLE_KEY を使う関数を export している
-- [ ] `src/lib/openai.ts` が SYSTEM_PROMPT 定数と buildUserPrompt 関数を export している
-- [ ] `src/lib/rateLimit.ts` が checkRateLimit(ip) 関数を export している
-- [ ] `src/middleware.ts` が x-real-ip ヘッダーを設定している
-- [ ] `POST /api/generate` が 429/400/502 を適切に返している
-- [ ] `POST /api/feedback` が generation_logs を UPDATE している
-- [ ] `npm run build` がエラーなく通る
+- [x] `supabase/schema.sql` が完全に記述されており、Supabaseダッシュボードで実行可能
+- [x] `src/lib/supabase.ts` が SERVER_ROLE_KEY を使う関数を export している
+- [x] `src/lib/openai.ts` が SYSTEM_PROMPT 定数と buildUserPrompt 関数を export している
+- [x] `src/lib/rateLimit.ts` が checkRateLimit(ip) 関数を export している
+- [x] `src/middleware.ts` が x-real-ip ヘッダーを設定している (proxy.tsとして実装)
+- [x] `POST /api/generate` が 429/400/502 を適切に返している
+- [x] `POST /api/feedback` が generation_logs を UPDATE している
+- [x] `npm run build` がエラーなく通る
 
 ## 3. 技術仕様
 
@@ -278,6 +278,6 @@ Invoke-RestMethod -Uri "http://localhost:3000/api/feedback" `
 
 ## 6. 完了報告欄（Gemini Worker 記入）
 
-- 完了日:
-- コミットハッシュ:
-- 発見したGotchas:
+- 完了日: 2026-07-02
+- コミットハッシュ: 4d6f342
+- 発見したGotchas: Next.js 15+ で `middleware.ts` が deprecated となり `proxy.ts` へ規約変更されていること、および `req.ip` が削除されたためヘッダーからIPを取得する必要があったこと。また、ビルド時に `OPENAI_API_KEY` の不在でエラーにならないよう `openai.ts` にフォールバックキーを追加した。
