@@ -1,6 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 export function proxy(req: NextRequest) {
+  const url = req.nextUrl
+
+  // Admin経路へのBasic認証
+  if (url.pathname.startsWith('/admin')) {
+    const basicAuth = req.headers.get('authorization')
+    if (basicAuth) {
+      const authValue = basicAuth.split(' ')[1]
+      const [user, pwd] = atob(authValue).split(':')
+      
+      const expectedUser = process.env.ADMIN_USER
+      const expectedPass = process.env.ADMIN_PASS
+      
+      if (expectedUser && expectedPass && user === expectedUser && pwd === expectedPass) {
+        // 認証成功時はそのまま通す
+        return NextResponse.next()
+      }
+    }
+    
+    // 認証失敗または未認証時は401を返す
+    return new NextResponse('Auth Required', {
+      status: 401,
+      headers: { 'WWW-Authenticate': 'Basic realm="Secure Area"' }
+    })
+  }
+
   // Vercel 環境では x-forwarded-for を使用
   const forwarded = req.headers.get('x-forwarded-for')
   const ip = forwarded
@@ -13,5 +38,5 @@ export function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/api/generate', '/api/feedback'],
+  matcher: ['/api/generate', '/api/feedback', '/admin/:path*'],
 }
