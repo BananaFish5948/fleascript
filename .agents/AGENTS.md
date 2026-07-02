@@ -1,0 +1,78 @@
+# Project Rules for Antigravity Agents — FleaScript
+
+このワークスペース（FleaScript）で活動する全てのエージェントは、以下の絶対防衛ルールを遵守すること。
+
+---
+
+## 0. プロダクト概要（コンテキスト高速復元用）
+
+- **プロダクト名**: FleaScript（フリマ商品説明ジェネレーター）
+- **ターゲット**: ネット初心者〜中級者
+- **コア機能**: テキストメモ入力 → AI（GPT-4o-mini）による商品説明文の自動生成
+- **コスト制約**: 月1万円以内（画像OCRはMVPフェーズ除外）
+- **技術スタック**:
+  | レイヤー | 技術 |
+  |---|---|
+  | フロントエンド | Next.js (App Router, TypeScript, Tailwind CSS v4) |
+  | バックエンド | Next.js API Routes（同一リポジトリ） |
+  | AI | OpenAI `gpt-4o-mini` |
+  | DB / ログ | Supabase |
+  | デプロイ | Vercel |
+  | レートリミット | Supabase `ip_rate_limits` テーブル（自前実装）|
+
+---
+
+## 1. エンコーディングとファイル操作の死守
+
+- 読み書きする全てのコードファイルは **必ず `UTF-8 (BOMなし)`** として扱うこと。
+- コマンドラインからの出力リダイレクト（`>`, `>>`, PowerShellの `Out-File` 等）は原則禁止。
+- ファイルの作成・編集は必ず `write_to_file`, `replace_file_content`, `multi_replace_file_content` を使用すること。
+
+## 2. 大規模置換の禁止と安全な差分修正
+
+- 一度に数十行・数百行を超える強引なコード置換は禁止。
+- 局所的な修正は `replace_file_content` / `multi_replace_file_content` を使い、ファイル全体を再生成しないこと。
+
+## 3. Git操作ルール
+
+- **【Vercelブロック回避の絶対ルール】**: コミット時は必ず `--author="BananaFish5948 <k.shin.0103@gmail.com>"` を付与すること。省略は厳禁（Vercel無料枠制限に抵触する）。
+- **【コミットフォーマット】**:
+  ```powershell
+  git add [変更ファイルを個別指定]   # git add . は禁止
+  git commit --author="BananaFish5948 <k.shin.0103@gmail.com>" -m "feat(xxx): 〇〇"
+  git push origin main
+  ```
+- **【ブランチ戦略】**: 作業中はトピックブランチを切り、マスター承認後にsquash mergeする。
+
+## 4. ドキュメント更新の限定化（トークン節約）
+
+- 単なる進捗ログのドキュメント化は禁止。ソースコード自体を最新ステートとして扱う。
+- `docs/handover_context.md` の更新は以下の条件のみ:
+  1. 次のAIが確実にハマる重大な罠（Gotchas）を発見した時
+  2. マスターから「引き継ぎ書を作れ」と明示的に指示された時
+
+## 5. AI共通開発ルール
+
+- **【自己修復のブレーキ】**: エラー自動修復ループは **最大3回まで**。超えた場合はマスターに報告。
+- **【疎結合の維持】**: API RoutesとUI Componentsの責務を明確に分離すること。
+- **【コスト意識の徹底】**: OpenAI APIコールは必ずトークン数・モデルを意識し、不必要な呼び出しを排除すること。
+
+## 6. ハイブリッドモデル運用プロトコル（Claude + Gemini）
+
+| モデル | 役割 | 主な担当作業 |
+|---|---|---|
+| **Claude** | Coordinator（管制塔） | 実装計画・タスクチケット生成・バグハント・レビュー・git操作 |
+| **Gemini** | Worker（実行部隊） | コーディング・テスト・差分作成・チケット完了報告 |
+
+### チケット保管場所
+- `workspaces/worker_frontend/` — フロントエンド系タスク
+- `workspaces/worker_backend/` — バックエンド系タスク
+- `workspaces/TICKET_TEMPLATE.md` — テンプレート（コピー使用、上書き禁止）
+
+---
+
+## 7. アーキテクチャ設計メモ（重要なGotchas）
+
+- **レートリミット**: Supabase の `ip_rate_limits` テーブルで管理（1日3回制限）。Middleware経由でIPを取得し、APIコール前にチェック。
+- **バイラルクレジット**: 生成テキストの末尾に `\n\n生成：FleaScript (https://fleascript.vercel.app)` を自動付与。
+- **フィードバックログ**: 👍/👎 + 選択式理由 + 匿名意見 を Supabase `feedback_logs` テーブルに格納。
