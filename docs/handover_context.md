@@ -40,8 +40,12 @@
    - **NEVER use the word "unlimited" (無制限 / 使い放題) in the UI.** Premium is mathematically capped at 50 requests/day to prevent API bankruptcy.
 4. **Compliance & Stripe Real Integration (RESOLVED)**:
    - Previously, subscriptions were tied to an anonymous `deviceId`. We have now implemented a **Progressive Google OAuth flow**. Users can use the free tier anonymously, but upgrading to Premium STRICTLY requires a Google Login. This prevents the "lost device = lost subscription" litigation risk.
+   - **Double Charge Prevention**: Front-end (`/checkout/page.tsx`) and back-end (`/api/checkout-success-mock`) explicitly check for `subscription_status === 'premium'` and redirect/reject to prevent accidental double charges.
 5. **No Direct Supabase Edge Runtime Usage**:
    - Complex DB operations fail in the Edge Runtime. Rate limiting and DB logic must reside in Node.js API routes, while `proxy.ts` strictly handles IP extraction and Basic Auth routing.
+6. **Admin Dashboard Design & Rate Limit Auditing**:
+   - The Admin dashboard (`/admin`) is **intentionally designed with a white/light theme**. DO NOT attempt to force the legacy "Teal x Dark Navy" cyber theme on this page.
+   - To audit rate limit abuse, the dashboard maps IPs from recent `generation_logs` to users to display a 👑 flag next to Premium IPs/Devices. This distinguishes legitimate Premium 50/day traffic from malicious Free tier bypasses.
 
 ## Next Potential Steps
 - [ ] 🐞 Bug Hunt & Code Review by Claude (Coordinator).

@@ -27,6 +27,31 @@ export default async function AdminDashboard() {
     )
   }
 
+  // 今日の利用状況 (IP / Device) と Premium ユーザー数を取得
+  const today = new Date().toISOString().slice(0, 10)
+  
+  const [
+    { data: ipLimits },
+    { data: deviceLimits },
+    { data: premiumUsersData }
+  ] = await Promise.all([
+    supabase.from('ip_rate_limits').select('*').eq('date', today).order('count', { ascending: false }).limit(10),
+    supabase.from('device_rate_limits').select('*').eq('date', today).order('count', { ascending: false }).limit(10),
+    supabase.from('users').select('id').eq('subscription_status', 'premium')
+  ])
+
+  // Premiumユーザーの判定用 Set
+  const premiumUserIds = new Set((premiumUsersData || []).map(u => u.id))
+  const premiumCount = premiumUserIds.size
+
+  // Premiumユーザーが利用したIPの特定（直近のログから）
+  const premiumIps = new Set<string>()
+  logs.forEach(log => {
+    if (log.user_id && premiumUserIds.has(log.user_id) && log.ip_address) {
+      premiumIps.add(log.ip_address)
+    }
+  })
+
   // 統計の計算
   const total = logs.length
   const positive = logs.filter(l => l.feedback === 'positive').length
@@ -56,10 +81,14 @@ export default async function AdminDashboard() {
         </header>
         
         {/* KPI パネル */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div className="card p-6 border-l-4 border-[var(--color-brand)]">
             <div className="text-[var(--color-text-secondary)] text-sm mb-1">最近の生成数</div>
             <div className="text-4xl font-bold">{total} <span className="text-base font-normal">件</span></div>
+          </div>
+          <div className="card p-6 border-l-4 border-amber-400">
+            <div className="text-[var(--color-text-secondary)] text-sm mb-1">👑 Premium 会員</div>
+            <div className="text-4xl font-bold text-amber-500">{premiumCount || 0} <span className="text-base font-normal text-amber-500">人</span></div>
           </div>
           <div className="card p-6 border-l-4 border-green-500">
             <div className="text-[var(--color-text-secondary)] text-sm mb-1">👍 Positive</div>
@@ -133,6 +162,67 @@ export default async function AdminDashboard() {
                     </td>
                   </tr>
                 ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* トラフィック・利用状況 (Today) */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="card p-6 overflow-x-auto">
+            <h2 className="text-xl font-bold mb-4 border-b border-[var(--color-border)] pb-2">本日のIP利用状況 (TOP 10)</h2>
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr className="text-[var(--color-text-secondary)] border-b border-[var(--color-border)]">
+                  <th className="pb-2 font-medium">IP Address</th>
+                  <th className="pb-2 font-medium text-right">生成回数</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[var(--color-border)]">
+                {!ipLimits || ipLimits.length === 0 ? (
+                  <tr>
+                    <td colSpan={2} className="py-4 text-center text-[var(--color-text-muted)]">データなし</td>
+                  </tr>
+                ) : (
+                  ipLimits.map(ip => (
+                    <tr key={ip.id} className="hover:bg-[var(--color-brand-dim)] transition-colors">
+                      <td className="py-3 font-mono text-xs">
+                        {ip.ip_address}
+                        {premiumIps.has(ip.ip_address) && <span className="ml-2" title="Premium ユーザーのIP">👑</span>}
+                      </td>
+                      <td className="py-3 text-right font-bold text-[var(--color-accent)]">{ip.count} 回</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="card p-6 overflow-x-auto">
+            <h2 className="text-xl font-bold mb-4 border-b border-[var(--color-border)] pb-2">本日のデバイス利用状況 (TOP 10)</h2>
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr className="text-[var(--color-text-secondary)] border-b border-[var(--color-border)]">
+                  <th className="pb-2 font-medium">Device ID</th>
+                  <th className="pb-2 font-medium text-right">生成回数</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[var(--color-border)]">
+                {!deviceLimits || deviceLimits.length === 0 ? (
+                  <tr>
+                    <td colSpan={2} className="py-4 text-center text-[var(--color-text-muted)]">データなし</td>
+                  </tr>
+                ) : (
+                  deviceLimits.map(dev => (
+                    <tr key={dev.id} className="hover:bg-[var(--color-brand-dim)] transition-colors">
+                      <td className="py-3 font-mono text-xs text-[var(--color-text-muted)] line-clamp-1">
+                        {dev.device_id}
+                        {premiumUserIds.has(dev.device_id) && <span className="ml-2" title="Premium ユーザー">👑</span>}
+                      </td>
+                      <td className="py-3 text-right font-bold text-[var(--color-accent)]">{dev.count} 回</td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
