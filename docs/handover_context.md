@@ -1,8 +1,9 @@
 # FleaScript Handover Context (For AI Agents)
 
 ## System Status
-- **Phase**: MVP Core Completed.
+- **Phase**: MVP Core Completed & UI Refined.
 - **Framework**: Next.js 16.2.10 (App Router), Tailwind CSS v4, TypeScript.
+- **Design System**: "Flea Market Native" design (Coral Red `#ea352d` & Warm White) with Ambient Glassmorphism backgrounds.
 - **External Services**: Supabase (Database), OpenAI (`gpt-4o-mini`).
 - **Core Features**: Text generation from notes, IP-based rate limiting (3/day), Positive/Negative feedback logging, Basic Auth protected Admin dashboard.
 
@@ -32,5 +33,5 @@
    - Complex DB operations (like upserts) fail or are unreliable in the Edge Runtime. Rate limiting and DB logic must reside in Node.js API routes (`/api/generate`), while `proxy.ts` strictly handles IP extraction and Basic Auth routing.
 
 ## Next Potential Steps
-- UI Refinement / Styling Polish.
-- Programmatic SEO Landing Pages generation.
+- [ ] Programmatic SEO Landing Pages generation (URL structure: `/category/:id`).
+- [ ] Production Deployment (Vercel) & Custom Domain setup.
