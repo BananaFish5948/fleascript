@@ -46,3 +46,4 @@
 ## Next Potential Steps
 - [ ] 🐞 Bug Hunt & Code Review by Claude (Coordinator).
 - [ ] Production Deployment (Vercel) & Custom Domain setup.
+- [ ] 📈 スケール時の監視強化 (Future Phase): エンドユーザー環境での502/503等の未知のAPIエラー多発を検知するため、Vercel Analyticsのエラー監視設定、またはSupabaseへの軽量なエラーログテーブル追加を検討する。
