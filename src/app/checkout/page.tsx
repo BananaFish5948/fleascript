@@ -14,6 +14,7 @@ export default function CheckoutPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [isCheckingAuth, setIsCheckingAuth] = useState(true)
   const [showAuthModal, setShowAuthModal] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -55,11 +56,11 @@ export default function CheckoutPage() {
       if (res.ok) {
         router.push('/?upgraded=true')
       } else {
-        alert("決済エラー（モック）が発生しました。")
+        setErrorMessage("決済エラー（モック）が発生しました。")
         setIsLoading(false)
       }
     } catch (err) {
-      alert("通信エラーが発生しました。")
+      setErrorMessage("通信エラーが発生しました。")
       setIsLoading(false)
     }
   }
@@ -119,6 +120,29 @@ export default function CheckoutPage() {
               <li className="flex items-center gap-2"><span>✅</span> 生成文末尾のバイラルクレジットを削除</li>
             </ul>
           </div>
+
+          {errorMessage && (
+            <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 text-left">
+              <h3 className="text-red-800 font-bold mb-2 flex items-center gap-2">
+                <span className="text-lg">⚠️</span> {errorMessage}
+              </h3>
+              <p className="text-sm text-red-700 mb-3 leading-relaxed">
+                ご不便をおかけして申し訳ありません。<br />
+                決済システム（Stripe）の仕様上、お客様の資金は安全に保護されており、「お金だけ引き落とされて利用できない」という事態は発生しませんのでご安心ください。
+              </p>
+              <p className="text-sm text-red-700 font-bold mb-3 leading-relaxed">
+                万が一、決済が完了しているのにプレミアムが有効にならない場合は、お手数ですが以下のフォームよりご連絡ください。迅速に100%安全な返金またはプランの有効化をいたします。
+              </p>
+              <a 
+                href="https://forms.gle/5A4UobMkRcBf7uPW9" 
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center w-full py-2.5 px-4 rounded-lg bg-red-100 text-red-800 font-bold hover:bg-red-200 transition-colors text-sm border border-red-300 shadow-sm"
+              >
+                📩 決済に関するお問い合わせはこちら
+              </a>
+            </div>
+          )}
 
           <div className="space-y-4">
             {/* Apple Pay / Google Pay Button (Mock) */}
