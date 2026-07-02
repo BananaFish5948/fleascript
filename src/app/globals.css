@@ -3,7 +3,7 @@
 /* ===== デザイントークン ===== */
 @theme inline {
   /* カラーパレット: コーラルレッド × 落ち着いたグレーベージュ */
-  --color-bg-base:        #e9ecef;   /* 少し落ち着かせた背景色（グレージュ系）でまぶしさを軽減 */
+  --color-bg-base:        #faf8f5;   /* 非常に淡いウォーム系オフホワイト（背景装飾を際立たせるため） */
   --color-bg-surface:     #ffffff;   /* UIカードは白にしてコントラストを出す */
   --color-bg-elevated:    #ffffff;
 
@@ -83,8 +83,20 @@ body {
 }
 
 @keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 8px rgba(0, 200, 180, 0.3); }
-  50%       { box-shadow: 0 0 20px rgba(0, 200, 180, 0.6); }
+  0%, 100% { box-shadow: 0 0 8px rgba(234, 53, 45, 0.3); }
+  50%       { box-shadow: 0 0 20px rgba(234, 53, 45, 0.6); }
+}
+
+@keyframes ambient-drift-1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(30px, -50px) scale(1.1); }
+  66% { transform: translate(-20px, 20px) scale(0.9); }
+}
+
+@keyframes ambient-drift-2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(-40px, 40px) scale(1.15); }
+  66% { transform: translate(20px, -30px) scale(0.85); }
 }
 
 .animate-fade-in-up {
@@ -93,6 +105,14 @@ body {
 
 .animate-pulse-glow {
   animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.animate-ambient-1 {
+  animation: ambient-drift-1 15s ease-in-out infinite;
+}
+
+.animate-ambient-2 {
+  animation: ambient-drift-2 18s ease-in-out infinite reverse;
 }
 
 /* ===== カードベース ===== */

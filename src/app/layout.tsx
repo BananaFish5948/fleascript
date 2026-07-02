@@ -25,8 +25,17 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="ja" className={`${zenMaruGothic.className} h-full`}>
-      <body className="min-h-full flex flex-col antialiased">
-        {children}
+      <body className="min-h-full flex flex-col antialiased relative overflow-x-hidden">
+        {/* 背景のアンビエント・オーブ（光の玉） */}
+        <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+          <div className="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-pink-300/30 blur-[100px] animate-ambient-1" />
+          <div className="absolute bottom-[-10%] right-[-10%] w-[60vw] h-[60vw] rounded-full bg-amber-200/30 blur-[120px] animate-ambient-2" />
+        </div>
+        
+        {/* メインコンテンツ */}
+        <div className="relative z-10 flex flex-col min-h-full">
+          {children}
+        </div>
       </body>
     </html>
   )
