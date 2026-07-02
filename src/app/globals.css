@@ -2,21 +2,21 @@
 
 /* ===== デザイントークン ===== */
 @theme inline {
-  /* カラーパレット: コーラルレッド × ライトグレー */
-  --color-bg-base:        #f5f6f8;   /* 優しいライトグレー */
-  --color-bg-surface:     #ffffff;   /* 白 */
+  /* カラーパレット: コーラルレッド × 落ち着いたグレーベージュ */
+  --color-bg-base:        #e9ecef;   /* 少し落ち着かせた背景色（グレージュ系）でまぶしさを軽減 */
+  --color-bg-surface:     #ffffff;   /* UIカードは白にしてコントラストを出す */
   --color-bg-elevated:    #ffffff;
 
   --color-brand:          #ea352d;   /* フリマ風コーラルレッド */
   --color-brand-light:    #ff5c54;   /* ホバー時 */
-  --color-brand-dim:      rgba(234, 53, 45, 0.08);
+  --color-brand-dim:      rgba(234, 53, 45, 0.06);
 
   --color-accent:         #38bdf8;   /* リンク等 */
   --color-text-primary:   #333333;
   --color-text-secondary: #666666;
   --color-text-muted:     #999999;
 
-  --color-border:         #e5e7eb;
+  --color-border:         #d1d5db;   /* 少し濃いボーダーに変更して境界を明確に */
   --color-border-focus:   rgba(234, 53, 45, 0.4);
   --color-danger:         #ef4444;
 
@@ -25,7 +25,7 @@
 
   /* シャドウ（柔らかい影） */
   --shadow-glow:  0 0 15px rgba(234, 53, 45, 0.2);
-  --shadow-card:  0 4px 20px rgba(0, 0, 0, 0.05);
+  --shadow-card:  0 4px 12px rgba(0, 0, 0, 0.08); /* 影を少し強めてカードを浮かせる */
 }
 
 /* ===== ベーススタイル ===== */
