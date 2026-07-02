@@ -2,30 +2,30 @@
 
 /* ===== デザイントークン ===== */
 @theme inline {
-  /* カラーパレット: Teal × ダークネイビー */
-  --color-bg-base:        #0a1628;
-  --color-bg-surface:     #0f2035;
-  --color-bg-elevated:    #162840;
+  /* カラーパレット: コーラルレッド × ライトグレー */
+  --color-bg-base:        #f5f6f8;   /* 優しいライトグレー */
+  --color-bg-surface:     #ffffff;   /* 白 */
+  --color-bg-elevated:    #ffffff;
 
-  --color-brand:          #00c8b4;   /* メインTeal */
-  --color-brand-light:    #4de8d8;   /* ホバー時 */
-  --color-brand-dim:      rgba(0, 200, 180, 0.12);
+  --color-brand:          #ea352d;   /* フリマ風コーラルレッド */
+  --color-brand-light:    #ff5c54;   /* ホバー時 */
+  --color-brand-dim:      rgba(234, 53, 45, 0.08);
 
-  --color-accent:         #38bdf8;   /* ライトブルー */
-  --color-text-primary:   #e2f0f9;
-  --color-text-secondary: #7da5be;
-  --color-text-muted:     #4d7a94;
+  --color-accent:         #38bdf8;   /* リンク等 */
+  --color-text-primary:   #333333;
+  --color-text-secondary: #666666;
+  --color-text-muted:     #999999;
 
-  --color-border:         rgba(0, 200, 180, 0.18);
-  --color-border-focus:   rgba(0, 200, 180, 0.6);
-  --color-danger:         #f87171;
+  --color-border:         #e5e7eb;
+  --color-border-focus:   rgba(234, 53, 45, 0.4);
+  --color-danger:         #ef4444;
 
   /* フォント */
-  --font-sans: 'Noto Sans JP', system-ui, sans-serif;
+  --font-sans: 'Zen Maru Gothic', 'Noto Sans JP', system-ui, sans-serif;
 
-  /* シャドウ（Tealグロー） */
-  --shadow-glow:  0 0 20px rgba(0, 200, 180, 0.15);
-  --shadow-card:  0 4px 24px rgba(0, 0, 0, 0.4);
+  /* シャドウ（柔らかい影） */
+  --shadow-glow:  0 0 15px rgba(234, 53, 45, 0.2);
+  --shadow-card:  0 4px 20px rgba(0, 0, 0, 0.05);
 }
 
 /* ===== ベーススタイル ===== */
@@ -99,6 +99,6 @@ body {
 .card {
   background: var(--color-bg-surface);
   border: 1px solid var(--color-border);
-  border-radius: 16px;
+  border-radius: 24px;
   box-shadow: var(--shadow-card);
 }

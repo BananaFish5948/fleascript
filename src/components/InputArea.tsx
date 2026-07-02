@@ -13,7 +13,7 @@ export default function InputArea({ value, onChange, disabled }: InputAreaProps)
     <div className="card p-4 relative">
       <textarea
         className="w-full h-32 bg-transparent text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none resize-none"
-        placeholder="例：iPhone 14 Pro、256GB、傷なし、充電器付き、3年使用"
+        placeholder="例：iPhone 14、画面に少し傷あり、箱なし、早く売りたい"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         maxLength={500}

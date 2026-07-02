@@ -1,8 +1,8 @@
 import type { Metadata } from 'next'
-import { Noto_Sans_JP } from 'next/font/google'
+import { Zen_Maru_Gothic } from 'next/font/google'
 import './globals.css'
 
-const notoSansJP = Noto_Sans_JP({
+const zenMaruGothic = Zen_Maru_Gothic({
   subsets: ['latin'],
   weight: ['400', '500', '700'],
   display: 'swap',
@@ -24,7 +24,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="ja" className={`${notoSansJP.className} h-full`}>
+    <html lang="ja" className={`${zenMaruGothic.className} h-full`}>
       <body className="min-h-full flex flex-col antialiased">
         {children}
       </body>

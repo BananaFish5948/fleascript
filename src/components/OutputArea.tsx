@@ -43,7 +43,7 @@ export default function OutputArea({ text }: OutputAreaProps) {
           {isCopied ? '✅ コピー完了！' : '📋 ワンクリックでコピー'}
         </button>
       </div>
-      <div className="p-4 bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)]">
+      <div className="p-4 bg-[#fffdfa] text-[var(--color-text-primary)] min-h-[150px]">
         <pre className="whitespace-pre-wrap font-sans text-sm md:text-base leading-relaxed">
           {mainText}
           {creditText && (

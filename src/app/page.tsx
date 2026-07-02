@@ -46,17 +46,14 @@ export default function Home() {
   return (
     <main className="max-w-2xl mx-auto w-full px-4 py-8 flex-1 flex flex-col">
       {/* Header */}
-      <header className="mb-8 text-center relative">
+      <header className="mb-8 text-center relative mt-4">
         <div className="inline-block relative">
-          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-[var(--color-brand)] to-[var(--color-accent)] bg-clip-text text-transparent mb-3">
-            FleaScript ✨
+          <h1 className="text-3xl md:text-4xl font-bold text-[var(--color-brand)] mb-3">
+            ✨ フリマ出品ジェネレーター
           </h1>
-          <span className="absolute -top-3 -right-12 bg-[var(--color-brand)]/20 text-[var(--color-brand)] text-xs font-bold px-2 py-0.5 rounded border border-[var(--color-brand)]/30">
-            ✦ Beta
-          </span>
         </div>
         <p className="text-[var(--color-text-secondary)] text-sm md:text-base font-medium">
-          「メモを貼るだけで、売れる文章に。」
+          商品の状態をメモするだけ！AIが売れる文章を自動で作ります🪄
         </p>
       </header>
 
