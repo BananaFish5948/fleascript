@@ -20,11 +20,27 @@ export default function CheckoutPage() {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) {
         setShowAuthModal(true)
+        setIsCheckingAuth(false)
+        return
       }
+
+      // Premium契約済みであればトップページへ強制リダイレクト
+      try {
+        const url = deviceId ? `/api/user-status?deviceId=${deviceId}` : '/api/user-status'
+        const res = await fetch(url)
+        const data = await res.json()
+        if (data.isPremium) {
+          router.replace('/')
+          return
+        }
+      } catch (err) {
+        console.error('Failed to check premium status:', err)
+      }
+
       setIsCheckingAuth(false)
     }
     checkAuth()
-  }, [supabase])
+  }, [supabase, deviceId, router])
 
   const handleCheckout = async () => {
     setIsLoading(true)
