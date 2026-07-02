@@ -3,8 +3,8 @@ import { NextRequest, NextResponse } from 'next/server'
 export function proxy(req: NextRequest) {
   const url = req.nextUrl
 
-  // Admin経路へのBasic認証
-  if (url.pathname.startsWith('/admin')) {
+  // Admin経路とDev Mode APIへのBasic認証
+  if (url.pathname.startsWith('/admin') || url.pathname.startsWith('/api/dev-mode')) {
     const basicAuth = req.headers.get('authorization')
     if (basicAuth) {
       const authValue = basicAuth.split(' ')[1]
@@ -38,5 +38,5 @@ export function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/api/generate', '/api/feedback', '/admin/:path*'],
+  matcher: ['/api/generate', '/api/feedback', '/api/dev-mode', '/admin/:path*'],
 }

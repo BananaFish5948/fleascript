@@ -1,59 +1,91 @@
 'use client'
 
 import { useState } from 'react'
+import { seoCategories } from '@/data/seoCategories'
+import Link from 'next/link'
 
 export default function FooterFeedback() {
-  const [inputValue, setInputValue] = useState('')
-  const [isSending, setIsSending] = useState(false)
-  const [showSuccess, setShowSuccess] = useState(false)
+  const [complaint, setComplaint] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isSuccess, setIsSuccess] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!inputValue.trim() || isSending) return
+    if (!complaint.trim() || isSubmitting) return
 
-    setIsSending(true)
+    setIsSubmitting(true)
     try {
-      await fetch('/api/feedback', {
+      const res = await fetch('/api/feedback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          logId: 'anonymous',
-          feedback: 'comment',
-          reason: inputValue.trim(),
+        body: JSON.stringify({ 
+          feedback: 'comment', 
+          reason: '(匿名意見)', 
+          complaint 
         }),
       })
-      setInputValue('')
-      setShowSuccess(true)
-      setTimeout(() => setShowSuccess(false), 2000)
+
+      if (res.ok) {
+        setIsSuccess(true)
+        setComplaint('')
+        setTimeout(() => setIsSuccess(false), 5000)
+      }
     } catch (error) {
-      console.error('[FooterFeedback] Error:', error)
+      console.error(error)
     } finally {
-      setIsSending(false)
+      setIsSubmitting(false)
     }
   }
 
   return (
-    <div className="border-t border-[var(--color-border)] mt-12 pt-6 pb-2 text-center text-[var(--color-text-muted)]">
-      <form onSubmit={handleSubmit} className="max-w-sm mx-auto flex items-center gap-2 mb-4">
-        <input
-          type="text"
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-          placeholder="「こんな機能があったら嬉しい...」など、なんでもどうぞ"
-          disabled={isSending || showSuccess}
-          className="flex-1 bg-[var(--color-bg-elevated)] border border-[var(--color-border)] rounded-md px-3 py-1.5 text-xs text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-brand)] disabled:opacity-50"
-        />
-        <button
-          type="submit"
-          disabled={!inputValue.trim() || isSending || showSuccess}
-          className="bg-[var(--color-bg-elevated)] border border-[var(--color-border)] hover:bg-[var(--color-brand-dim)] hover:text-[var(--color-brand)] rounded-md px-3 py-1.5 text-xs transition-colors disabled:opacity-50"
-        >
-          {showSuccess ? '送信しました！' : '送る'}
-        </button>
-      </form>
-      <div className="text-xs">
-        &copy; {new Date().getFullYear()} FleaScript. All rights reserved.
+    <footer className="mt-12 text-center text-[var(--color-text-muted)] text-sm space-y-8">
+      {/* Template Links for SEO */}
+      <div className="pt-8 border-t border-[var(--color-border)]">
+        <p className="font-bold mb-4 text-gray-500">人気のカテゴリ別 テンプレート</p>
+        <div className="flex flex-wrap justify-center gap-3 max-w-lg mx-auto">
+          {Object.values(seoCategories).map((cat) => (
+            <Link 
+              key={cat.id} 
+              href={`/template/${cat.id}`}
+              className="text-xs text-[var(--color-brand)] hover:underline bg-white px-3 py-1.5 rounded-full border border-gray-200 shadow-sm transition-colors hover:bg-orange-50"
+            >
+              {cat.name}
+            </Link>
+          ))}
+        </div>
       </div>
-    </div>
+
+      {/* Anonymous Feedback Form */}
+      <div className="bg-[var(--color-bg-elevated)] p-6 rounded-2xl border border-[var(--color-border)] max-w-md mx-auto">
+        <h3 className="font-bold text-[var(--color-text-primary)] mb-2">開発者への匿名意見箱 📮</h3>
+        <p className="text-xs mb-4">「ここが使いにくい」「こんな機能が欲しい」など、何でもお気軽にどうぞ！</p>
+        
+        {isSuccess ? (
+          <div className="text-[var(--color-brand)] font-bold animate-fade-in-up py-2">
+            送信完了しました。ありがとうございます！
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="flex gap-2">
+            <input
+              type="text"
+              value={complaint}
+              onChange={(e) => setComplaint(e.target.value)}
+              placeholder="1行で自由に書く"
+              className="flex-1 bg-[var(--color-bg-base)] border border-[var(--color-border)] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]/50"
+              maxLength={100}
+            />
+            <button
+              type="submit"
+              disabled={!complaint.trim() || isSubmitting}
+              className="bg-[var(--color-text-secondary)] hover:bg-[var(--color-text-primary)] text-[var(--color-bg-base)] px-4 py-2 rounded-lg text-sm font-bold transition-colors disabled:opacity-50"
+            >
+              送る
+            </button>
+          </form>
+        )}
+      </div>
+
+      <p className="pb-8">&copy; 2026 FleaScript. All rights reserved.</p>
+    </footer>
   )
 }

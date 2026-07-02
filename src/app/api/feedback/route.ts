@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@/lib/supabase';
+import { createAdminClient } from '@/lib/supabase/admin';
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   try {
@@ -10,12 +10,19 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
     }
 
+    const supabase = createAdminClient();
+
     if (logId === 'anonymous') {
-      // 匿名意見箱の場合は UPDATE 対象がないため正常終了とする
+      // 匿名意見箱の場合は新しいログとして保存する
+      const { error } = await supabase
+        .from('generation_logs')
+        .insert({ user_complaint: reason });
+
+      if (error) {
+        console.error("[feedback] Supabase error for anonymous:", error.message);
+      }
       return NextResponse.json({ ok: true });
     }
-
-    const supabase = createServerClient();
     
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const updateData: any = { feedback };
@@ -33,8 +40,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     }
 
     return NextResponse.json({ ok: true });
-  } catch (error: any) {
-    console.error("[feedback] Error:", error.message);
+  } catch (error: unknown) {
+    console.error("[feedback] Error:", error instanceof Error ? error.message : error);
     return NextResponse.json({ error: "Invalid request." }, { status: 400 });
   }
 }

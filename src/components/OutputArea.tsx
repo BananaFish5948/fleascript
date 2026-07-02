@@ -20,9 +20,9 @@ export default function OutputArea({ text }: OutputAreaProps) {
   }
 
   // バイラルクレジットの分割
-  const parts = text.split('\n[ 生成：')
+  const parts = text.split('\n\n【FleaScript無料版で自動作成】')
   const mainText = parts[0]
-  const creditText = parts.length > 1 ? `\n[ 生成：${parts[1]}` : ''
+  const creditText = parts.length > 1 ? `\n\n【FleaScript無料版で自動作成】${parts[1]}` : ''
 
   return (
     <div className="card animate-fade-in-up flex flex-col overflow-hidden">

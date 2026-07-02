@@ -1,10 +1,16 @@
-import { createServerClient } from '@/lib/supabase'
+import { createAdminClient } from '@/lib/supabase/admin';
+import Link from 'next/link'
+import { cookies } from 'next/headers'
+import DevModeToggle from '@/components/DevModeToggle'
+import PremiumToggle from '@/components/PremiumToggle'
 
 // Dynamic rendering for admin dashboard
 export const dynamic = 'force-dynamic'
 
 export default async function AdminDashboard() {
-  const supabase = createServerClient()
+  const supabase = createAdminClient()
+  const cookieStore = await cookies()
+  const isDevMode = cookieStore.has('FLEA_DEV_MODE')
   
   // ログを取得 (最新50件)
   const { data: logs, error } = await supabase
@@ -40,9 +46,13 @@ export default async function AdminDashboard() {
     <div className="min-h-screen bg-[var(--color-bg-base)] text-[var(--color-text-primary)] p-8 font-sans">
       <div className="max-w-6xl mx-auto space-y-8">
         
-        <header className="flex items-center justify-between">
+        <header className="flex flex-col md:flex-row items-center justify-between gap-4">
           <h1 className="text-3xl font-bold text-[var(--color-brand)]">FleaScript Admin Dashboard</h1>
-          <a href="/" className="text-[var(--color-accent)] hover:underline text-sm">アプリへ戻る</a>
+          <div className="flex flex-wrap items-center gap-4">
+            <PremiumToggle />
+            <DevModeToggle initialDevMode={isDevMode} />
+            <Link href="/" className="text-[var(--color-accent)] hover:underline text-sm whitespace-nowrap">アプリへ戻る</Link>
+          </div>
         </header>
         
         {/* KPI パネル */}
@@ -90,6 +100,7 @@ export default async function AdminDashboard() {
                 <tr className="text-[var(--color-text-secondary)] border-b border-[var(--color-border)]">
                   <th className="pb-2 font-medium">日時</th>
                   <th className="pb-2 font-medium">IP</th>
+                  <th className="pb-2 font-medium">プラットフォーム</th>
                   <th className="pb-2 font-medium w-1/3">入力メモ</th>
                   <th className="pb-2 font-medium">評価</th>
                 </tr>
@@ -97,7 +108,7 @@ export default async function AdminDashboard() {
               <tbody className="divide-y divide-[var(--color-border)]">
                 {logs.length === 0 && (
                   <tr>
-                    <td colSpan={4} className="py-4 text-center text-[var(--color-text-muted)]">ログがありません</td>
+                    <td colSpan={5} className="py-4 text-center text-[var(--color-text-muted)]">ログがありません</td>
                   </tr>
                 )}
                 {logs.map((log) => (
@@ -108,6 +119,9 @@ export default async function AdminDashboard() {
                       })}
                     </td>
                     <td className="py-3 pr-2 text-xs text-[var(--color-text-muted)]">{log.ip_address}</td>
+                    <td className="py-3 pr-2 text-xs text-[var(--color-text-muted)]">
+                      {log.platform === 'yahoo' ? 'ヤフオク' : log.platform === 'minne' ? 'ハンドメイド' : 'メルカリ'}
+                    </td>
                     <td className="py-3 pr-2">
                       <div className="line-clamp-2">{log.input_text}</div>
                     </td>
