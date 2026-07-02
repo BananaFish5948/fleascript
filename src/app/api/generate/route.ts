@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/server';
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   const ip = req.headers.get('x-real-ip') ?? '127.0.0.1';
+  const isDevMode = req.cookies.has('FLEA_DEV_MODE');
 
   try {
     const body = await req.json();
@@ -14,7 +15,6 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     const ssrClient = await createClient();
     const { data: { user } } = await ssrClient.auth.getUser();
 
-    const isDevMode = req.cookies.has('FLEA_DEV_MODE');
     const { allowed, remaining, isPremium } = await checkRateLimit(ip, deviceId, isDevMode, user?.id);
 
     if (!allowed) {
@@ -98,6 +98,17 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         { error: "AIサーバーが混み合っています。少し時間をおいて再度お試しください。" },
         { status: 504 }
+      );
+    }
+
+    if (error?.status === 429 || error?.code === 'insufficient_quota') {
+      const errorMessage = isDevMode 
+        ? `[DevMode] Quota Exceeded (429): ${error?.message || 'insufficient_quota'}`
+        : "現在、アクセスが集中しており商品説明の生成を一時停止しています。しばらく経ってから再度お試しください。";
+      
+      return NextResponse.json(
+        { error: errorMessage },
+        { status: 503 }
       );
     }
 
