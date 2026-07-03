@@ -1,0 +1,13 @@
+#!/bin/sh
+echo "[Pre-Flight Check] Running tests before push..."
+npm run test:preflight
+
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "❌ Pre-flight checks failed! Push aborted."
+  echo "Please fix the failing tests before pushing."
+  exit 1
+fi
+
+echo "✅ Pre-flight checks passed! Proceeding with push."
+exit 0

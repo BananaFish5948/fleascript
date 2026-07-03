@@ -11,30 +11,33 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'ログインが必要です' }, { status: 401 });
     }
 
+    const { targetPlan } = await req.json();
+    if (targetPlan !== 'standard' && targetPlan !== 'premium') {
+      return NextResponse.json({ error: '無効なプランです' }, { status: 400 });
+    }
+
     const supabase = createAdminClient();
 
-    // 既に Premium かどうかをチェックする
+    // 既に指定のプランかどうかをチェックする
     const { data: dbUser } = await supabase
       .from('users')
       .select('subscription_status')
       .eq('id', user.id)
       .maybeSingle();
 
-    if (dbUser?.subscription_status === 'premium') {
-      return NextResponse.json({ error: 'すでにプレミアムプランに加入しています。' }, { status: 400 });
+    if (dbUser?.subscription_status === targetPlan) {
+      return NextResponse.json({ error: 'すでにこのプランに加入しています。' }, { status: 400 });
     }
 
-    // モック用の決済成功処理: ログインユーザーの subscription_status を 'premium' に更新
+    // モック用の決済成功処理: ログインユーザーの subscription_status を targetPlan に更新
     const { error } = await supabase
       .from('users')
-      .upsert(
-        { id: user.id, subscription_status: 'premium' },
-        { onConflict: 'id' }
-      );
+      .update({ subscription_status: targetPlan })
+      .eq('id', user.id);
 
     if (error) {
       console.error('[checkout-mock] Supabase error:', error.message);
-      return NextResponse.json({ error: 'Failed to update subscription status' }, { status: 500 });
+      return NextResponse.json({ error: `Failed to update subscription status: ${error.message}` }, { status: 500 });
     }
 
     return NextResponse.json({ success: true });

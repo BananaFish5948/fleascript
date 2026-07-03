@@ -5,36 +5,37 @@ interface ManagePlanModalProps {
   onClose: () => void;
   deviceId: string | null;
   onCanceled: () => void;
+  subscriptionStatus?: string;
 }
 
-export default function ManagePlanModal({ isOpen, onClose, deviceId, onCanceled }: ManagePlanModalProps) {
+export default function ManagePlanModal({ isOpen, onClose, deviceId, onCanceled, subscriptionStatus = 'free' }: ManagePlanModalProps) {
   const [isLoading, setIsLoading] = useState(false)
-  const [isConfirming, setIsConfirming] = useState(false)
+  const [confirmAction, setConfirmAction] = useState<{ type: 'cancel' | 'downgrade', targetPlan: string } | null>(null)
 
   if (!isOpen) return null
 
-  const handleCancelSubscription = async () => {
-    if (!deviceId) return
+  const handleChangePlan = async (targetPlan: string) => {
     setIsLoading(true)
 
     try {
-      const res = await fetch('/api/cancel-subscription-mock', {
+      const res = await fetch('/api/change-plan-mock', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ deviceId }),
+        body: JSON.stringify({ targetPlan }),
       })
 
       if (res.ok) {
-        alert('プランの解約が完了しました。無料プランへ移行します。')
+        alert(targetPlan === 'free' ? 'プランの解約が完了しました。' : 'プランの変更が完了しました。')
         onCanceled()
+        onClose()
       } else {
-        alert('解約処理に失敗しました。')
+        alert('処理に失敗しました。')
       }
     } catch (err) {
       alert('通信エラーが発生しました。')
     } finally {
       setIsLoading(false)
-      setIsConfirming(false)
+      setConfirmAction(null)
     }
   }
 
@@ -53,15 +54,28 @@ export default function ManagePlanModal({ isOpen, onClose, deviceId, onCanceled 
           
           <div className="bg-amber-50 rounded-lg p-4 my-6 text-left border border-amber-100">
             <p className="text-sm text-[var(--color-text-secondary)] mb-1">現在のプラン</p>
-            <p className="text-lg font-bold text-[var(--color-brand)] mb-2">✨ FleaScript Premium</p>
+            <p className="text-lg font-bold text-[var(--color-brand)] mb-2">
+              {subscriptionStatus === 'premium' ? '✨ FleaScript Premium' : '⭐ FleaScript Standard'}
+            </p>
             <ul className="text-sm text-gray-700 list-disc pl-5 space-y-1">
-              <li>1日の作成回数 50回</li>
-              <li>入力文字数 1500文字</li>
-              <li>広告・クレジット非表示</li>
+              {subscriptionStatus === 'premium' ? (
+                <>
+                  <li>1日の作成回数 50回</li>
+                  <li>在庫枠 500件</li>
+                  <li>広告・クレジット非表示</li>
+                  <li>利益分析レポート</li>
+                </>
+              ) : (
+                <>
+                  <li>1日の作成回数 15回</li>
+                  <li>在庫枠 100件</li>
+                  <li>基本機能解放</li>
+                </>
+              )}
             </ul>
           </div>
 
-          {!isConfirming ? (
+          {!confirmAction ? (
             <div className="space-y-3">
               <button 
                 onClick={onClose}
@@ -69,30 +83,51 @@ export default function ManagePlanModal({ isOpen, onClose, deviceId, onCanceled 
               >
                 閉じる
               </button>
+              
+              {subscriptionStatus === 'standard' && (
+                <button 
+                  onClick={() => window.location.href = '/checkout?plan=premium'}
+                  className="w-full bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-white font-bold py-2 px-6 rounded-xl shadow-md transition-transform hover:scale-105 mt-2"
+                >
+                  👑 Premiumへアップグレード
+                </button>
+              )}
+
+              {subscriptionStatus === 'premium' && (
+                <button 
+                  onClick={() => setConfirmAction({ type: 'downgrade', targetPlan: 'standard' })}
+                  className="w-full text-orange-500 hover:text-orange-700 font-bold py-2 px-6 transition-colors text-sm underline mt-2"
+                >
+                  Standardプランへダウングレードする
+                </button>
+              )}
+
               <button 
-                onClick={() => setIsConfirming(true)}
+                onClick={() => setConfirmAction({ type: 'cancel', targetPlan: 'free' })}
                 className="w-full text-red-500 hover:text-red-700 font-bold py-2 px-6 transition-colors text-sm underline"
               >
                 サブスクリプションを解約する
               </button>
               <p className="text-xs text-gray-400 mt-2">
-                ※解約すると即座に無料プランに戻ります。
+                ※解約・変更は即座に反映されます（モック仕様）。
               </p>
             </div>
           ) : (
             <div className="space-y-3 animate-fade-in-up bg-red-50 p-4 rounded-xl border border-red-100">
               <p className="text-sm text-red-700 font-bold mb-3">
-                本当に解約しますか？<br/>即座に無料プラン（広告あり・1日3回）に戻ります。
+                {confirmAction.type === 'cancel' 
+                  ? '本当に解約しますか？即座に無料プランに戻ります。' 
+                  : 'Standardプランへダウングレードしますか？'}
               </p>
               <button 
-                onClick={handleCancelSubscription}
+                onClick={() => handleChangePlan(confirmAction.targetPlan)}
                 disabled={isLoading}
                 className={`w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition-colors flex justify-center items-center gap-2 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
-                {isLoading ? '解約処理中...' : 'はい、解約します (Mock)'}
+                {isLoading ? '処理中...' : 'はい、実行します (Mock)'}
               </button>
               <button 
-                onClick={() => setIsConfirming(false)}
+                onClick={() => setConfirmAction(null)}
                 disabled={isLoading}
                 className="w-full bg-transparent text-gray-600 hover:text-gray-900 font-bold py-2 px-6 transition-colors text-sm"
               >

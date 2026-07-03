@@ -1,12 +1,16 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { InventoryStatus } from '@/types/inventory';
+import { InventoryStatus, InventoryItem } from '@/types/inventory';
 
 interface InventoryFormProps {
   onAdd: (data: any) => Promise<void>;
   isLoading: boolean;
   disabled: boolean;
+  subscriptionStatus?: string;
+  boxCapacity?: number;
+  currentItems?: InventoryItem[];
+  sellerRules?: string;
 }
 
 const STATUS_OPTIONS: { value: InventoryStatus; label: string; defaultFee: number }[] = [
@@ -16,7 +20,7 @@ const STATUS_OPTIONS: { value: InventoryStatus; label: string; defaultFee: numbe
   { value: 'sold', label: '売却済', defaultFee: 10.0 },
 ];
 
-export default function InventoryForm({ onAdd, isLoading, disabled }: InventoryFormProps) {
+export default function InventoryForm({ onAdd, isLoading, disabled, subscriptionStatus = 'free', boxCapacity = 20, currentItems = [], sellerRules = '' }: InventoryFormProps) {
   const [itemName, setItemName] = useState('');
   const [purchasePrice, setPurchasePrice] = useState<number | ''>('');
   const [targetPrice, setTargetPrice] = useState<number | ''>('');
@@ -24,6 +28,9 @@ export default function InventoryForm({ onAdd, isLoading, disabled }: InventoryF
   const [status, setStatus] = useState<InventoryStatus>('hand');
   const [feeRate, setFeeRate] = useState<number>(10.0);
   const [boxNumber, setBoxNumber] = useState('');
+  const [locationTag, setLocationTag] = useState('');
+  const [localSellerRules, setLocalSellerRules] = useState(sellerRules);
+  const [isSavingRules, setIsSavingRules] = useState(false);
 
   // ステータス変更時にデフォルト手数料をセット
   useEffect(() => {
@@ -43,6 +50,32 @@ export default function InventoryForm({ onAdd, isLoading, disabled }: InventoryF
 
   const profit = calcProfit();
 
+  useEffect(() => {
+    setLocalSellerRules(sellerRules);
+  }, [sellerRules]);
+
+  const handleSaveRules = async () => {
+    setIsSavingRules(true);
+    try {
+      const res = await fetch('/api/user-status/preferences', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ seller_rules: localSellerRules }),
+      });
+      if (!res.ok) throw new Error('保存に失敗しました');
+      alert('マイルールを保存しました！AI説明文に反映されます。');
+    } catch (e) {
+      alert('保存に失敗しました');
+    } finally {
+      setIsSavingRules(false);
+    }
+  };
+
+  // 収納キャパシティ計算
+  const activeBoxItemsCount = currentItems.filter(i => i.status !== 'sold' && i.box_number === boxNumber).length;
+  const remainingBoxCapacity = boxCapacity - activeBoxItemsCount;
+  const isBoxFullWarning = boxNumber && remainingBoxCapacity <= (boxCapacity * 0.2);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!itemName.trim() || disabled || isLoading) return;
@@ -55,6 +88,7 @@ export default function InventoryForm({ onAdd, isLoading, disabled }: InventoryF
       fee_rate: feeRate,
       status,
       box_number: boxNumber || null,
+      location_tag: locationTag || 'home',
     });
 
     // Reset form
@@ -63,6 +97,7 @@ export default function InventoryForm({ onAdd, isLoading, disabled }: InventoryF
     setTargetPrice('');
     setPostage('');
     setBoxNumber('');
+    setLocationTag('');
     setStatus('hand');
   };
 
@@ -120,7 +155,7 @@ export default function InventoryForm({ onAdd, isLoading, disabled }: InventoryF
               className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] transition-shadow disabled:opacity-50"
             />
           </div>
-          <div>
+          <div className="relative">
             <label className="block text-xs font-bold text-gray-500 mb-1">保管箱番号</label>
             <input 
               type="text" 
@@ -130,7 +165,25 @@ export default function InventoryForm({ onAdd, isLoading, disabled }: InventoryF
               placeholder="例: A-1" 
               className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] transition-shadow disabled:opacity-50"
             />
+            {isBoxFullWarning && (
+              <p className="absolute -bottom-5 left-0 text-[10px] text-amber-600 font-bold whitespace-nowrap">
+                💡 {boxNumber}の空きはあと{Math.max(0, remainingBoxCapacity)}個です
+              </p>
+            )}
           </div>
+          {subscriptionStatus === 'premium' && (
+            <div>
+              <label className="block text-xs font-bold text-amber-600 mb-1">保管ロケーション 👑</label>
+              <input 
+                type="text" 
+                value={locationTag} 
+                onChange={e => setLocationTag(e.target.value)} 
+                disabled={disabled}
+                placeholder="例: 自宅 / 実家" 
+                className="w-full bg-amber-50 border border-amber-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 transition-shadow disabled:opacity-50"
+              />
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
@@ -183,6 +236,33 @@ export default function InventoryForm({ onAdd, isLoading, disabled }: InventoryF
           </button>
         </div>
       </form>
+
+      {/* Seller Rules Settings */}
+      <div className="mt-6 pt-6 border-t border-gray-100">
+        <h4 className="text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
+          <span>⚙️ 出品マイルール（AIパーソナライズ）</span>
+        </h4>
+        <p className="text-xs text-gray-500 mb-3">
+          「タバコ吸いません」「即購入OK」「値下げ不可」など、あなた独自のルールを設定しておくと、AIが自動で全プラットフォーム向けの説明文に組み込みます。
+        </p>
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={localSellerRules}
+            onChange={(e) => setLocalSellerRules(e.target.value)}
+            placeholder="例: ペットなし、喫煙者なし。即購入大歓迎です！"
+            className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] transition-shadow"
+          />
+          <button
+            type="button"
+            onClick={handleSaveRules}
+            disabled={isSavingRules}
+            className="bg-gray-800 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-sm hover:opacity-90 disabled:opacity-50 whitespace-nowrap transition-all"
+          >
+            {isSavingRules ? '保存中...' : '保存'}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

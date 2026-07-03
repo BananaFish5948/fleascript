@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { InventoryItem, InventoryStatus } from '@/types/inventory';
-import { PlatformType } from '@/lib/openai';
+
 
 interface InventoryListProps {
   items: InventoryItem[];
@@ -15,6 +15,14 @@ export default function InventoryList({ items, onUpdateStatus, onUpdateDescripti
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [generatingId, setGeneratingId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'mercari' | 'yahoo' | 'rakuma'>('mercari');
+
+  const isThreeDaysPassed = (utcDateString: string | undefined) => {
+    if (!utcDateString) return false;
+    const date = new Date(utcDateString);
+    const now = new Date();
+    return (now.getTime() - date.getTime()) > 3 * 24 * 60 * 60 * 1000;
+  };
 
   const handleStatusChange = async (id: string, status: InventoryStatus) => {
     setLoadingId(id);
@@ -33,14 +41,11 @@ export default function InventoryList({ items, onUpdateStatus, onUpdateDescripti
     setGeneratingId(item.id);
     try {
       // 既存のAI生成APIエンドポイントを利用
-      const platform: PlatformType = item.status === 'yahoo' ? 'yahoo' : 'mercari';
-      
       const res = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          inputText: `商品名: ${item.item_name}\n仕入れ値: ${item.purchase_price}円\n目標売価: ${item.target_price}円\n`, 
-          platform 
+          inputText: `商品名: ${item.item_name}\n仕入れ値: ${item.purchase_price}円\n目標売価: ${item.target_price}円\n`
         }),
       });
       const data = await res.json();
@@ -50,9 +55,10 @@ export default function InventoryList({ items, onUpdateStatus, onUpdateDescripti
         return;
       }
 
-      if (data.outputText) {
-        await onUpdateDescription(item.id, data.outputText);
+      if (data.outputData) {
+        await onUpdateDescription(item.id, JSON.stringify(data.outputData));
       }
+
     } catch (error) {
       alert('ネットワークエラーが発生しました');
     } finally {
@@ -117,6 +123,7 @@ export default function InventoryList({ items, onUpdateStatus, onUpdateDescripti
                     売却済にする
                   </button>
                 )}
+                {/* ワンタップ横断アシストは不要になるため一旦削除（最初から全プラットフォーム生成されるため） */}
                 <button
                   onClick={() => setExpandedId(expandedId === item.id ? null : item.id)}
                   className="text-xs font-bold bg-gray-50 text-gray-600 hover:bg-gray-100 px-3 py-1.5 rounded-lg transition-colors border border-gray-100"
@@ -148,16 +155,58 @@ export default function InventoryList({ items, onUpdateStatus, onUpdateDescripti
                   {generatingId === item.id ? (
                     <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   ) : (
-                    <span>✨ 自動生成する</span>
+                    <span>✨ AI一括生成</span>
                   )}
                 </button>
               </div>
-              <textarea
-                value={item.description_stock || ''}
-                onChange={(e) => onUpdateDescription(item.id, e.target.value)}
-                placeholder="AIが生成した文章がここにストックされます。手動で編集も可能です。"
-                className="w-full h-32 p-3 text-sm bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] resize-none"
-              />
+              
+              {(() => {
+                let parsedData: any = null;
+                const rawDesc = item.description_stock || '';
+                try {
+                  parsedData = JSON.parse(rawDesc);
+                  if (typeof parsedData !== 'object' || !parsedData.mercari) {
+                    parsedData = null;
+                  }
+                } catch {
+                  parsedData = null; // レガシーテキストフォーマット
+                }
+
+                if (parsedData) {
+                  return (
+                    <div className="flex flex-col h-full">
+                      <div className="flex border-b border-gray-200 mb-3">
+                        {(['mercari', 'yahoo', 'rakuma'] as const).map(tab => (
+                          <button
+                            key={tab}
+                            onClick={() => setActiveTab(tab)}
+                            className={`px-4 py-2 text-xs font-bold transition-colors ${activeTab === tab ? 'text-[var(--color-brand)] border-b-2 border-[var(--color-brand)]' : 'text-gray-400 hover:text-gray-600'}`}
+                          >
+                            {tab === 'mercari' ? 'メルカリ' : tab === 'yahoo' ? 'ヤフオク' : 'ラクマ'}
+                          </button>
+                        ))}
+                      </div>
+                      <textarea
+                        value={parsedData[activeTab] || ''}
+                        onChange={(e) => {
+                          const updated = { ...parsedData, [activeTab]: e.target.value };
+                          onUpdateDescription(item.id, JSON.stringify(updated));
+                        }}
+                        className="w-full h-32 p-3 text-sm bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] resize-none"
+                      />
+                    </div>
+                  );
+                } else {
+                  return (
+                    <textarea
+                      value={rawDesc}
+                      onChange={(e) => onUpdateDescription(item.id, e.target.value)}
+                      placeholder="「AI一括生成」ボタンを押すと、各プラットフォーム向けの説明文がここにストックされます。"
+                      className="w-full h-32 p-3 text-sm bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] resize-none"
+                    />
+                  );
+                }
+              })()}
             </div>
           )}
         </div>

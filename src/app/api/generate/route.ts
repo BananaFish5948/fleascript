@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { checkRateLimit } from '@/lib/rateLimit';
-import { openai, buildSystemPrompt, buildUserPrompt, PlatformType } from '@/lib/openai';
+import { openai, buildSystemPrompt, buildUserPrompt } from '@/lib/openai';
 import { createClient } from '@/lib/supabase/server';
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
@@ -9,7 +9,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
   try {
     const body = await req.json();
-    const { inputText, deviceId, platform = 'mercari', pageLoadId } = body;
+    const { inputText, deviceId, pageLoadId } = body;
 
     const ssrClient = await createClient();
     const { data: { user } } = await ssrClient.auth.getUser();
@@ -46,24 +46,45 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       );
     }
 
-    const systemPrompt = buildSystemPrompt(platform as PlatformType);
+    // ユーザー設定から seller_rules を取得
+    let sellerRules = '';
+    if (user) {
+      const { data: dbUser } = await ssrClient
+        .from('users')
+        .select('preferences')
+        .eq('id', user.id)
+        .maybeSingle();
+      if (dbUser?.preferences?.seller_rules) {
+        sellerRules = dbUser.preferences.seller_rules;
+      }
+    }
+
+    const systemPrompt = buildSystemPrompt(sellerRules);
 
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
-      max_tokens: 600,
+      max_tokens: 1500, // 3プラットフォーム分なので少し多めに確保
       temperature: 0.7,
+      response_format: { type: "json_object" },
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: buildUserPrompt(inputText) }
       ]
     }, {
-      timeout: 15000 // 15秒でタイムアウトさせる
+      timeout: 20000 // JSON出力で少し時間がかかる可能性があるため20秒に延長
     });
 
-    let outputText = completion.choices[0]?.message?.content;
-
-    if (!outputText) {
+    const rawOutput = completion.choices[0]?.message?.content;
+    if (!rawOutput) {
       throw new Error("OpenAI API returned empty response.");
+    }
+
+    let parsedOutput;
+    try {
+      parsedOutput = JSON.parse(rawOutput);
+    } catch (e) {
+      console.error("JSON Parse Error:", rawOutput);
+      throw new Error("Failed to parse JSON response from OpenAI.");
     }
 
     if (!isPremium) {
@@ -72,11 +93,15 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         '\n\n（出品タイパ向上ツール FleaScript にて作成 👉 https://fleascript.vercel.app ）',
         '\n\n（フリマ出品をラクにする「FleaScript」で自動生成: https://fleascript.vercel.app ）'
       ];
-      outputText += footerTexts[Math.floor(Math.random() * footerTexts.length)];
+      
+      ['mercari', 'yahoo', 'rakuma'].forEach(platform => {
+        if (parsedOutput[platform]) {
+          parsedOutput[platform] += footerTexts[Math.floor(Math.random() * footerTexts.length)];
+        }
+      });
     }
 
-    // generation_logs への保存機能はピボットに伴い廃止
-    return NextResponse.json({ outputText, logId: null, remaining, isPremium });
+    return NextResponse.json({ outputData: parsedOutput, logId: null, remaining, isPremium });
 
   } catch (error: any) {
     console.error("[generate] Error:", error?.message || error);

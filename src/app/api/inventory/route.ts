@@ -32,12 +32,19 @@ export async function POST(request: Request) {
   // ユーザーのサブスクリプション状態を取得
   const { data: userData } = await supabase
     .from('users')
-    .select('subscription_status')
+    .select('subscription_status, preferences')
     .eq('id', user.id)
     .single()
   
-  const isPremium = userData?.subscription_status === 'premium'
-  const maxLimit = isPremium ? 500 : 3
+  const subStatus = userData?.subscription_status || 'free'
+  const preferences = userData?.preferences || {}
+  const bonusSlots = preferences.bonus_slots || 0
+
+  let maxLimit = 3
+  if (subStatus === 'premium') maxLimit = 500
+  else if (subStatus === 'standard') maxLimit = 100
+
+  maxLimit += bonusSlots // ボーナス枠を加算
 
   // 現在の登録件数を取得
   const { count } = await supabase
@@ -46,7 +53,7 @@ export async function POST(request: Request) {
     .eq('user_id', user.id)
   
   if (count !== null && count >= maxLimit) {
-    return NextResponse.json({ error: 'Registration limit reached', limitReached: true }, { status: 403 })
+    return NextResponse.json({ error: 'Payment Required', limitReached: true }, { status: 402 })
   }
 
   try {
@@ -68,6 +75,7 @@ export async function POST(request: Request) {
         fee_rate: fee_rate || 10.00,
         box_number: box_number || null,
         status: status || 'hand',
+        location_tag: body.location_tag || 'home',
         description_stock: description_stock || null
       })
       .select()

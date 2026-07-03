@@ -1,7 +1,7 @@
 # FleaScript Handover Context (For AI Agents)
 
 ## System Status
-- **Phase**: Phase 3 Completed (Auth, Rate Limits, and Roadmap Gauge Implemented). Ready for Phase 4 (Promotion & Monetization).
+- **Phase**: Phase 4.2 Completed (AI Personalization, Best-Selling Time Analytics & Referral Code). Ready for Marketing/Promotion & Deployment.
 - **Framework**: Next.js 16.2.10 (App Router), Tailwind CSS v4, TypeScript.
 - **Design System**: "Flea Market Native" design (Coral Red `#ea352d` & Warm White) with Ambient Glassmorphism backgrounds.
 - **External Services**: Supabase (Database & Auth), OpenAI (`gpt-4o-mini`).
@@ -65,7 +65,9 @@
 - [x] Phase 3: Auth Integration, UI Refinement, Share Bonus & Roadmap Gauge.
 - [x] Landing Page (LP) Implementation using Switcher pattern (`src/app/page.tsx`).
 - [x] Native Ad Integration (UI & Dummy Data) & Layout Refinement completed.
-- [ ] **Phase 4: Promotion & Viral Strategy**: Invoke `@sns-marketer` (Gemika) to create copy and viral loops.
+- [x] **Phase 4.1**: AI Personalization (Seller Rules) & Multi-Platform Output (Mercari, Yahoo, Rakuma tabs).
+- [x] **Phase 4.2**: Dashboard Analytics (Best-Selling Time) & Viral Referral System (+3 slots).
+- [ ] **Phase 4.3**: Promotion Strategy & Viral Copy. Invoke `@sns-marketer` (Gemika) to create copy.
 - [ ] Production Deployment (Vercel) & Custom Domain setup.
 - [ ] **Affiliate Monetization**: Replace placeholder links in `src/lib/affiliateData.ts` with real Amazon Associates links (Requires Vercel deployment first for Amazon site review).
 - [ ] Real Stripe Integration (Replace Mock).

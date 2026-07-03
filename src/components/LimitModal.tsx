@@ -21,38 +21,38 @@ export default function LimitModal({ isOpen, onClose, onOpenShareModal }: LimitM
         
         <div className="p-8 text-center">
           <div className="text-5xl mb-4">🔒</div>
-          <h2 className="text-xl font-bold text-gray-800 mb-2">本日の無料作成枠が終了しました</h2>
+          <h2 className="text-xl font-bold text-gray-800 mb-2">無料枠（上限）に到達しました</h2>
           <p className="text-gray-600 mb-6 text-sm">
-            月額300円（ジュース1本分！）で、作成回数を1日50回へ大幅拡張・広告とクレジットを完全非表示にしませんか？
+            FleaScriptの全機能を解放して、面倒な計算や在庫管理から解放されませんか？
           </p>
           
-          <button 
-            onClick={() => window.location.href = '/checkout'}
-            className="w-full bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition-transform hover:scale-105 mb-4 flex items-center justify-center gap-2"
-          >
-            <span>👑 プレミアムに登録する</span>
-          </button>
-          
-          <div className="relative flex items-center justify-center mb-4">
-            <div className="border-t border-gray-200 w-full"></div>
-            <span className="bg-white px-3 text-xs text-gray-400 absolute">または</span>
+          <div className="grid grid-cols-1 gap-4 mb-6">
+            <button 
+              onClick={() => window.location.href = '/checkout'}
+              className="w-full bg-white border-2 border-indigo-500 hover:bg-indigo-50 text-indigo-700 font-bold py-3 px-6 rounded-xl transition-transform hover:scale-105 flex flex-col items-center justify-center gap-1"
+            >
+              <span className="text-sm">Standard プラン (月額500円)</span>
+              <span className="text-xs font-normal">在庫枠100件 / 基本機能解放 / 手数料自動計算</span>
+            </button>
+            <button 
+              onClick={() => window.location.href = '/checkout?plan=premium'}
+              className="w-full bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition-transform hover:scale-105 flex flex-col items-center justify-center gap-1"
+            >
+              <span className="text-sm">👑 Premium プラン (月額1,000円)</span>
+              <span className="text-xs font-normal">在庫枠500件 / 利益分析 / CSV出力 / 保管タグ</span>
+            </button>
           </div>
-
-          <button 
-            onClick={() => {
-              if (onOpenShareModal) {
-                onClose();
-                onOpenShareModal();
-              }
-            }}
-            className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-bold py-3 px-6 rounded-xl shadow-md transition-transform hover:scale-105 mb-4 flex items-center justify-center gap-2"
-          >
-            <span>🎁 SNSでシェアして今日だけ＋1回枠をもらう</span>
-          </button>
           
-          <div className="text-center text-xs text-green-700 font-medium mb-3 flex items-center justify-center gap-1">
-            <span>✅</span> プレミアムはいつでも解約可能。違約金等の縛りはありません。
-          </div>
+          {onOpenShareModal && (
+            <div className="mb-6">
+              <button
+                onClick={onOpenShareModal}
+                className="w-full bg-blue-50 hover:bg-blue-100 text-blue-600 font-bold py-3 px-6 rounded-xl border border-blue-200 transition-colors flex items-center justify-center gap-2"
+              >
+                <span>🎁 SNSでシェアして枠を1つ増やす</span>
+              </button>
+            </div>
+          )}
           
           <button 
             onClick={onClose}

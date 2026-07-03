@@ -29,10 +29,11 @@ export default function Home() {
   const [maxLimit, setMaxLimit] = useState<number>(3)
   const [isPremium, setIsPremium] = useState(false)
   const [subscriptionStatus, setSubscriptionStatus] = useState<string>('free')
-  const [preferences, setPreferences] = useState<{box_capacity: number; bonus_slots?: number}>({ box_capacity: 20 })
+  const [preferences, setPreferences] = useState<{box_capacity: number; bonus_slots?: number; seller_rules?: string; referral_code?: string}>({ box_capacity: 20 })
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [isAuthLoading, setIsAuthLoading] = useState(true)
   const [roadmapProgress, setRoadmapProgress] = useState(35)
+  const [analytics, setAnalytics] = useState<{totalItems: number, soldCount: number, totalProfitEstimate: number, bestSellingTime?: string} | null>(null)
 
   // モーダル状態
   const [showLimitModal, setShowLimitModal] = useState(false)
@@ -67,6 +68,15 @@ export default function Home() {
       
       if (data.isLoggedIn) {
         await fetchInventory();
+        if (data.subscriptionStatus === 'premium') {
+          try {
+            const aRes = await fetch('/api/premium/analytics');
+            const aData = await aRes.json();
+            if (aData.analytics) setAnalytics(aData.analytics);
+          } catch(e) {
+            console.error(e);
+          }
+        }
       }
     } catch (e) {
       console.error("Failed to fetch user status", e);
@@ -207,7 +217,7 @@ export default function Home() {
           onManagePlanClick={() => setShowManagePlanModal(true)}
           onLogoutClick={handleLogout}
           onLoginClick={() => {}}
-          onOpenShareModal={(preferences?.bonus_slots || 0) < 1 ? () => setShowShareModal(true) : undefined}
+          onOpenShareModal={() => setShowShareModal(true)}
         />
         </div>
 
@@ -232,6 +242,7 @@ export default function Home() {
               subscriptionStatus={subscriptionStatus}
               boxCapacity={preferences.box_capacity}
               currentItems={items}
+              sellerRules={preferences.seller_rules || ''}
             />
             
             {/* Dashboard Native Ad for Free Users */}
@@ -245,6 +256,30 @@ export default function Home() {
             {subscriptionStatus === 'premium' && (
               <div className="bg-gradient-to-r from-amber-50 to-amber-100 border border-amber-200 rounded-2xl p-6 shadow-sm">
                 <h3 className="text-amber-800 font-bold mb-4 flex items-center gap-2">👑 プレミアム分析ダッシュボード</h3>
+                
+                {analytics ? (
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                    <div className="bg-white/60 p-4 rounded-xl text-center">
+                      <div className="text-xs text-amber-700 font-bold mb-1">登録総数</div>
+                      <div className="text-xl font-bold text-gray-800">{analytics.totalItems} <span className="text-sm font-normal">件</span></div>
+                    </div>
+                    <div className="bg-white/60 p-4 rounded-xl text-center">
+                      <div className="text-xs text-amber-700 font-bold mb-1">売却済</div>
+                      <div className="text-xl font-bold text-gray-800">{analytics.soldCount} <span className="text-sm font-normal">件</span></div>
+                    </div>
+                    <div className="bg-white/60 p-4 rounded-xl text-center">
+                      <div className="text-xs text-amber-700 font-bold mb-1">想定利益総額</div>
+                      <div className="text-xl font-bold text-emerald-600">¥ {analytics.totalProfitEstimate.toLocaleString()}</div>
+                    </div>
+                    <div className="bg-amber-500 text-white p-4 rounded-xl text-center shadow-inner relative overflow-hidden">
+                      <div className="text-xs font-bold mb-1 opacity-90 text-amber-100">🔥 最も売れる時間</div>
+                      <div className="text-sm font-bold mt-2">{analytics.bestSellingTime || 'データ不足'}</div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-amber-700 text-sm mb-4">分析データを読み込み中...</div>
+                )}
+
                 <div className="flex gap-4 flex-wrap">
                   <button onClick={() => window.open('/api/premium/export', '_blank')} className="bg-white text-amber-700 px-5 py-2.5 rounded-xl text-sm font-bold shadow-sm hover:shadow-md transition flex items-center gap-2">
                     📥 CSVエクスポート
@@ -254,15 +289,14 @@ export default function Home() {
                       const res = await fetch('/api/premium/analytics');
                       const data = await res.json();
                       if (data.analytics) {
-                        alert(`【簡易利益分析】\n登録総数: ${data.analytics.totalItems}件\n売却済: ${data.analytics.soldCount}件\n想定利益総額: ¥${data.analytics.totalProfitEstimate.toLocaleString()}`);
-                      } else {
-                        alert('分析データの取得に失敗しました');
+                        setAnalytics(data.analytics);
+                        alert('データを最新に更新しました');
                       }
                     } catch(e) {
                       alert('エラーが発生しました');
                     }
-                  }} className="bg-gradient-to-r from-amber-500 to-amber-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-sm hover:opacity-90 transition flex items-center gap-2">
-                    📊 簡易利益分析レポートを生成
+                  }} className="bg-amber-200/50 text-amber-800 px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-amber-200 transition flex items-center gap-2 border border-amber-300">
+                    🔄 データ更新
                   </button>
                 </div>
               </div>
@@ -300,6 +334,7 @@ export default function Home() {
       <CustomShareModal
         isOpen={showShareModal}
         onClose={() => setShowShareModal(false)}
+        referralCode={preferences?.referral_code}
       />
 
       <ManagePlanModal

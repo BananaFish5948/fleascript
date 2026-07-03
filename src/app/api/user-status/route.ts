@@ -14,12 +14,34 @@ export async function GET(req: NextRequest) {
 
   const { data: dbUser } = await ssrClient
     .from('users')
-    .select('subscription_status')
+    .select('subscription_status, preferences')
     .eq('id', user.id)
     .maybeSingle();
 
-  const isPremium = dbUser?.subscription_status === 'premium';
-  const limit = isPremium ? PREMIUM_LIMIT : FREE_LIMIT;
+  const subscriptionStatus = dbUser?.subscription_status || 'free';
+  let preferences = dbUser?.preferences || { box_capacity: 20 };
+  
+  // referral_code の自動生成
+  if (!preferences.referral_code) {
+    const newCode = `ref_${user.id.substring(0, 8)}`;
+    preferences = { ...preferences, referral_code: newCode };
+    
+    // DBを更新 (失敗してもエラーにはしない)
+    await ssrClient
+      .from('users')
+      .update({ preferences })
+      .eq('id', user.id);
+  }
+
+  const bonusSlots = preferences.bonus_slots || 0;
+
+  let limit = FREE_LIMIT;
+  if (subscriptionStatus === 'premium') limit = 500;
+  else if (subscriptionStatus === 'standard') limit = 100;
+
+  limit += bonusSlots; // ボーナス枠を加算
+
+  const isPremium = subscriptionStatus === 'premium';
 
   // inventory_items に登録されている現在の在庫数をカウント
   const { count } = await ssrClient
@@ -28,5 +50,12 @@ export async function GET(req: NextRequest) {
     .eq('user_id', user.id);
   
   const currentCount = count ?? 0;
-  return NextResponse.json({ remaining: Math.max(0, limit - currentCount), isPremium, isLoggedIn: true });
+  return NextResponse.json({ 
+    remaining: Math.max(0, limit - currentCount), 
+    maxLimit: limit,
+    isPremium, 
+    subscriptionStatus, 
+    preferences, 
+    isLoggedIn: true 
+  });
 }

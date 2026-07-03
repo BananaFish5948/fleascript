@@ -1,13 +1,16 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useDeviceId } from '@/hooks/useDeviceId'
 import { createClient } from '@/lib/supabase/client'
 import AuthModal from '@/components/AuthModal'
 
-export default function CheckoutPage() {
+function CheckoutContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const initialPlan = searchParams.get('plan') === 'standard' ? 'standard' : 'premium'
+  const [targetPlan, setTargetPlan] = useState<'standard' | 'premium'>(initialPlan)
   const deviceId = useDeviceId()
   const supabase = createClient()
   
@@ -25,12 +28,12 @@ export default function CheckoutPage() {
         return
       }
 
-      // Premium契約済みであればトップページへ強制リダイレクト
+      // 既に指定のプランかどうかをチェック
       try {
         const url = deviceId ? `/api/user-status?deviceId=${deviceId}` : '/api/user-status'
         const res = await fetch(url)
         const data = await res.json()
-        if (data.isPremium) {
+        if (data.subscriptionStatus === targetPlan) {
           router.replace('/')
           return
         }
@@ -41,7 +44,7 @@ export default function CheckoutPage() {
       setIsCheckingAuth(false)
     }
     checkAuth()
-  }, [supabase, deviceId, router])
+  }, [supabase, deviceId, router, targetPlan])
 
   const handleCheckout = async () => {
     setIsLoading(true)
@@ -50,17 +53,18 @@ export default function CheckoutPage() {
       const res = await fetch('/api/checkout-success-mock', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ deviceId }), // The server will also check cookies for user auth
+        body: JSON.stringify({ deviceId, targetPlan }), // targetPlanを送信
       })
 
       if (res.ok) {
         router.push('/?upgraded=true')
       } else {
-        setErrorMessage("決済エラー（モック）が発生しました。")
+        const errorData = await res.json().catch(() => ({}));
+        setErrorMessage(errorData.error || "決済エラー（モック）が発生しました。");
         setIsLoading(false)
       }
-    } catch (err) {
-      setErrorMessage("通信エラーが発生しました。")
+    } catch (err: any) {
+      setErrorMessage(err.message || "通信エラーが発生しました。");
       setIsLoading(false)
     }
   }
@@ -70,7 +74,7 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f7fafc] flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#f7fafc] flex flex-col py-12 px-4 sm:px-6 lg:px-8">
       <AuthModal 
         isOpen={showAuthModal} 
         onClose={() => {
@@ -80,12 +84,29 @@ export default function CheckoutPage() {
         }} 
       />
 
+      <div className="flex justify-center mb-6">
+        <div className="bg-gray-200/80 p-1.5 rounded-full flex gap-1 shadow-inner">
+          <button 
+            onClick={() => setTargetPlan('standard')}
+            className={`px-6 py-2 rounded-full text-sm font-bold transition-all ${targetPlan === 'standard' ? 'bg-white shadow-sm text-gray-900 scale-105' : 'text-gray-500 hover:text-gray-700'}`}
+          >
+            Standard
+          </button>
+          <button 
+            onClick={() => setTargetPlan('premium')}
+            className={`px-6 py-2 rounded-full text-sm font-bold transition-all ${targetPlan === 'premium' ? 'bg-white shadow-sm text-amber-600 scale-105' : 'text-gray-500 hover:text-gray-700'}`}
+          >
+            Premium ✨
+          </button>
+        </div>
+      </div>
+
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center mb-8">
         <h2 className="text-3xl font-extrabold text-gray-900 mb-2">
-          ✨ FleaScript Premium
+          {targetPlan === 'premium' ? '✨ FleaScript Premium' : '⭐ FleaScript Standard'}
         </h2>
         <div className="inline-flex items-center justify-center px-4 py-1.5 rounded-full bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 font-bold text-sm mb-4 border border-amber-200">
-          月額 <span className="text-xl mx-1">¥300</span> (税込)
+          月額 <span className="text-xl mx-1">{targetPlan === 'premium' ? '¥1,000' : '¥500'}</span> (税込)
         </div>
         <p className="text-sm text-gray-500 font-medium">
           いつでも1クリックで解約可能。違約金等はありません。
@@ -112,11 +133,17 @@ export default function CheckoutPage() {
           </div>
 
           <div className="mb-8 bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl p-5 border border-orange-100">
-            <p className="font-bold text-orange-800 mb-3 text-center">🎁 プレミアムの特典</p>
+            <p className="font-bold text-orange-800 mb-3 text-center">🎁 {targetPlan === 'premium' ? 'プレミアムの特典' : 'スタンダードの特典'}</p>
             <ul className="text-sm text-orange-900 space-y-2">
-              <li className="flex items-center gap-2"><span>✅</span> 1日の作成回数が<span className="font-bold">50回</span>に拡張</li>
+              <li className="flex items-center gap-2"><span>✅</span> 1日の作成回数が<span className="font-bold">{targetPlan === 'premium' ? '50回' : '15回'}</span>に拡張</li>
+              <li className="flex items-center gap-2"><span>✅</span> 登録できる在庫枠が<span className="font-bold">{targetPlan === 'premium' ? '500件' : '100件'}</span>に拡張</li>
               <li className="flex items-center gap-2"><span>✅</span> 入力文字数が<span className="font-bold">1500文字</span>に拡張</li>
-              <li className="flex items-center gap-2"><span>✅</span> すべての広告を非表示</li>
+              {targetPlan === 'premium' && (
+                <>
+                  <li className="flex items-center gap-2"><span>✅</span> すべての広告を非表示</li>
+                  <li className="flex items-center gap-2"><span>✅</span> 簡易利益分析レポート機能の解放</li>
+                </>
+              )}
               <li className="flex items-center gap-2"><span>✅</span> 生成文末尾のバイラルクレジットを削除</li>
             </ul>
           </div>
@@ -237,5 +264,13 @@ export default function CheckoutPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function CheckoutPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#f7fafc] flex items-center justify-center"><div className="animate-spin w-8 h-8 border-4 border-[var(--color-brand)] border-t-transparent rounded-full" /></div>}>
+      <CheckoutContent />
+    </Suspense>
   )
 }
