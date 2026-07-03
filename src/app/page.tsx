@@ -6,13 +6,16 @@ import { createClient } from '@/lib/supabase/client'
 import SummaryCard from '@/components/SummaryCard'
 import InventoryForm from '@/components/InventoryForm'
 import InventoryList from '@/components/InventoryList'
+import ShippingCalculator from '@/components/ShippingCalculator'
 import FooterFeedback from '@/components/FooterFeedback'
 import StatusBar from '@/components/StatusBar'
 import AuthModal from '@/components/AuthModal'
 import LimitModal from '@/components/LimitModal'
 import CustomShareModal from '@/components/CustomShareModal'
 import ManagePlanModal from '@/components/ManagePlanModal'
+import RoadmapGauge from '@/components/RoadmapGauge'
 import { InventoryItem, InventoryStatus } from '@/types/inventory'
+import LandingPage from '@/components/LandingPage'
 
 export default function Home() {
   const [items, setItems] = useState<InventoryItem[]>([])
@@ -21,14 +24,19 @@ export default function Home() {
   
   // ユーザー状態
   const [remaining, setRemaining] = useState<number | null>(null)
+  const [maxLimit, setMaxLimit] = useState<number>(3)
   const [isPremium, setIsPremium] = useState(false)
+  const [subscriptionStatus, setSubscriptionStatus] = useState<string>('free')
+  const [preferences, setPreferences] = useState<{box_capacity: number; bonus_slots?: number}>({ box_capacity: 20 })
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [isAuthLoading, setIsAuthLoading] = useState(true)
+  const [roadmapProgress, setRoadmapProgress] = useState(35)
 
   // モーダル状態
   const [showLimitModal, setShowLimitModal] = useState(false)
   const [showManagePlanModal, setShowManagePlanModal] = useState(false)
   const [showShareModal, setShowShareModal] = useState(false)
+  const [showAuthModal, setShowAuthModal] = useState(false)
 
   // データフェッチ
   const fetchInventory = useCallback(async () => {
@@ -50,7 +58,10 @@ export default function Home() {
       const data = await res.json();
       if (data.isLoggedIn !== undefined) setIsLoggedIn(data.isLoggedIn);
       if (data.remaining !== undefined) setRemaining(data.remaining);
+      if (data.maxLimit !== undefined) setMaxLimit(data.maxLimit);
       if (data.isPremium !== undefined) setIsPremium(data.isPremium);
+      if (data.subscriptionStatus !== undefined) setSubscriptionStatus(data.subscriptionStatus);
+      if (data.preferences !== undefined) setPreferences(data.preferences);
       
       if (data.isLoggedIn) {
         await fetchInventory();
@@ -62,9 +73,22 @@ export default function Home() {
     }
   }, [fetchInventory]);
 
+  const fetchRoadmapProgress = useCallback(async () => {
+    try {
+      const res = await fetch('/api/roadmap');
+      if (res.ok) {
+        const data = await res.json();
+        setRoadmapProgress(data.progress || 35);
+      }
+    } catch (e) {
+      console.error("Failed to fetch roadmap progress", e);
+    }
+  }, []);
+
   useEffect(() => {
     fetchUserStatus();
-  }, [fetchUserStatus]);
+    fetchRoadmapProgress();
+  }, [fetchUserStatus, fetchRoadmapProgress]);
 
   // アクションハンドラー
   const handleAdd = async (data: any) => {
@@ -78,7 +102,7 @@ export default function Home() {
       });
       const result = await res.json();
       
-      if (result.limitReached) {
+      if (res.status === 402 || result.limitReached) {
         setShowLimitModal(true);
         return;
       }
@@ -142,6 +166,18 @@ export default function Home() {
     window.location.reload()
   }
 
+  if (!isAuthLoading && !isLoggedIn) {
+    return (
+      <>
+        <LandingPage onLoginClick={() => setShowAuthModal(true)} />
+        <AuthModal 
+          isOpen={showAuthModal} 
+          onClose={() => setShowAuthModal(false)}
+        />
+      </>
+    )
+  }
+
   return (
     <>
       <main className="max-w-3xl mx-auto w-full px-4 py-8 flex-1 flex flex-col">
@@ -157,34 +193,27 @@ export default function Home() {
           </p>
         </header>
 
+        <div className="mb-8">
         <StatusBar 
           remaining={remaining} 
+          maxLimit={maxLimit}
           isPremium={isPremium} 
           isLoggedIn={isLoggedIn}
-          isDevMode={false} // DevModeトグルは外すか固定
-          onUpgradeClick={() => window.location.href = '/checkout'} 
+          isDevMode={false}
+          subscriptionStatus={subscriptionStatus}
+          onUpgradeClick={() => window.location.href = '/checkout?plan=standard'} 
           onManagePlanClick={() => setShowManagePlanModal(true)}
           onLogoutClick={handleLogout}
           onLoginClick={() => {}}
-          onOpenShareModal={() => setShowShareModal(true)}
+          onOpenShareModal={(preferences?.bonus_slots || 0) < 1 ? () => setShowShareModal(true) : undefined}
         />
+        </div>
 
         <div className="glow-line mb-8" />
 
-        {/* Auth Check */}
-        {!isAuthLoading && !isLoggedIn && (
-          <div className="text-center py-12 bg-white/50 backdrop-blur-sm rounded-3xl border border-gray-100 shadow-sm">
-            <h2 className="text-xl font-bold text-gray-700 mb-4">ご利用にはログインが必要です</h2>
-            <p className="text-sm text-gray-500 mb-8 max-w-md mx-auto">
-              FleaScriptは無料で始められる在庫管理手帳です。大切なデータを保存するため、アカウント登録（無料）をお願いします。
-            </p>
-          </div>
-        )}
-
         {/* Dashboard Content */}
-        {!isAuthLoading && isLoggedIn && (
-          <div className="flex flex-col gap-6">
-            <SummaryCard items={items} remaining={remaining} isPremium={isPremium} />
+        <div className="flex flex-col gap-6">
+            <SummaryCard items={items} remaining={remaining} maxLimit={maxLimit} isPremium={isPremium} />
             
             {error && (
               <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm animate-fade-in-up">
@@ -192,11 +221,44 @@ export default function Home() {
               </div>
             )}
 
+            {(subscriptionStatus === 'standard' || subscriptionStatus === 'premium') && (
+              <ShippingCalculator />
+            )}
+
             <InventoryForm 
               onAdd={handleAdd} 
               isLoading={isLoading} 
               disabled={remaining === 0} 
+              subscriptionStatus={subscriptionStatus}
+              boxCapacity={preferences.box_capacity}
+              currentItems={items}
             />
+            
+            {subscriptionStatus === 'premium' && (
+              <div className="bg-gradient-to-r from-amber-50 to-amber-100 border border-amber-200 rounded-2xl p-6 shadow-sm">
+                <h3 className="text-amber-800 font-bold mb-4 flex items-center gap-2">👑 プレミアム分析ダッシュボード</h3>
+                <div className="flex gap-4 flex-wrap">
+                  <button onClick={() => window.open('/api/premium/export', '_blank')} className="bg-white text-amber-700 px-5 py-2.5 rounded-xl text-sm font-bold shadow-sm hover:shadow-md transition flex items-center gap-2">
+                    📥 CSVエクスポート
+                  </button>
+                  <button onClick={async () => {
+                    try {
+                      const res = await fetch('/api/premium/analytics');
+                      const data = await res.json();
+                      if (data.analytics) {
+                        alert(`【簡易利益分析】\n登録総数: ${data.analytics.totalItems}件\n売却済: ${data.analytics.soldCount}件\n想定利益総額: ¥${data.analytics.totalProfitEstimate.toLocaleString()}`);
+                      } else {
+                        alert('分析データの取得に失敗しました');
+                      }
+                    } catch(e) {
+                      alert('エラーが発生しました');
+                    }
+                  }} className="bg-gradient-to-r from-amber-500 to-amber-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-sm hover:opacity-90 transition flex items-center gap-2">
+                    📊 簡易利益分析レポートを生成
+                  </button>
+                </div>
+              </div>
+            )}
             
             <InventoryList 
               items={items}
@@ -205,9 +267,13 @@ export default function Home() {
               onDelete={handleDelete}
             />
           </div>
-        )}
 
         <div className="flex-1" />
+
+        {/* Roadmap Gauge (New Location) */}
+        <div className="mt-12 mb-4 px-2">
+          <RoadmapGauge progress={roadmapProgress} />
+        </div>
 
         {/* Legal Links */}
         <div className="mt-12 mb-4 pt-8 border-t border-gray-100 flex flex-wrap justify-center gap-4 text-xs text-gray-400">
@@ -217,15 +283,10 @@ export default function Home() {
         </div>
       </main>
 
-      <AuthModal 
-        isOpen={!isAuthLoading && !isLoggedIn} 
-        onClose={() => {}} // 閉じられないようにする
-      />
-
       <LimitModal 
         isOpen={showLimitModal} 
         onClose={() => setShowLimitModal(false)} 
-        onOpenShareModal={() => setShowShareModal(true)}
+        onOpenShareModal={(preferences?.bonus_slots || 0) < 1 ? () => setShowShareModal(true) : undefined}
       />
 
       <CustomShareModal
@@ -238,6 +299,7 @@ export default function Home() {
         onClose={() => setShowManagePlanModal(false)}
         deviceId="" // deviceIdは廃止されたため空文字（バックエンドでは不要になったが、コンポーネントのProps変更対応が必要なら空で渡す）
         onCanceled={fetchUserStatus}
+        subscriptionStatus={subscriptionStatus}
       />
     </>
   )
