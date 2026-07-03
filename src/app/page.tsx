@@ -16,6 +16,8 @@ import ManagePlanModal from '@/components/ManagePlanModal'
 import RoadmapGauge from '@/components/RoadmapGauge'
 import { InventoryItem, InventoryStatus } from '@/types/inventory'
 import LandingPage from '@/components/LandingPage'
+import NativeAdCard from '@/components/NativeAdCard'
+import { AFFILIATE_ADS } from '@/lib/affiliateData'
 
 export default function Home() {
   const [items, setItems] = useState<InventoryItem[]>([])
@@ -221,9 +223,7 @@ export default function Home() {
               </div>
             )}
 
-            {(subscriptionStatus === 'standard' || subscriptionStatus === 'premium') && (
-              <ShippingCalculator />
-            )}
+            <ShippingCalculator subscriptionStatus={subscriptionStatus} />
 
             <InventoryForm 
               onAdd={handleAdd} 
@@ -233,6 +233,14 @@ export default function Home() {
               boxCapacity={preferences.box_capacity}
               currentItems={items}
             />
+            
+            {/* Dashboard Native Ad for Free Users */}
+            {subscriptionStatus === 'free' && (
+              <NativeAdCard 
+                ad={AFFILIATE_ADS.find(a => a.id === 'ad-measure')!} 
+                subscriptionStatus={subscriptionStatus} 
+              />
+            )}
             
             {subscriptionStatus === 'premium' && (
               <div className="bg-gradient-to-r from-amber-50 to-amber-100 border border-amber-200 rounded-2xl p-6 shadow-sm">
