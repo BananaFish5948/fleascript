@@ -20,6 +20,8 @@ export const metadata: Metadata = {
   },
 }
 
+import InAppBrowserWarning from '@/components/InAppBrowserWarning'
+
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
@@ -36,6 +38,9 @@ export default function RootLayout({
         <div className="relative z-10 flex flex-col min-h-full">
           {children}
         </div>
+
+        {/* アプリ内ブラウザ脱出UI */}
+        <InAppBrowserWarning />
       </body>
     </html>
   )

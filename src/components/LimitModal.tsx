@@ -1,9 +1,12 @@
+'use client';
+
 interface LimitModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onOpenShareModal?: () => void;
 }
 
-export default function LimitModal({ isOpen, onClose }: LimitModalProps) {
+export default function LimitModal({ isOpen, onClose, onOpenShareModal }: LimitModalProps) {
   if (!isOpen) return null;
 
   return (
@@ -25,13 +28,30 @@ export default function LimitModal({ isOpen, onClose }: LimitModalProps) {
           
           <button 
             onClick={() => window.location.href = '/checkout'}
-            className="w-full bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition-transform hover:scale-105 mb-2 flex items-center justify-center gap-2"
+            className="w-full bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition-transform hover:scale-105 mb-4 flex items-center justify-center gap-2"
           >
             <span>👑 プレミアムに登録する</span>
           </button>
           
+          <div className="relative flex items-center justify-center mb-4">
+            <div className="border-t border-gray-200 w-full"></div>
+            <span className="bg-white px-3 text-xs text-gray-400 absolute">または</span>
+          </div>
+
+          <button 
+            onClick={() => {
+              if (onOpenShareModal) {
+                onClose();
+                onOpenShareModal();
+              }
+            }}
+            className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-bold py-3 px-6 rounded-xl shadow-md transition-transform hover:scale-105 mb-4 flex items-center justify-center gap-2"
+          >
+            <span>🎁 SNSでシェアして今日だけ＋1回枠をもらう</span>
+          </button>
+          
           <div className="text-center text-xs text-green-700 font-medium mb-3 flex items-center justify-center gap-1">
-            <span>✅</span> いつでも解約可能。違約金等の縛りは一切ありません。
+            <span>✅</span> プレミアムはいつでも解約可能。違約金等の縛りはありません。
           </div>
           
           <button 
@@ -45,3 +65,4 @@ export default function LimitModal({ isOpen, onClose }: LimitModalProps) {
     </div>
   )
 }
+

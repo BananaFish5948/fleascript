@@ -11,6 +11,7 @@ import FooterFeedback from '@/components/FooterFeedback'
 import StatusBar from '@/components/StatusBar'
 import AdCard from '@/components/AdCard'
 import LimitModal from '@/components/LimitModal'
+import CustomShareModal from '@/components/CustomShareModal'
 import PlatformSelector from '@/components/PlatformSelector'
 import ManagePlanModal from '@/components/ManagePlanModal'
 import AuthModal from '@/components/AuthModal'
@@ -22,6 +23,7 @@ export default function Home() {
   const deviceId = useDeviceId()
   const [inputText, setInputText] = useState('')
   const [outputText, setOutputText] = useState('')
+  const [pageLoadId] = useState(() => Date.now().toString() + Math.random().toString().slice(2, 6))
   const [logId, setLogId] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -36,6 +38,7 @@ export default function Home() {
   const [showUpgradeToast, setShowUpgradeToast] = useState(false)
   const [showManagePlanModal, setShowManagePlanModal] = useState(false)
   const [showAuthModal, setShowAuthModal] = useState(false)
+  const [showShareModal, setShowShareModal] = useState(false)
 
   // Client-side initialization of dev mode & status
   useEffect(() => {
@@ -61,7 +64,7 @@ export default function Home() {
 
   const fetchUserStatus = useCallback(() => {
     if (deviceId) {
-      fetch(`/api/user-status?deviceId=${deviceId}`)
+      fetch(`/api/user-status?deviceId=${deviceId}&pageLoadId=${pageLoadId}`)
         .then(res => res.json())
         .then(data => {
           if (data.remaining !== undefined) setRemaining(data.remaining)
@@ -94,7 +97,7 @@ export default function Home() {
       const res = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ inputText, deviceId, platform }),
+        body: JSON.stringify({ inputText, deviceId, platform, pageLoadId }),
       })
       const data = await res.json()
 
@@ -160,6 +163,7 @@ export default function Home() {
           onManagePlanClick={() => setShowManagePlanModal(true)}
           onLogoutClick={handleLogout}
           onLoginClick={() => setShowAuthModal(true)}
+          onOpenShareModal={() => setShowShareModal(true)}
         />
 
         <div className="glow-line mb-8" />
@@ -233,6 +237,12 @@ export default function Home() {
       <LimitModal 
         isOpen={showLimitModal} 
         onClose={() => setShowLimitModal(false)} 
+        onOpenShareModal={() => setShowShareModal(true)}
+      />
+
+      <CustomShareModal
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
       />
 
       <ManagePlanModal

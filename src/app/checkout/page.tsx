@@ -168,14 +168,58 @@ export default function CheckoutPage() {
               )}
             </button>
 
-            {/* Credit Card Button (Mock) */}
-            <button
-              onClick={handleCheckout}
-              disabled={isLoading}
-              className="w-full flex items-center justify-center py-3 px-4 border-2 border-gray-200 rounded-xl text-sm font-bold text-gray-600 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-200 transition-all"
-            >
-              クレジットカードで支払う（Mock）
-            </button>
+            {/* Mock Credit Card Form */}
+            <div className="mt-8 border-t border-gray-200 pt-6">
+              <h3 className="text-sm font-bold text-gray-700 mb-4">💳 クレジットカードで支払う（モック）</h3>
+              <form onSubmit={(e) => { e.preventDefault(); handleCheckout(); }} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">カード番号</label>
+                  <input 
+                    type="text" 
+                    placeholder="0000 0000 0000 0000" 
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] text-sm" 
+                    required 
+                  />
+                </div>
+                <div className="flex gap-4">
+                  <div className="flex-1">
+                    <label className="block text-xs font-medium text-gray-700 mb-1">有効期限</label>
+                    <input 
+                      type="text" 
+                      placeholder="MM/YY" 
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] text-sm" 
+                      required 
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <label className="block text-xs font-medium text-gray-700 mb-1">CVC</label>
+                    <input 
+                      type="text" 
+                      placeholder="123" 
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] text-sm" 
+                      required 
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">カード名義</label>
+                  <input 
+                    type="text" 
+                    placeholder="TARO YAMADA" 
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] text-sm" 
+                    required 
+                  />
+                </div>
+                
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full mt-4 flex items-center justify-center py-3 px-4 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all shadow-md"
+                >
+                  {isLoading ? '処理中...' : '決済する（Mock）'}
+                </button>
+              </form>
+            </div>
             
             <p className="text-xs text-center text-gray-400 mt-4 leading-relaxed">
               ※本番環境では、このボタンを押すとStripeの安全な決済画面へ移動します。<br/>現在はデモ環境のため、クリックすると即座に決済成功となります。

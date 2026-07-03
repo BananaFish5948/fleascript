@@ -1,3 +1,5 @@
+'use client';
+
 interface StatusBarProps {
   remaining: number | null;
   isPremium: boolean;
@@ -7,9 +9,10 @@ interface StatusBarProps {
   onManagePlanClick: () => void;
   onLogoutClick?: () => void;
   onLoginClick?: () => void;
+  onOpenShareModal?: () => void;
 }
 
-export default function StatusBar({ remaining, isPremium, isLoggedIn, isDevMode, onUpgradeClick, onManagePlanClick, onLogoutClick, onLoginClick }: StatusBarProps) {
+export default function StatusBar({ remaining, isPremium, isLoggedIn, isDevMode, onUpgradeClick, onManagePlanClick, onLogoutClick, onLoginClick, onOpenShareModal }: StatusBarProps) {
   if (remaining === null) {
     return <div className="h-10"></div> // placeholder
   }
@@ -22,10 +25,21 @@ export default function StatusBar({ remaining, isPremium, isLoggedIn, isDevMode,
         </span>
         <div className="font-bold text-[var(--color-text-primary)]">
           {isDevMode 
-            ? <span className="text-amber-500">👑 開発者モード (テスト用)</span>
+            ? <div className="flex flex-col">
+                <span className="text-amber-500">👑 開発者モード (テスト用)</span>
+                <span className="text-sm mt-0.5 font-normal">残り <span className="text-[var(--color-brand)] font-bold text-lg">{remaining}</span>/3 回</span>
+              </div>
             : (isPremium 
                 ? <span>残り <span className="text-[var(--color-brand)] text-lg">{remaining}</span>/50 回</span> 
-                : <span>残り <span className="text-[var(--color-brand)] text-lg">{remaining}</span>/3 回</span>
+                : <div className="flex flex-col">
+                    <span>残り <span className="text-[var(--color-brand)] text-lg">{remaining}</span>/3 回</span>
+                    <button 
+                      onClick={onOpenShareModal}
+                      className="text-[10px] text-[#1DA1F2] hover:underline flex items-center gap-1 mt-0.5 w-fit"
+                    >
+                      🎁 シェアして枠を増やす
+                    </button>
+                  </div>
               )
           }
         </div>
@@ -50,7 +64,7 @@ export default function StatusBar({ remaining, isPremium, isLoggedIn, isDevMode,
           </button>
         )}
 
-        {!isPremium && !isDevMode && (
+        {!isPremium && (
           <button 
             onClick={onUpgradeClick}
             className="text-[var(--color-brand)] font-bold hover:bg-[var(--color-brand)]/10 px-3 py-1 rounded-full transition-colors text-xs flex items-center gap-1"
@@ -60,7 +74,7 @@ export default function StatusBar({ remaining, isPremium, isLoggedIn, isDevMode,
           </button>
         )}
 
-        {isPremium && !isDevMode && (
+        {isPremium && (
           <button 
             onClick={onManagePlanClick}
             className="text-gray-500 font-bold hover:bg-gray-100 px-3 py-1 rounded-full transition-colors text-xs flex items-center gap-1"

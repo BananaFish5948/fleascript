@@ -3,13 +3,24 @@ import { createAdminClient } from './supabase/admin'
 const FREE_LIMIT = 3;
 const PREMIUM_LIMIT = 50;
 
+// 開発者モード用の一時的なインメモリキャッシュ（リロードで復帰）
+export const devRateLimits = new Map<string, number>();
+
 export async function checkRateLimit(
   ip: string,
   deviceId?: string | null,
   isDevMode?: boolean,
-  userId?: string | null
+  userId?: string | null,
+  pageLoadId?: string | null
 ): Promise<{ allowed: boolean; remaining: number; isPremium: boolean }> {
-  if (isDevMode) {
+  if (isDevMode && pageLoadId) {
+    const currentCount = devRateLimits.get(pageLoadId) || 0;
+    if (currentCount >= FREE_LIMIT) {
+      return { allowed: false, remaining: 0, isPremium: false };
+    }
+    devRateLimits.set(pageLoadId, currentCount + 1);
+    return { allowed: true, remaining: Math.max(0, FREE_LIMIT - (currentCount + 1)), isPremium: false };
+  } else if (isDevMode) {
     return { allowed: true, remaining: 9999, isPremium: true };
   }
 
@@ -47,6 +58,20 @@ export async function checkRateLimit(
       await supabase
         .from('users')
         .upsert({ id: deviceId, subscription_status: 'free' }, { onConflict: 'id' });
+    }
+  }
+
+  // シェアボーナス枠の確認
+  if (deviceId && !isPremium) {
+    const { data: shareLog } = await supabase
+      .from('share_logs')
+      .select('id')
+      .eq('device_id', deviceId)
+      .eq('date', today)
+      .maybeSingle()
+
+    if (shareLog) {
+      limit += 1;
     }
   }
 

@@ -6,7 +6,9 @@
     "dev": "next dev -p 3001",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:preflight": "ts-node tests/preflight.test.ts",
+    "prepare": "git config core.hooksPath .githooks"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.0",
@@ -24,6 +26,8 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.10",
     "tailwindcss": "^4",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
     "typescript": "^5"
   }
 }

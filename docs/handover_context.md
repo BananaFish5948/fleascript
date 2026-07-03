@@ -44,10 +44,18 @@
 5. **No Direct Supabase Edge Runtime Usage**:
    - Complex DB operations fail in the Edge Runtime. Rate limiting and DB logic must reside in Node.js API routes, while `proxy.ts` strictly handles IP extraction and Basic Auth routing.
 6. **Admin Dashboard Design & Rate Limit Auditing**:
-   - The Admin dashboard (`/admin`) is **intentionally designed with a white/light theme**. DO NOT attempt to force the legacy "Teal x Dark Navy" cyber theme on this page.
    - To audit rate limit abuse, the dashboard maps IPs from recent `generation_logs` to users to display a 👑 flag next to Premium IPs/Devices. This distinguishes legitimate Premium 50/day traffic from malicious Free tier bypasses.
+7. **定型文バスター (Anti-Spam Footer)**:
+   - To prevent identical generated descriptions from triggering marketplace spam filters, the appended footer for free users dynamically rotates the surrounding text of the URL (e.g., `https://fleascript.vercel.app`). This ensures the URL is present for conversion while minimizing the risk of being flagged as identical spam.
+8. **マルチSNSシェア (Custom Share Modal)**:
+   - On Desktop, `navigator.share` fails to show SNS apps. Furthermore, Instagram severely restricts text pre-fill APIs. To solve this, we use `CustomShareModal.tsx`, which bypasses native sharing entirely on Desktop, utilizing Web Intents (for X/Threads) and a "Copy to Clipboard + Open App" flow for Instagram to guarantee a robust UX across all platforms.
+9. **アプリ内ブラウザ（IAB）脱出UI**:
+   - TikTok or Instagram In-App Browsers block Google OAuth and Clipboard APIs, leading to severe UX degradation and conversion loss. We implemented `InAppBrowserWarning.tsx` globally in `layout.tsx` to detect these environments via User-Agent and prompt users to switch to Safari/Chrome.
+10. **開発者モードのエフェメラル・レートリミット**:
+    - To allow testing of the `LimitModal` and Premium upgrade flow without polluting the Supabase `device_rate_limits` table, Developer Mode (`FLEA_DEV_MODE=1`) tracks limits using an in-memory `Map` on the server. The client sends an ephemeral `pageLoadId` (generated on mount) to `api/user-status` and `api/generate`. Reloading the page (F5) generates a new ID and instantly resets the remaining limit to 3.
 
 ## Next Potential Steps
 - [ ] 🐞 Bug Hunt & Code Review by Claude (Coordinator).
 - [ ] Production Deployment (Vercel) & Custom Domain setup.
 - [ ] 📈 スケール時の監視強化 (Future Phase): エンドユーザー環境での502/503等の未知のAPIエラー多発を検知するため、Vercel Analyticsのエラー監視設定、またはSupabaseへの軽量なエラーログテーブル追加を検討する。
+- [ ] 🚀 真のリファラル型シェアへのピボット (Future Phase): 現在の「割り切り型（ボタンクリックのみで+1枠付与）」から、紹介用の一意URL（例: `?ref=device_id`）を発行し、第三者がそのリンク経由でサイトへアクセスして初回生成したタイミングで紹介元に枠を付与する、より堅牢でバイラル効果の高いシステムへの移行を検討する。
