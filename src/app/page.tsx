@@ -3,130 +3,138 @@
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import InputArea from '@/components/InputArea'
-import GenerateButton from '@/components/GenerateButton'
-import OutputArea from '@/components/OutputArea'
-import FeedbackPanel from '@/components/FeedbackPanel'
+import SummaryCard from '@/components/SummaryCard'
+import InventoryForm from '@/components/InventoryForm'
+import InventoryList from '@/components/InventoryList'
 import FooterFeedback from '@/components/FooterFeedback'
 import StatusBar from '@/components/StatusBar'
-import AdCard from '@/components/AdCard'
+import AuthModal from '@/components/AuthModal'
 import LimitModal from '@/components/LimitModal'
 import CustomShareModal from '@/components/CustomShareModal'
-import PlatformSelector from '@/components/PlatformSelector'
 import ManagePlanModal from '@/components/ManagePlanModal'
-import AuthModal from '@/components/AuthModal'
-import { useDeviceId } from '@/hooks/useDeviceId'
-import { PlatformType } from '@/lib/openai'
-import { seoCategories } from '@/data/seoCategories'
+import { InventoryItem, InventoryStatus } from '@/types/inventory'
 
 export default function Home() {
-  const deviceId = useDeviceId()
-  const [inputText, setInputText] = useState('')
-  const [outputText, setOutputText] = useState('')
-  const [pageLoadId] = useState(() => Date.now().toString() + Math.random().toString().slice(2, 6))
-  const [logId, setLogId] = useState<string | null>(null)
+  const [items, setItems] = useState<InventoryItem[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [platform, setPlatform] = useState<PlatformType>('mercari')
   
-  // State for rate limit & premium status
+  // ユーザー状態
   const [remaining, setRemaining] = useState<number | null>(null)
   const [isPremium, setIsPremium] = useState(false)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [isDevMode, setIsDevMode] = useState(false)
+  const [isAuthLoading, setIsAuthLoading] = useState(true)
+
+  // モーダル状態
   const [showLimitModal, setShowLimitModal] = useState(false)
-  const [showUpgradeToast, setShowUpgradeToast] = useState(false)
   const [showManagePlanModal, setShowManagePlanModal] = useState(false)
-  const [showAuthModal, setShowAuthModal] = useState(false)
   const [showShareModal, setShowShareModal] = useState(false)
 
-  // Client-side initialization of dev mode & status
-  useEffect(() => {
-    setIsDevMode(document.cookie.includes('FLEA_DEV_MODE=1'))
-    
-    const params = new URLSearchParams(window.location.search)
-    
-    // upgraded=trueの検知
-    if (params.get('upgraded') === 'true') {
-      setShowUpgradeToast(true)
-      window.history.replaceState({}, document.title, window.location.pathname)
-      setTimeout(() => setShowUpgradeToast(false), 5000)
-    }
-
-    // templateパラメータの検知
-    const templateId = params.get('template')
-    if (templateId && seoCategories[templateId]) {
-      setInputText(seoCategories[templateId].exampleInput)
-      // URLをクリーンにする（任意）
-      window.history.replaceState({}, document.title, window.location.pathname)
-    }
-  }, [])
-
-  const fetchUserStatus = useCallback(() => {
-    if (deviceId) {
-      fetch(`/api/user-status?deviceId=${deviceId}&pageLoadId=${pageLoadId}`)
-        .then(res => res.json())
-        .then(data => {
-          if (data.remaining !== undefined) setRemaining(data.remaining)
-          if (data.isPremium !== undefined) setIsPremium(data.isPremium)
-          if (data.isLoggedIn !== undefined) setIsLoggedIn(data.isLoggedIn)
-        })
-        .catch(console.error)
-    }
-  }, [deviceId])
-
-  useEffect(() => {
-    fetchUserStatus()
-  }, [fetchUserStatus])
-
-  const handleCanceled = () => {
-    setShowManagePlanModal(false)
-    fetchUserStatus()
-  }
-
-  const maxLength = isDevMode || isPremium ? 1500 : 300
-
-  const handleGenerate = async () => {
-    if (!inputText.trim() || inputText.length > maxLength || isLoading) return
-    setIsLoading(true)
-    setError(null)
-    setOutputText('')
-    setLogId(null)
-
+  // データフェッチ
+  const fetchInventory = useCallback(async () => {
     try {
-      const res = await fetch('/api/generate', {
+      const res = await fetch('/api/inventory');
+      if (res.ok) {
+        const data = await res.json();
+        setItems(data.items || []);
+      }
+    } catch (e) {
+      console.error("Failed to fetch inventory", e);
+    }
+  }, []);
+
+  const fetchUserStatus = useCallback(async () => {
+    setIsAuthLoading(true);
+    try {
+      const res = await fetch(`/api/user-status`);
+      const data = await res.json();
+      if (data.isLoggedIn !== undefined) setIsLoggedIn(data.isLoggedIn);
+      if (data.remaining !== undefined) setRemaining(data.remaining);
+      if (data.isPremium !== undefined) setIsPremium(data.isPremium);
+      
+      if (data.isLoggedIn) {
+        await fetchInventory();
+      }
+    } catch (e) {
+      console.error("Failed to fetch user status", e);
+    } finally {
+      setIsAuthLoading(false);
+    }
+  }, [fetchInventory]);
+
+  useEffect(() => {
+    fetchUserStatus();
+  }, [fetchUserStatus]);
+
+  // アクションハンドラー
+  const handleAdd = async (data: any) => {
+    setError(null);
+    setIsLoading(true);
+    try {
+      const res = await fetch('/api/inventory', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ inputText, deviceId, platform, pageLoadId }),
-      })
-      const data = await res.json()
-
-      if (data.remaining !== undefined) setRemaining(data.remaining)
-      if (data.isPremium !== undefined) setIsPremium(data.isPremium)
-
-      if (data.limitReached) {
-        setShowLimitModal(true)
-        setIsLoading(false)
-        return
+        body: JSON.stringify(data),
+      });
+      const result = await res.json();
+      
+      if (result.limitReached) {
+        setShowLimitModal(true);
+        return;
       }
-
-      if (!res.ok) {
-        setError(data.error ?? '予期せぬエラーが発生しました。')
-        return
-      }
-
-      setOutputText(data.outputText)
-      setLogId(data.logId)
-    } catch {
-      setError('ネットワークエラーが発生しました。接続を確認して再試行してください。')
+      
+      if (!res.ok) throw new Error(result.error || '追加に失敗しました');
+      
+      setItems(prev => [result.item, ...prev]);
+      await fetchUserStatus(); // limit更新用
+    } catch (err: any) {
+      setError(err.message);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
-  const handleUpgradeClick = () => {
-    window.location.href = '/checkout'
-  }
+  const handleUpdateStatus = async (id: string, status: InventoryStatus) => {
+    try {
+      const res = await fetch(`/api/inventory/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+      });
+      if (res.ok) {
+        setItems(prev => prev.map(item => item.id === id ? { ...item, status } : item));
+      }
+    } catch (e) {
+      console.error(e);
+      alert('更新に失敗しました');
+    }
+  };
+
+  const handleUpdateDescription = async (id: string, description_stock: string) => {
+    try {
+      setItems(prev => prev.map(item => item.id === id ? { ...item, description_stock } : item));
+      await fetch(`/api/inventory/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ description_stock }),
+      });
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      const res = await fetch(`/api/inventory/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        setItems(prev => prev.filter(item => item.id !== id));
+        await fetchUserStatus(); // limit更新用
+      }
+    } catch (e) {
+      console.error(e);
+      alert('削除に失敗しました');
+    }
+  };
 
   const handleLogout = async () => {
     const supabase = createClient()
@@ -136,21 +144,16 @@ export default function Home() {
 
   return (
     <>
-      {showUpgradeToast && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-gradient-to-r from-amber-400 to-amber-500 text-white px-6 py-3 rounded-full shadow-2xl font-bold animate-fade-in-up flex items-center gap-2">
-          🎉 プレミアムプランへのアップグレードが完了しました！
-        </div>
-      )}
-      <main className="max-w-2xl mx-auto w-full px-4 py-8 flex-1 flex flex-col">
+      <main className="max-w-3xl mx-auto w-full px-4 py-8 flex-1 flex flex-col">
         {/* Header */}
         <header className="mb-6 text-center relative mt-4">
           <div className="inline-block relative">
             <h1 className="text-3xl md:text-4xl font-bold text-[var(--color-brand)] mb-3">
-              ✨ フリマ出品ジェネレーター
+              📦 FleaScript 在庫管理
             </h1>
           </div>
           <p className="text-[var(--color-text-secondary)] text-sm md:text-base font-medium">
-            商品の状態をメモするだけ！AIが売れる文章を自動で作ります🪄
+            超軽量・シンプル・低価格な在庫・利益・保管箱管理手帳
           </p>
         </header>
 
@@ -158,81 +161,66 @@ export default function Home() {
           remaining={remaining} 
           isPremium={isPremium} 
           isLoggedIn={isLoggedIn}
-          isDevMode={isDevMode}
-          onUpgradeClick={handleUpgradeClick} 
+          isDevMode={false} // DevModeトグルは外すか固定
+          onUpgradeClick={() => window.location.href = '/checkout'} 
           onManagePlanClick={() => setShowManagePlanModal(true)}
           onLogoutClick={handleLogout}
-          onLoginClick={() => setShowAuthModal(true)}
+          onLoginClick={() => {}}
           onOpenShareModal={() => setShowShareModal(true)}
         />
 
         <div className="glow-line mb-8" />
 
-        {/* Main Content */}
-        <div className="flex flex-col gap-6">
-          <PlatformSelector 
-            platform={platform} 
-            onChange={setPlatform} 
-            disabled={isLoading || remaining === 0} 
-          />
-
-          <InputArea 
-            value={inputText} 
-            onChange={setInputText} 
-            disabled={isLoading || remaining === 0} 
-            maxLength={maxLength}
-          />
-          
-          <GenerateButton 
-            onClick={handleGenerate} 
-            isLoading={isLoading} 
-            disabled={!inputText.trim() || inputText.length > maxLength || remaining === 0} 
-          />
-
-          {!isPremium && <AdCard logId={logId} />}
-
-          {error && (
-            <div className="p-4 rounded-xl bg-[var(--color-danger)]/10 border border-[var(--color-danger)]/30 text-[var(--color-danger)] text-sm animate-fade-in-up">
-              {error}
-            </div>
-          )}
-
-          {outputText && (
-            <div className="flex flex-col gap-4">
-              <OutputArea text={outputText} />
-              {logId && <FeedbackPanel logId={logId} />}
-            </div>
-          )}
-        </div>
-
-        <div className="flex-1" /> {/* Spacer */}
-
-        {/* SEO Categories Footer Links for Crawlers & Users */}
-        <div className="mt-12 pt-8 border-t border-gray-100">
-          <h3 className="text-sm font-bold text-gray-400 mb-4 text-center">人気の出品テンプレート</h3>
-          <div className="flex flex-wrap justify-center gap-2">
-            {Object.values(seoCategories).map((cat) => (
-              <a 
-                key={cat.id} 
-                href={`/template/${cat.id}`}
-                className="text-xs text-gray-500 hover:text-[var(--color-brand)] bg-gray-50 hover:bg-[var(--color-brand)]/5 px-3 py-1.5 rounded-full transition-colors"
-              >
-                {cat.name}
-              </a>
-            ))}
+        {/* Auth Check */}
+        {!isAuthLoading && !isLoggedIn && (
+          <div className="text-center py-12 bg-white/50 backdrop-blur-sm rounded-3xl border border-gray-100 shadow-sm">
+            <h2 className="text-xl font-bold text-gray-700 mb-4">ご利用にはログインが必要です</h2>
+            <p className="text-sm text-gray-500 mb-8 max-w-md mx-auto">
+              FleaScriptは無料で始められる在庫管理手帳です。大切なデータを保存するため、アカウント登録（無料）をお願いします。
+            </p>
           </div>
-        </div>
+        )}
 
-        {/* Footer */}
-        <FooterFeedback />
+        {/* Dashboard Content */}
+        {!isAuthLoading && isLoggedIn && (
+          <div className="flex flex-col gap-6">
+            <SummaryCard items={items} remaining={remaining} isPremium={isPremium} />
+            
+            {error && (
+              <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm animate-fade-in-up">
+                {error}
+              </div>
+            )}
+
+            <InventoryForm 
+              onAdd={handleAdd} 
+              isLoading={isLoading} 
+              disabled={remaining === 0} 
+            />
+            
+            <InventoryList 
+              items={items}
+              onUpdateStatus={handleUpdateStatus}
+              onUpdateDescription={handleUpdateDescription}
+              onDelete={handleDelete}
+            />
+          </div>
+        )}
+
+        <div className="flex-1" />
 
         {/* Legal Links */}
-        <div className="mt-8 mb-4 flex flex-wrap justify-center gap-4 text-xs text-gray-400">
+        <div className="mt-12 mb-4 pt-8 border-t border-gray-100 flex flex-wrap justify-center gap-4 text-xs text-gray-400">
           <Link href="/legal/terms" className="hover:text-gray-600 hover:underline">利用規約</Link>
           <Link href="/legal/privacy" className="hover:text-gray-600 hover:underline">プライバシーポリシー</Link>
           <Link href="/legal/tokushoho" className="hover:text-gray-600 hover:underline">特定商取引法に基づく表記</Link>
         </div>
       </main>
+
+      <AuthModal 
+        isOpen={!isAuthLoading && !isLoggedIn} 
+        onClose={() => {}} // 閉じられないようにする
+      />
 
       <LimitModal 
         isOpen={showLimitModal} 
@@ -248,16 +236,8 @@ export default function Home() {
       <ManagePlanModal
         isOpen={showManagePlanModal}
         onClose={() => setShowManagePlanModal(false)}
-        deviceId={deviceId}
-        onCanceled={handleCanceled}
-      />
-
-      <AuthModal 
-        isOpen={showAuthModal} 
-        onClose={() => {
-          setShowAuthModal(false)
-          fetchUserStatus() // ログイン完了時にステータスを更新
-        }} 
+        deviceId="" // deviceIdは廃止されたため空文字（バックエンドでは不要になったが、コンポーネントのProps変更対応が必要なら空で渡す）
+        onCanceled={fetchUserStatus}
       />
     </>
   )
