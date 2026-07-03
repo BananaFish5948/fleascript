@@ -60,6 +60,14 @@
    - **Mandatory DB Update Announcements**: When updating `schema.sql`, the AI MUST explicitly notify the Master that a manual SQL execution on Supabase is required, providing the exact SQL snippet.
    - When the backend needs to update system records (e.g., granting bonus slots), doing so under the user's session may fail due to Row Level Security (RLS). Always use the `SUPABASE_SERVICE_ROLE_KEY` to instantiate an Admin Client and bypass RLS safely from API routes.
    - **Never swallow API errors (Robustness Rule)**: Do not use generic fallback messages like "An error occurred." Always extract the actual error payload from the API (`errorData.error`) and display it to the user. This immediately isolates DB/constraint issues from frontend bugs.
+10. **Testing Time-Based Triggers**:
+    - The `inventory_items_updated_at` trigger automatically forces `updated_at = now()` on every record update.
+    - Features that rely on elapsed time (like AI Markdown Suggestions requiring `updated_at > 3 days`) cannot be easily mocked from the UI.
+    - To test these features, you MUST execute raw SQL in the Supabase Dashboard to temporarily disable the trigger, backdate the record, and re-enable it: `ALTER TABLE inventory_items DISABLE TRIGGER ...; UPDATE ...; ALTER TABLE ... ENABLE TRIGGER;`
+11. **Downgrade Data Lock Protection (Security Constraint)**:
+    - If a user registers 500 items on Premium and downgrades to Free, they must NOT be allowed to access the excess 497 items.
+    - Both `/api/inventory` and `/api/premium/analytics` enforce `.limit(maxLimit)` on database queries based on the user's *current* active subscription limit.
+    - Excess items are safely locked in the DB (not deleted) but completely inaccessible from the network layer. If `totalCount > maxLimit`, the API returns `isLocked: true`, and the UI displays a warning banner urging an upgrade.
 
 ## Next Potential Steps
 - [x] Phase 3: Auth Integration, UI Refinement, Share Bonus & Roadmap Gauge.
@@ -67,7 +75,9 @@
 - [x] Native Ad Integration (UI & Dummy Data) & Layout Refinement completed.
 - [x] **Phase 4.1**: AI Personalization (Seller Rules) & Multi-Platform Output (Mercari, Yahoo, Rakuma tabs).
 - [x] **Phase 4.2**: Dashboard Analytics (Best-Selling Time) & Viral Referral System (+3 slots).
+- [x] **Phase 4.4**: Premium Analytics Upgrade (AI Markdown Suggestion & Recharts Profit Donut Chart).
 - [ ] **Phase 4.3**: Promotion Strategy & Viral Copy. Invoke `@sns-marketer` (Gemika) to create copy.
+- [ ] **Phase 4.5**: Affiliate Monetization (Amazon Associates & Native Ads).
 - [ ] Production Deployment (Vercel) & Custom Domain setup.
-- [ ] **Affiliate Monetization**: Replace placeholder links in `src/lib/affiliateData.ts` with real Amazon Associates links (Requires Vercel deployment first for Amazon site review).
 - [ ] Real Stripe Integration (Replace Mock).
+- [ ] **Future UI Improvement**: Inline Edit Profit Simulator. (Currently, the inline edit mode in `InventoryList.tsx` provides a minimal editing experience. If requested, port the real-time profit calculation logic from `InventoryForm.tsx` into the inline edit form to allow users to adjust prices while watching the profit change in real-time.)

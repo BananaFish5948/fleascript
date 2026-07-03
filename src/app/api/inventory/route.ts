@@ -9,16 +9,48 @@ export async function GET() {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  // ユーザーのプランと制限を取得
+  const { data: userData } = await supabase
+    .from('users')
+    .select('subscription_status, preferences')
+    .eq('id', user.id)
+    .single()
+  
+  const subStatus = userData?.subscription_status || 'free'
+  const preferences = userData?.preferences || {}
+  const bonusSlots = preferences.bonus_slots || 0
+
+  let maxLimit = 3
+  if (subStatus === 'premium') maxLimit = 500
+  else if (subStatus === 'standard') maxLimit = 100
+
+  maxLimit += bonusSlots
+
+  // 総数を取得
+  const { count } = await supabase
+    .from('inventory_items')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', user.id)
+
+  const totalCount = count || 0
+
+  // 上限件数までしか取得させない（悪質なダウングレードによる超過データ保持の防止）
   const { data, error } = await supabase
     .from('inventory_items')
     .select('*')
     .order('created_at', { ascending: false })
+    .limit(maxLimit)
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
-  return NextResponse.json({ items: data })
+  return NextResponse.json({ 
+    items: data, 
+    totalCount, 
+    maxLimit, 
+    isLocked: totalCount > maxLimit 
+  })
 }
 
 export async function POST(request: Request) {

@@ -15,6 +15,7 @@ import CustomShareModal from '@/components/CustomShareModal'
 import ManagePlanModal from '@/components/ManagePlanModal'
 import RoadmapGauge from '@/components/RoadmapGauge'
 import { InventoryItem, InventoryStatus } from '@/types/inventory'
+import PremiumChart from '@/components/PremiumChart'
 import LandingPage from '@/components/LandingPage'
 import NativeAdCard from '@/components/NativeAdCard'
 import { AFFILIATE_ADS } from '@/lib/affiliateData'
@@ -23,6 +24,7 @@ export default function Home() {
   const [items, setItems] = useState<InventoryItem[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isDataLocked, setIsDataLocked] = useState(false)
   
   // ユーザー状態
   const [remaining, setRemaining] = useState<number | null>(null)
@@ -33,7 +35,20 @@ export default function Home() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [isAuthLoading, setIsAuthLoading] = useState(true)
   const [roadmapProgress, setRoadmapProgress] = useState(35)
-  const [analytics, setAnalytics] = useState<{totalItems: number, soldCount: number, totalProfitEstimate: number, bestSellingTime?: string} | null>(null)
+  type MarkdownSuggestion = {
+    id: string;
+    item_name: string;
+    current_price: number;
+    suggested_price: number;
+    days_elapsed: number;
+    reason: string;
+  };
+  type ChartData = {
+    name: string;
+    value: number;
+    fill: string;
+  };
+  const [analytics, setAnalytics] = useState<{totalItems: number, soldCount: number, totalProfitEstimate: number, bestSellingTime?: string, markdownSuggestions?: MarkdownSuggestion[], chartData?: ChartData[]} | null>(null)
 
   // モーダル状態
   const [showLimitModal, setShowLimitModal] = useState(false)
@@ -48,6 +63,7 @@ export default function Home() {
       if (res.ok) {
         const data = await res.json();
         setItems(data.items || []);
+        setIsDataLocked(data.isLocked || false);
       }
     } catch (e) {
       console.error("Failed to fetch inventory", e);
@@ -146,6 +162,33 @@ export default function Home() {
     }
   };
 
+  const handleUpdateTargetPrice = async (id: string, target_price: number) => {
+    try {
+      const res = await fetch(`/api/inventory/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ target_price }),
+      });
+      if (res.ok) {
+        setItems(prev => prev.map(item => item.id === id ? { ...item, target_price } : item));
+        // サジェストをリストから消す
+        setAnalytics(prev => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            markdownSuggestions: prev.markdownSuggestions?.filter(sug => sug.id !== id)
+          }
+        });
+        alert('システム上の価格を更新しました。\\n※実際のフリマアプリ上でも手動で価格を変更してください。');
+      } else {
+        throw new Error('Update failed');
+      }
+    } catch (e) {
+      console.error(e);
+      alert('更新に失敗しました');
+    }
+  };
+
   const handleUpdateDescription = async (id: string, description_stock: string) => {
     try {
       setItems(prev => prev.map(item => item.id === id ? { ...item, description_stock } : item));
@@ -156,6 +199,25 @@ export default function Home() {
       });
     } catch (e) {
       console.error(e);
+    }
+  };
+
+  const handleUpdateItem = async (id: string, updates: Partial<InventoryItem>) => {
+    try {
+      const res = await fetch(`/api/inventory/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates),
+      });
+      if (res.ok) {
+        const { item } = await res.json();
+        setItems(prev => prev.map(i => i.id === id ? { ...i, ...item } : i));
+      } else {
+        throw new Error('Update failed');
+      }
+    } catch (e) {
+      console.error(e);
+      alert('更新に失敗しました');
     }
   };
 
@@ -200,8 +262,8 @@ export default function Home() {
               📦 FleaScript 在庫管理
             </h1>
           </div>
-          <p className="text-[var(--color-text-secondary)] text-sm md:text-base font-medium">
-            超軽量・シンプル・低価格な在庫・利益・保管箱管理手帳
+          <p className="text-[var(--color-text-secondary)] text-sm md:text-base font-medium mt-2">
+            フリマ出品の「めんどくさい」を1秒で消し去る魔法
           </p>
         </header>
 
@@ -258,22 +320,25 @@ export default function Home() {
                 <h3 className="text-amber-800 font-bold mb-4 flex items-center gap-2">👑 プレミアム分析ダッシュボード</h3>
                 
                 {analytics ? (
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                    <div className="bg-white/60 p-4 rounded-xl text-center">
-                      <div className="text-xs text-amber-700 font-bold mb-1">登録総数</div>
-                      <div className="text-xl font-bold text-gray-800">{analytics.totalItems} <span className="text-sm font-normal">件</span></div>
-                    </div>
-                    <div className="bg-white/60 p-4 rounded-xl text-center">
-                      <div className="text-xs text-amber-700 font-bold mb-1">売却済</div>
-                      <div className="text-xl font-bold text-gray-800">{analytics.soldCount} <span className="text-sm font-normal">件</span></div>
-                    </div>
-                    <div className="bg-white/60 p-4 rounded-xl text-center">
-                      <div className="text-xs text-amber-700 font-bold mb-1">想定利益総額</div>
-                      <div className="text-xl font-bold text-emerald-600">¥ {analytics.totalProfitEstimate.toLocaleString()}</div>
-                    </div>
-                    <div className="bg-amber-500 text-white p-4 rounded-xl text-center shadow-inner relative overflow-hidden">
-                      <div className="text-xs font-bold mb-1 opacity-90 text-amber-100">🔥 最も売れる時間</div>
-                      <div className="text-sm font-bold mt-2">{analytics.bestSellingTime || 'データ不足'}</div>
+                  <div className="flex flex-col md:flex-row gap-6 mb-6">
+                    <PremiumChart data={analytics.chartData} />
+                    <div className="grid grid-cols-2 gap-4 flex-1">
+                      <div className="bg-white/60 p-4 rounded-xl text-center shadow-sm border border-amber-100 flex flex-col justify-center">
+                        <div className="text-xs text-amber-700 font-bold mb-1">登録総数</div>
+                        <div className="text-xl font-bold text-gray-800">{analytics.totalItems} <span className="text-sm font-normal">件</span></div>
+                      </div>
+                      <div className="bg-white/60 p-4 rounded-xl text-center shadow-sm border border-amber-100 flex flex-col justify-center">
+                        <div className="text-xs text-amber-700 font-bold mb-1">売却済</div>
+                        <div className="text-xl font-bold text-gray-800">{analytics.soldCount} <span className="text-sm font-normal">件</span></div>
+                      </div>
+                      <div className="bg-white/60 p-4 rounded-xl text-center shadow-sm border border-amber-100 flex flex-col justify-center col-span-2">
+                        <div className="text-xs text-amber-700 font-bold mb-1">想定利益総額</div>
+                        <div className="text-2xl font-bold text-emerald-600">¥ {analytics.totalProfitEstimate.toLocaleString()}</div>
+                      </div>
+                      <div className="bg-gradient-to-br from-amber-500 to-orange-500 text-white p-4 rounded-xl text-center shadow-md relative overflow-hidden col-span-2 flex flex-col justify-center">
+                        <div className="text-xs font-bold mb-1 opacity-90 text-amber-100">🔥 最も売れる時間</div>
+                        <div className="text-lg font-bold mt-1">{analytics.bestSellingTime || 'データ不足'}</div>
+                      </div>
                     </div>
                   </div>
                 ) : (
@@ -299,6 +364,47 @@ export default function Home() {
                     🔄 データ更新
                   </button>
                 </div>
+                
+                {/* AI Markdown Suggestions */}
+                {analytics?.markdownSuggestions && analytics.markdownSuggestions.length > 0 && (
+                  <div className="mt-6 border-t border-amber-200/50 pt-6 animate-fade-in-up">
+                    <h4 className="text-sm font-bold text-amber-800 mb-4 flex items-center gap-2">
+                      🤖 AI値下げサジェスト（上位表示ハック）
+                    </h4>
+                    <div className="flex flex-col gap-3">
+                      {analytics.markdownSuggestions.map(sug => (
+                        <div key={sug.id} className="bg-white rounded-xl p-4 border border-amber-200 flex flex-col md:flex-row md:items-center justify-between shadow-sm gap-4">
+                           <div className="flex-1">
+                             <div className="font-bold text-gray-800">{sug.item_name}</div>
+                             <div className="text-xs text-amber-600 mt-1">{sug.reason}</div>
+                           </div>
+                           <div className="flex items-center gap-4">
+                             <div className="text-right flex flex-col items-end">
+                               <div className="text-xs text-gray-400 line-through">¥{sug.current_price.toLocaleString()}</div>
+                               <div className="text-lg font-bold text-red-500">¥{sug.suggested_price.toLocaleString()}</div>
+                             </div>
+                             <button
+                               onClick={() => handleUpdateTargetPrice(sug.id, sug.suggested_price)}
+                               className="bg-red-50 text-red-600 hover:bg-red-500 hover:text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors whitespace-nowrap border border-red-100"
+                             >
+                               この価格に変更
+                             </button>
+                           </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+            
+            {isDataLocked && (
+              <div className="p-4 mb-2 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm animate-fade-in-up flex items-start gap-3 shadow-sm">
+                <span className="text-xl">⚠️</span>
+                <div>
+                  <p className="font-bold text-red-700">現在のプラン上限（{maxLimit}件）を超過しています</p>
+                  <p className="mt-1 text-red-600/90 text-xs">超過分のデータは安全に保護されていますが、現在は閲覧・編集がロックされています。<br />すべてのデータにアクセスするには、プランをアップグレードしてください。</p>
+                </div>
               </div>
             )}
             
@@ -306,6 +412,7 @@ export default function Home() {
               items={items}
               onUpdateStatus={handleUpdateStatus}
               onUpdateDescription={handleUpdateDescription}
+              onUpdateItem={handleUpdateItem}
               onDelete={handleDelete}
             />
           </div>

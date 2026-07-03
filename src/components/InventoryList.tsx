@@ -8,14 +8,19 @@ interface InventoryListProps {
   items: InventoryItem[];
   onUpdateStatus: (id: string, status: InventoryStatus) => Promise<void>;
   onUpdateDescription: (id: string, text: string) => Promise<void>;
+  onUpdateItem: (id: string, updates: Partial<InventoryItem>) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
 }
 
-export default function InventoryList({ items, onUpdateStatus, onUpdateDescription, onDelete }: InventoryListProps) {
+export default function InventoryList({ items, onUpdateStatus, onUpdateDescription, onUpdateItem, onDelete }: InventoryListProps) {
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [generatingId, setGeneratingId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'mercari' | 'yahoo' | 'rakuma'>('mercari');
+  
+  // 編集用ステート
+  const [editId, setEditId] = useState<string | null>(null);
+  const [editData, setEditData] = useState<Partial<InventoryItem>>({});
 
   const isThreeDaysPassed = (utcDateString: string | undefined) => {
     if (!utcDateString) return false;
@@ -92,52 +97,127 @@ export default function InventoryList({ items, onUpdateStatus, onUpdateDescripti
           <div className="p-4 sm:p-5">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               
-              {/* 商品情報 */}
+              {/* 商品情報 (通常モード or 編集モード) */}
               <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${STATUS_LABELS[item.status].color}`}>
-                    {STATUS_LABELS[item.status].label}
-                  </span>
-                  {item.box_number && (
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-100">
-                      📦 箱: {item.box_number}
-                    </span>
-                  )}
-                </div>
-                <h4 className="font-bold text-gray-800 text-base">{item.item_name}</h4>
-                <div className="flex gap-4 mt-2 text-xs text-gray-500">
-                  <span>仕入: ¥{item.purchase_price.toLocaleString()}</span>
-                  <span>売価: ¥{item.target_price.toLocaleString()}</span>
-                  <span>送料: ¥{item.postage.toLocaleString()}</span>
-                </div>
+                {editId === item.id ? (
+                  <div className="flex flex-col gap-3">
+                    <div>
+                      <label className="text-[10px] font-bold text-gray-500 mb-1 block">商品名</label>
+                      <input 
+                        type="text" 
+                        value={editData.item_name || ''} 
+                        onChange={e => setEditData({ ...editData, item_name: e.target.value })}
+                        className="w-full text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-[var(--color-brand)]"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                      <div>
+                        <label className="text-[10px] font-bold text-gray-500 mb-1 block">仕入 (¥)</label>
+                        <input type="number" value={editData.purchase_price ?? ''} onChange={e => setEditData({ ...editData, purchase_price: Number(e.target.value) })} className="w-full text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-[var(--color-brand)]" />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-bold text-gray-500 mb-1 block">売価 (¥)</label>
+                        <input type="number" value={editData.target_price ?? ''} onChange={e => setEditData({ ...editData, target_price: Number(e.target.value) })} className="w-full text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-[var(--color-brand)]" />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-bold text-gray-500 mb-1 block">送料 (¥)</label>
+                        <input type="number" value={editData.postage ?? ''} onChange={e => setEditData({ ...editData, postage: Number(e.target.value) })} className="w-full text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-[var(--color-brand)]" />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-bold text-gray-500 mb-1 block">箱番号</label>
+                        <input type="text" value={editData.box_number || ''} onChange={e => setEditData({ ...editData, box_number: e.target.value })} className="w-full text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-[var(--color-brand)]" />
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${STATUS_LABELS[item.status].color}`}>
+                        {STATUS_LABELS[item.status].label}
+                      </span>
+                      {item.box_number && (
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-100">
+                          📦 箱: {item.box_number}
+                        </span>
+                      )}
+                    </div>
+                    <h4 className="font-bold text-gray-800 text-base">{item.item_name}</h4>
+                    <div className="flex gap-4 mt-2 text-xs text-gray-500">
+                      <span>仕入: ¥{item.purchase_price.toLocaleString()}</span>
+                      <span>売価: ¥{item.target_price.toLocaleString()}</span>
+                      <span>送料: ¥{item.postage.toLocaleString()}</span>
+                    </div>
+                  </>
+                )}
               </div>
 
               {/* アクションボタン */}
-              <div className="flex items-center gap-2 self-end sm:self-auto">
-                {item.status !== 'sold' && (
-                  <button
-                    onClick={() => handleStatusChange(item.id, 'sold')}
-                    disabled={loadingId === item.id}
-                    className="text-xs font-bold bg-emerald-50 text-emerald-600 hover:bg-emerald-100 px-3 py-1.5 rounded-lg transition-colors border border-emerald-100"
-                  >
-                    売却済にする
-                  </button>
+              <div className="flex flex-wrap items-center gap-2 self-end sm:self-auto mt-2 sm:mt-0">
+                {editId === item.id ? (
+                  <>
+                    <button
+                      onClick={async () => {
+                        setLoadingId(item.id);
+                        await onUpdateItem(item.id, editData);
+                        setEditId(null);
+                        setLoadingId(null);
+                      }}
+                      disabled={loadingId === item.id}
+                      className="text-xs font-bold bg-blue-500 text-white hover:bg-blue-600 px-3 py-1.5 rounded-lg transition-colors shadow-sm"
+                    >
+                      保存
+                    </button>
+                    <button
+                      onClick={() => setEditId(null)}
+                      disabled={loadingId === item.id}
+                      className="text-xs font-bold bg-gray-100 text-gray-600 hover:bg-gray-200 px-3 py-1.5 rounded-lg transition-colors"
+                    >
+                      キャンセル
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    {item.status !== 'sold' && (
+                      <button
+                        onClick={() => handleStatusChange(item.id, 'sold')}
+                        disabled={loadingId === item.id}
+                        className="text-xs font-bold bg-emerald-50 text-emerald-600 hover:bg-emerald-100 px-3 py-1.5 rounded-lg transition-colors border border-emerald-100"
+                      >
+                        売却済にする
+                      </button>
+                    )}
+                    <button
+                      onClick={() => setExpandedId(expandedId === item.id ? null : item.id)}
+                      className="text-xs font-bold bg-gray-50 text-gray-600 hover:bg-gray-100 px-3 py-1.5 rounded-lg transition-colors border border-gray-100"
+                    >
+                      {expandedId === item.id ? '閉じる' : '説明文AI'}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setEditId(item.id);
+                        setEditData({
+                          item_name: item.item_name,
+                          purchase_price: item.purchase_price,
+                          target_price: item.target_price,
+                          postage: item.postage,
+                          box_number: item.box_number || '',
+                        });
+                        setExpandedId(null);
+                      }}
+                      className="text-xs font-bold bg-blue-50 text-blue-600 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors border border-blue-100"
+                    >
+                      編集
+                    </button>
+                    <button
+                      onClick={() => handleDelete(item.id)}
+                      disabled={loadingId === item.id}
+                      className="text-xs p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                      title="削除"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                    </button>
+                  </>
                 )}
-                {/* ワンタップ横断アシストは不要になるため一旦削除（最初から全プラットフォーム生成されるため） */}
-                <button
-                  onClick={() => setExpandedId(expandedId === item.id ? null : item.id)}
-                  className="text-xs font-bold bg-gray-50 text-gray-600 hover:bg-gray-100 px-3 py-1.5 rounded-lg transition-colors border border-gray-100"
-                >
-                  {expandedId === item.id ? '閉じる' : '説明文AI'}
-                </button>
-                <button
-                  onClick={() => handleDelete(item.id)}
-                  disabled={loadingId === item.id}
-                  className="text-xs p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                  title="削除"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                </button>
               </div>
             </div>
           </div>
