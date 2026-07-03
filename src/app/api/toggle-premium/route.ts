@@ -1,12 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { createClient } from '@/lib/supabase/server';
 
 export async function POST(req: NextRequest) {
   try {
-    const { deviceId, status } = await req.json();
+    const ssrClient = await createClient();
+    const { data: { user } } = await ssrClient.auth.getUser();
 
-    if (!deviceId || !status) {
-      return NextResponse.json({ error: 'Device ID and status are required' }, { status: 400 });
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { status } = await req.json();
+
+    if (!status) {
+      return NextResponse.json({ error: 'Status is required' }, { status: 400 });
     }
 
     const supabase = createAdminClient();
@@ -14,7 +22,7 @@ export async function POST(req: NextRequest) {
     const { error } = await supabase
       .from('users')
       .upsert(
-        { id: deviceId, subscription_status: status },
+        { id: user.id, subscription_status: status },
         { onConflict: 'id' }
       );
 

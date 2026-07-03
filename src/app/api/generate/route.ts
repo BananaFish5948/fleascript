@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { checkRateLimit } from '@/lib/rateLimit';
 import { openai, buildSystemPrompt, buildUserPrompt, PlatformType } from '@/lib/openai';
-import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
@@ -10,12 +9,12 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
   try {
     const body = await req.json();
-    const { inputText, deviceId, platform = 'mercari' } = body;
+    const { inputText, deviceId, platform = 'mercari', pageLoadId } = body;
 
     const ssrClient = await createClient();
     const { data: { user } } = await ssrClient.auth.getUser();
 
-    const { allowed, remaining, isPremium } = await checkRateLimit(ip, deviceId, isDevMode, user?.id);
+    const { allowed, remaining, isPremium } = await checkRateLimit(ip, deviceId, isDevMode, user?.id, pageLoadId);
 
     if (!allowed) {
       return NextResponse.json(
@@ -68,28 +67,16 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     }
 
     if (!isPremium) {
-      outputText += '\n\n【FleaScript無料版で自動作成】フリマ出品を1秒でラクにする無料ツールはこちら(https://fleascript.vercel.app)';
+      const footerTexts = [
+        '\n\n（商品説明最適化ツール「FleaScript」: https://fleascript.vercel.app ）',
+        '\n\n（出品タイパ向上ツール FleaScript にて作成 👉 https://fleascript.vercel.app ）',
+        '\n\n（フリマ出品をラクにする「FleaScript」で自動生成: https://fleascript.vercel.app ）'
+      ];
+      outputText += footerTexts[Math.floor(Math.random() * footerTexts.length)];
     }
 
-    const supabase = createAdminClient();
-    const { data, error } = await supabase
-      .from('generation_logs')
-      .insert({
-        user_id: user?.id || deviceId || null,
-        ip_address: ip,
-        input_text: inputText,
-        output_text: outputText,
-        platform: platform
-      })
-      .select('id')
-      .maybeSingle();
-
-    if (error) {
-      console.error("[generate] Supabase error:", error.message);
-      return NextResponse.json({ outputText, logId: null, remaining, isPremium });
-    }
-
-    return NextResponse.json({ outputText, logId: data?.id ?? null, remaining, isPremium });
+    // generation_logs への保存機能はピボットに伴い廃止
+    return NextResponse.json({ outputText, logId: null, remaining, isPremium });
 
   } catch (error: any) {
     console.error("[generate] Error:", error?.message || error);

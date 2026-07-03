@@ -1,17 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { createClient } from '@/lib/supabase/server';
 
 export async function POST(req: NextRequest) {
   try {
-    const { deviceId } = await req.json();
-    if (!deviceId) return NextResponse.json({ error: 'No device ID' }, { status: 400 });
+    const ssrClient = await createClient();
+    const { data: { user } } = await ssrClient.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
     const supabase = createAdminClient();
     
-    // UPSERT or Insert ignore to ensure the user exists
+    // UPSERT or Insert ignore to ensure the user exists in public.users
     const { error } = await supabase
       .from('users')
-      .upsert({ id: deviceId, subscription_status: 'free' }, { onConflict: 'id' });
+      .upsert({ id: user.id, subscription_status: 'free' }, { onConflict: 'id' });
 
     if (error) throw error;
 
