@@ -64,6 +64,7 @@
 ## Next Potential Steps
 - [x] Phase 3: Auth Integration, UI Refinement, Share Bonus & Roadmap Gauge.
 - [x] Landing Page (LP) Implementation using Switcher pattern (`src/app/page.tsx`).
+- [x] Native Ad Integration (UI & Dummy Data) & Layout Refinement completed.
 - [ ] **Phase 4: Promotion & Viral Strategy**: Invoke `@sns-marketer` (Gemika) to create copy and viral loops.
 - [ ] Production Deployment (Vercel) & Custom Domain setup.
 - [ ] **Affiliate Monetization**: Replace placeholder links in `src/lib/affiliateData.ts` with real Amazon Associates links (Requires Vercel deployment first for Amazon site review).

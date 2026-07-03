@@ -30,7 +30,7 @@ export default function ShippingCalculator({ subscriptionStatus = 'free' }: Ship
   return (
     <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 shadow-sm rounded-2xl p-6 mb-6">
       <h3 className="text-blue-800 font-bold mb-4 flex items-center gap-2">
-        <span>🚚 最安送料・一撃パリィ判定</span>
+        <span>🚚 最安送料シミュレーター</span>
       </h3>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -73,19 +73,20 @@ export default function ShippingCalculator({ subscriptionStatus = 'free' }: Ship
             <span className="text-red-500 font-bold">該当する配送方法が見つかりません</span>
           )}
 
-          {/* アフィリエイトへのスマート誘導（旧仕様削除・NativeAdCardに置換） */}
-          <div className="mt-4 pt-4 border-t border-gray-100 w-full">
-            {bestMethod && (
-              <NativeAdCard 
-                ad={
-                  AFFILIATE_ADS.find(a => a.sizeTarget?.includes(bestMethod.name)) 
-                  || AFFILIATE_ADS.find(a => a.id === 'ad-box-nekoposu')!
-                }
-                subscriptionStatus={subscriptionStatus} 
-              />
-            )}
-          </div>
         </div>
+      </div>
+
+      {/* アフィリエイトへのスマート誘導（レイアウトをグリッド外に出し、全幅で表示） */}
+      <div className="mt-6 pt-6 border-t border-blue-100 w-full">
+        {bestMethod && (
+          <NativeAdCard 
+            ad={
+              AFFILIATE_ADS.find(a => a.sizeTarget?.includes(bestMethod.name)) 
+              || AFFILIATE_ADS.find(a => a.id === 'ad-measure')!
+            }
+            subscriptionStatus={subscriptionStatus} 
+          />
+        )}
       </div>
     </div>
   );

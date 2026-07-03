@@ -21,7 +21,7 @@ export const AFFILIATE_ADS: NativeAdData[] = [
     imageUrl: 'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=400&q=80',
     affiliateUrl: 'https://www.amazon.co.jp/',
     context: 'shipping',
-    sizeTarget: ['ネコポス', 'ゆうパケット', 'クリックポスト']
+    sizeTarget: ['ネコポス', 'ゆうパケットポスト', 'クリックポスト']
   },
   {
     id: 'ad-box-compact',
