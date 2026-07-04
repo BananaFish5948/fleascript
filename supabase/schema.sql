@@ -19,6 +19,16 @@ CREATE TABLE IF NOT EXISTS public.users (
   created_at          timestamptz NOT NULL DEFAULT now()
 );
 
+-- マルチプロバイダ・ログイン用交差テーブル (Apple Sign-in / Hide My Email 対策)
+CREATE TABLE IF NOT EXISTS public.user_identities (
+  id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id      uuid REFERENCES public.users(id) ON DELETE CASCADE NOT NULL,
+  provider     text NOT NULL,      -- 例: 'apple', 'google'
+  provider_id  text NOT NULL,      -- プロバイダから返される固有ID (sub)
+  created_at   timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT user_identities_provider_id_unique UNIQUE (provider, provider_id)
+);
+
 -- 既存テーブルのアップデート（カラムが欠落している場合や、制約が古い場合をケア）
 ALTER TABLE public.users ADD COLUMN IF NOT EXISTS preferences jsonb DEFAULT '{"box_capacity": 20}'::jsonb;
 
@@ -35,6 +45,9 @@ CREATE TABLE IF NOT EXISTS public.ip_rate_limits (
   count        int  NOT NULL DEFAULT 1,
   CONSTRAINT ip_rate_limits_ip_date_unique UNIQUE (ip_address, date)
 );
+
+ALTER TABLE public.ip_rate_limits ADD COLUMN IF NOT EXISTS consecutive_failures int NOT NULL DEFAULT 0;
+ALTER TABLE public.ip_rate_limits ADD COLUMN IF NOT EXISTS locked_until timestamptz;
 
 -- 3. 在庫・利益・保管箱管理テーブル (新設)
 CREATE TABLE IF NOT EXISTS public.inventory_items (
@@ -71,12 +84,16 @@ BEFORE UPDATE ON public.inventory_items
 FOR EACH ROW
 EXECUTE FUNCTION set_updated_at();
 
--- 4. システム設定・進捗管理テーブル (新設)
+-- 4. システム設定・進捗管理・動的リンク管理テーブル (新設)
 CREATE TABLE IF NOT EXISTS public.app_settings (
   id                  text PRIMARY KEY DEFAULT 'global',
   roadmap_progress    integer NOT NULL DEFAULT 35,
+  url_schemes         jsonb DEFAULT '{"mercari": {"edit": "mercari://item/edit?id=", "search": "mercari://search?keyword="}, "yahoo": {"edit": "yahooauctions://item/edit?id=", "search": "yahooauctions://search?query="}}'::jsonb,
   updated_at          timestamptz NOT NULL DEFAULT now()
 );
+
+-- 既存テーブルのアップデート
+ALTER TABLE public.app_settings ADD COLUMN IF NOT EXISTS url_schemes jsonb DEFAULT '{"mercari": {"edit": "mercari://item/edit?id=", "search": "mercari://search?keyword="}, "yahoo": {"edit": "yahooauctions://item/edit?id=", "search": "yahooauctions://search?query="}}'::jsonb;
 
 -- 初期データの投入
 INSERT INTO public.app_settings (id, roadmap_progress)
@@ -89,6 +106,7 @@ ON CONFLICT (id) DO NOTHING;
 -- =============================================
 
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.user_identities ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.ip_rate_limits ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.inventory_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.app_settings ENABLE ROW LEVEL SECURITY;
@@ -114,6 +132,18 @@ DROP POLICY IF EXISTS "Users can insert own profile" ON public.users;
 CREATE POLICY "Users can insert own profile" 
 ON public.users FOR INSERT 
 WITH CHECK (auth.uid() = id);
+
+-- user_identities ポリシー
+DROP POLICY IF EXISTS "Users can view own identities" ON public.user_identities;
+CREATE POLICY "Users can view own identities" 
+ON public.user_identities FOR SELECT 
+USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can manage own identities" ON public.user_identities;
+CREATE POLICY "Users can manage own identities" 
+ON public.user_identities FOR ALL
+USING (auth.uid() = user_id)
+WITH CHECK (auth.uid() = user_id);
 
 -- inventory_items ポリシー (自分自身の在庫のみCRUD可能)
 DROP POLICY IF EXISTS "Users can view own inventory" ON public.inventory_items;

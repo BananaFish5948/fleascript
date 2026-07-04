@@ -24,7 +24,7 @@
   --color-success-bg:     #E9ECE7;   /* 淡いオリーブ */
   --color-warning:        #C29B62;   /* マスタード（警告など） */
   --color-warning-bg:     #F9F6F0;
-  --color-danger:         #C4837A;   /* ダスティレッド（メルカリ出品中、エラーなど） */
+  --color-danger:         #BA8A85;   /* ダスティモーブ（ノイズレスな警告色） */
   --color-danger-bg:      #F8F3F2;
   --color-info:           #8B9B9E;   /* スレートブルー（ヤフオク出品中など） */
   --color-info-bg:        #F2F4F5;
@@ -80,6 +80,36 @@ body {
 }
 
 /* ===== アニメーション ===== */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes unlock-shackle {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+  100% { transform: translateY(-4px) translateX(4px) rotate(15deg); }
+}
+
+@keyframes tuning-meter {
+  0% { transform: rotate(-45deg); }
+  20% { transform: rotate(10deg); }
+  40% { transform: rotate(-15deg); }
+  60% { transform: rotate(5deg); }
+  80% { transform: rotate(-2deg); }
+  100% { transform: rotate(0deg); }
+}
+
+.animate-unlock-shackle {
+  transform-origin: left bottom;
+  animation: unlock-shackle 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.animate-tuning {
+  transform-origin: bottom center;
+  animation: tuning-meter 1.2s ease-out forwards;
+}
+
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -92,8 +122,8 @@ body {
 }
 
 @keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 8px rgba(234, 53, 45, 0.3); }
-  50%       { box-shadow: 0 0 20px rgba(234, 53, 45, 0.6); }
+  0%, 100% { box-shadow: 0 0 8px rgba(166, 93, 71, 0.3); }
+  50%       { box-shadow: 0 0 20px rgba(166, 93, 71, 0.6); }
 }
 
 @keyframes ambient-drift-1 {

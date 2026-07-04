@@ -79,6 +79,10 @@
     - To reduce visual clutter for beginners, we pivoted from a long single-page scroll to a 4-tab Bottom Navigation SPA (`home`, `add`, `analytics`, `settings`).
     - **Keyboard Protection**: Mobile software keyboards push up `fixed bottom-0` elements, obscuring input fields. We mitigate this by actively listening to `focusin` / `focusout` on `INPUT`/`TEXTAREA` elements to temporarily hide the `BottomNav`.
     - **Ad Golden Zone**: Native affiliate ads (`NativeAdCard`) for free users are strictly injected directly below the `SummaryCard` on the Home tab. This ensures maximum impression rate ("Golden Zone" placement) without breaking the new tabbed UX layout.
+15. **HMR Crash Prevention (Dev Environment)**:
+    - AI agents frequently overwrite files faster than the Next.js (Turbopack/Webpack) watcher can process, leading to `ELIFECYCLE` or `EPERM` crashes on the local dev server. Master should stop `npm run dev` while AI is writing code, or restart it if it crashes.
+16. **Cost Optimization for Auth (Apple vs Google/Magic Link)**:
+    - "Sign in with Apple" requires a $99/year Apple Developer Program subscription. To maintain strict MVP costs, Apple Login was scrapped. We utilize Google OAuth as primary, and Supabase Magic Links (OTP) as the fallback for pure iCloud/iOS users.
 
 ## Next Potential Steps
 - [x] Phase 3: Auth Integration, UI Refinement, Share Bonus & Roadmap Gauge.
@@ -89,8 +93,31 @@
 - [x] **Phase 4.4**: Premium Analytics Upgrade (AI Markdown Suggestion & Recharts Profit Donut Chart).
 - [x] **Phase 4.6**: Zero-Cost Virality (Canvas Monthly Activity Report, OGP Twitter Card Integration, Hybrid Shipping Calculator, 3-day stall detection).
 - [x] **Phase 4.7**: Bottom Navigation UX Pivot & Ad Placement Optimization (Golden Zone).
+- [x] **Product Version 2.0 UX/Security Upgrades**:
+  - Implemented Graceful Degradation in Web Workers for Multimodal Image Analysis.
+  - Built IP-based 15-minute Rate Limit Cooldown (3 consecutive failures).
+  - Designed "Tuning Navigator" with clipboard integration and deep-link fallbacks.
+  - Optimized Auth to Google + Magic Links (Cost Defense).
 - [ ] **Phase 4.3**: Promotion Strategy & Viral Copy. Invoke `@sns-marketer` (Gemika) to create copy.
 - [ ] **Phase 4.5**: Affiliate Monetization (Amazon Associates & Native Ads).
 - [ ] Production Deployment (Vercel) & Custom Domain setup.
 - [ ] Real Stripe Integration (Replace Mock).
 - [ ] **Future UI Improvement**: Inline Edit Profit Simulator. (Currently, the inline edit mode in `InventoryList.tsx` provides a minimal editing experience. If requested, port the real-time profit calculation logic from `InventoryForm.tsx` into the inline edit form to allow users to adjust prices while watching the profit change in real-time.)
+- [ ] **Future Feature**: Theme Customization (To satisfy users' desire for self-expression, implement a feature to switch themes. See below for proposed themes).
+
+### Theme Proposals for Future Customization
+**🎨 Proposal B: Stone & Espresso**
+Minimal, calming, modern tone like dark roasted coffee.
+- Base Background: Greige (`#EAE6E1`)
+- Brand/Accent: Espresso (`#3E2723`)
+- Text: Off-Black (`#1C1B1A`)
+- Success (Sold): Olive (`#73795C`)
+- Warning/Alert: Rust (`#A05E4C`)
+
+**🎨 Proposal C: Linen & Slate**
+Clean, cool-toned Scandinavian slow-life feel.
+- Base Background: Linen White (`#F9F8F6`)
+- Brand/Accent: Slate Blue (`#5C6B73`)
+- Text: Deep Slate (`#253237`)
+- Success (Sold): Matcha Green (`#9CA894`)
+- Warning/Alert: Dusty Rose (`#B27C7C`)
