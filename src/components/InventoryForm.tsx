@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { InventoryStatus, InventoryItem } from '@/types/inventory';
+import { PackagePlus, Crown, Lightbulb, Bot, Settings2 } from 'lucide-react';
 
 interface InventoryFormProps {
   onAdd: (data: any) => Promise<void>;
@@ -102,14 +103,15 @@ export default function InventoryForm({ onAdd, isLoading, disabled, subscription
   };
 
   return (
-    <div className="bg-white/80 backdrop-blur-xl border border-white/40 shadow-xl rounded-2xl p-6 relative overflow-hidden">
-      <h3 className="text-lg font-bold text-[var(--color-brand)] mb-4 flex items-center gap-2">
-        <span>📦 新規アイテム登録</span>
+    <div className="bg-[var(--color-bg-surface)] border border-[var(--color-border)] shadow-[var(--shadow-card)] rounded-2xl p-6 relative overflow-hidden">
+      <h3 className="text-sm font-medium tracking-[0.2em] text-[var(--color-text-primary)] mb-6 flex items-center gap-2">
+        <PackagePlus size={18} strokeWidth={1.5} className="text-[var(--color-brand)]" />
+        <span>新規アイテム登録</span>
       </h3>
       
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-xs font-bold text-gray-500 mb-1">商品名 <span className="text-red-400">*</span></label>
+          <label className="block text-[10px] font-medium tracking-widest text-[var(--color-text-secondary)] mb-1">商品名 <span className="text-[var(--color-danger)]">*</span></label>
           <input 
             type="text" 
             required 
@@ -123,7 +125,7 @@ export default function InventoryForm({ onAdd, isLoading, disabled, subscription
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div>
-            <label className="block text-xs font-bold text-gray-500 mb-1">仕入れ値 (¥)</label>
+            <label className="block text-[10px] font-medium tracking-widest text-[var(--color-text-secondary)] mb-1">仕入れ値 (¥)</label>
             <input 
               type="number" 
               value={purchasePrice} 
@@ -134,7 +136,7 @@ export default function InventoryForm({ onAdd, isLoading, disabled, subscription
             />
           </div>
           <div>
-            <label className="block text-xs font-bold text-gray-500 mb-1">目標売価 (¥)</label>
+            <label className="block text-[10px] font-medium tracking-widest text-[var(--color-text-secondary)] mb-1">目標売価 (¥)</label>
             <input 
               type="number" 
               value={targetPrice} 
@@ -145,7 +147,7 @@ export default function InventoryForm({ onAdd, isLoading, disabled, subscription
             />
           </div>
           <div>
-            <label className="block text-xs font-bold text-gray-500 mb-1">想定送料 (¥)</label>
+            <label className="block text-[10px] font-medium tracking-widest text-[var(--color-text-secondary)] mb-1">想定送料 (¥)</label>
             <input 
               type="number" 
               value={postage} 
@@ -156,7 +158,7 @@ export default function InventoryForm({ onAdd, isLoading, disabled, subscription
             />
           </div>
           <div className="relative">
-            <label className="block text-xs font-bold text-gray-500 mb-1">保管箱番号</label>
+            <label className="block text-[10px] font-medium tracking-widest text-[var(--color-text-secondary)] mb-1">保管箱番号</label>
             <input 
               type="text" 
               value={boxNumber} 
@@ -166,14 +168,21 @@ export default function InventoryForm({ onAdd, isLoading, disabled, subscription
               className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] transition-shadow disabled:opacity-50"
             />
             {isBoxFullWarning && (
-              <p className="absolute -bottom-5 left-0 text-[10px] text-amber-600 font-bold whitespace-nowrap">
-                💡 {boxNumber}の空きはあと{Math.max(0, remainingBoxCapacity)}個です
-              </p>
+              <div className="absolute -bottom-6 left-0 right-0">
+                <p className="text-[10px] text-[var(--color-warning)] font-medium tracking-wide whitespace-nowrap flex items-center gap-1">
+                  <Lightbulb size={10} strokeWidth={1.5} /> {boxNumber}の空きはあと{Math.max(0, remainingBoxCapacity)}個です。
+                </p>
+                <p className="text-[9px] text-[var(--color-warning)] font-medium mt-0.5 leading-tight flex items-center gap-1">
+                  <Bot size={10} strokeWidth={1.5} /> AI提案: 古い在庫の値下げ・処分を検討しましょう。
+                </p>
+              </div>
             )}
           </div>
           {subscriptionStatus === 'premium' && (
             <div>
-              <label className="block text-xs font-bold text-amber-600 mb-1">保管ロケーション 👑</label>
+              <label className="block text-[10px] font-medium tracking-widest text-[var(--color-warning)] mb-1 flex items-center gap-1">
+                保管ロケーション <Crown size={12} strokeWidth={1.5} />
+              </label>
               <input 
                 type="text" 
                 value={locationTag} 
@@ -186,10 +195,10 @@ export default function InventoryForm({ onAdd, isLoading, disabled, subscription
           )}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end mt-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold text-gray-500 mb-1">ステータス</label>
+              <label className="block text-[10px] font-medium tracking-widest text-[var(--color-text-secondary)] mb-1">ステータス</label>
               <select
                 value={status}
                 onChange={e => setStatus(e.target.value as InventoryStatus)}
@@ -202,7 +211,7 @@ export default function InventoryForm({ onAdd, isLoading, disabled, subscription
               </select>
             </div>
             <div>
-              <label className="block text-xs font-bold text-gray-500 mb-1">手数料率 (%)</label>
+              <label className="block text-[10px] font-medium tracking-widest text-[var(--color-text-secondary)] mb-1">手数料率 (%)</label>
               <input 
                 type="number" 
                 step="0.1"
@@ -214,9 +223,9 @@ export default function InventoryForm({ onAdd, isLoading, disabled, subscription
             </div>
           </div>
           
-          <div className="bg-gray-50 rounded-xl px-4 py-2.5 border border-gray-100 flex justify-between items-center h-[42px]">
-            <span className="text-xs font-bold text-gray-500">純利益予測</span>
-            <span className={`font-bold ${profit >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+          <div className="bg-[var(--color-bg-base)] rounded-xl px-4 py-2.5 border border-[var(--color-border)] flex justify-between items-center h-[42px]">
+            <span className="text-xs font-medium tracking-widest text-[var(--color-text-secondary)]">純利益予測</span>
+            <span className={`font-medium tracking-wide ${profit >= 0 ? 'text-[var(--color-success)]' : 'text-[var(--color-danger)]'}`}>
               ¥ {Math.floor(profit).toLocaleString()}
             </span>
           </div>
@@ -226,7 +235,7 @@ export default function InventoryForm({ onAdd, isLoading, disabled, subscription
           <button
             type="submit"
             disabled={!itemName.trim() || disabled || isLoading}
-            className="w-full bg-gradient-to-r from-[var(--color-brand)] to-[var(--color-brand-light)] hover:opacity-90 disabled:opacity-50 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2"
+            className="w-full bg-[var(--color-brand)] hover:bg-[var(--color-brand-light)] disabled:opacity-50 text-white font-medium tracking-widest py-3 px-6 rounded-full shadow-[var(--shadow-card)] transition-colors flex items-center justify-center gap-2"
           >
             {isLoading ? (
               <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -237,12 +246,12 @@ export default function InventoryForm({ onAdd, isLoading, disabled, subscription
         </div>
       </form>
 
-      {/* Seller Rules Settings */}
-      <div className="mt-6 pt-6 border-t border-gray-100">
-        <h4 className="text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-          <span>⚙️ 出品マイルール（AIパーソナライズ）</span>
+      <div className="mt-8 pt-6 border-t border-[var(--color-border)]">
+        <h4 className="text-xs font-medium tracking-[0.2em] text-[var(--color-text-primary)] mb-3 flex items-center gap-2">
+          <Settings2 size={16} strokeWidth={1.5} className="text-[var(--color-text-secondary)]" />
+          <span>出品マイルール（AIパーソナライズ）</span>
         </h4>
-        <p className="text-xs text-gray-500 mb-3">
+        <p className="text-[10px] tracking-wide text-[var(--color-text-secondary)] mb-4 leading-relaxed">
           「タバコ吸いません」「即購入OK」「値下げ不可」など、あなた独自のルールを設定しておくと、AIが自動で全プラットフォーム向けの説明文に組み込みます。
         </p>
         <div className="flex gap-2">
@@ -257,7 +266,7 @@ export default function InventoryForm({ onAdd, isLoading, disabled, subscription
             type="button"
             onClick={handleSaveRules}
             disabled={isSavingRules}
-            className="bg-gray-800 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-sm hover:opacity-90 disabled:opacity-50 whitespace-nowrap transition-all"
+            className="bg-[var(--color-text-primary)] text-white px-5 py-2 rounded-full text-xs font-medium tracking-widest shadow-sm hover:opacity-90 disabled:opacity-50 transition-all"
           >
             {isSavingRules ? '保存中...' : '保存'}
           </button>

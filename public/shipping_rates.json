@@ -1,0 +1,10 @@
+{
+  "updatedAt": "2026-07-04T00:00:00Z",
+  "rates": [
+    { "id": "yupacket_mini", "name": "ゆうパケットポストmini", "maxThickness": 3.0, "maxWeight": 2000, "price": 160 },
+    { "id": "nekoposu", "name": "ネコポス", "maxThickness": 3.0, "maxWeight": 1000, "price": 210 },
+    { "id": "yupacket", "name": "ゆうパケットポスト", "maxThickness": 3.0, "maxWeight": 2000, "price": 215 },
+    { "id": "taku_compact", "name": "宅急便コンパクト", "maxThickness": 5.0, "maxWeight": -1, "price": 450 },
+    { "id": "taku_60", "name": "宅急便60サイズ", "maxThickness": 999, "maxWeight": 2000, "price": 750 }
+  ]
+}

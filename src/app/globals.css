@@ -2,30 +2,39 @@
 
 /* ===== デザイントークン ===== */
 @theme inline {
-  /* カラーパレット: コーラルレッド × 落ち着いたグレーベージュ */
-  --color-bg-base:        #faf8f5;   /* 非常に淡いウォーム系オフホワイト（背景装飾を際立たせるため） */
-  --color-bg-surface:     #ffffff;   /* UIカードは白にしてコントラストを出す */
+  /* カラーパレット: オーガニック・スローライフ（Kinfolk風） */
+  --color-bg-base:        #F5F2EB;   /* リネンのような温かみのあるエクリュ */
+  --color-bg-surface:     #ffffff;   /* UIカードは白 */
   --color-bg-elevated:    #ffffff;
 
-  --color-brand:          #ea352d;   /* フリマ風コーラルレッド */
-  --color-brand-light:    #ff5c54;   /* ホバー時 */
-  --color-brand-dim:      rgba(234, 53, 45, 0.06);
+  --color-brand:          #A65D47;   /* テラコッタ・レンガ色 */
+  --color-brand-light:    #C27A65;   /* ホバー時 */
+  --color-brand-dim:      rgba(166, 93, 71, 0.08);
 
-  --color-accent:         #38bdf8;   /* リンク等 */
-  --color-text-primary:   #333333;
-  --color-text-secondary: #666666;
-  --color-text-muted:     #999999;
+  --color-accent:         #7A8B76;   /* セージグリーン（自然の緑） */
+  --color-text-primary:   #2D2926;   /* 温かみのあるチャコールグレー */
+  --color-text-secondary: #78716C;   /* stone-500相当 */
+  --color-text-muted:     #A8A29E;   /* stone-400相当 */
 
-  --color-border:         #d1d5db;   /* 少し濃いボーダーに変更して境界を明確に */
-  --color-border-focus:   rgba(234, 53, 45, 0.4);
-  --color-danger:         #ef4444;
+  --color-border:         #E7E5E4;   /* より柔らかい境界線（stone-200） */
+  --color-border-focus:   rgba(166, 93, 71, 0.4);
+
+  /* セマンティックカラー（Kinfolk風くすみカラー） */
+  --color-success:        #5B6E53;   /* ディープオリーブ（深みのある緑） */
+  --color-success-bg:     #E9ECE7;   /* 淡いオリーブ */
+  --color-warning:        #C29B62;   /* マスタード（警告など） */
+  --color-warning-bg:     #F9F6F0;
+  --color-danger:         #C4837A;   /* ダスティレッド（メルカリ出品中、エラーなど） */
+  --color-danger-bg:      #F8F3F2;
+  --color-info:           #8B9B9E;   /* スレートブルー（ヤフオク出品中など） */
+  --color-info-bg:        #F2F4F5;
 
   /* フォント */
   --font-sans: 'Zen Maru Gothic', 'Noto Sans JP', system-ui, sans-serif;
 
   /* シャドウ（柔らかい影） */
-  --shadow-glow:  0 0 15px rgba(234, 53, 45, 0.2);
-  --shadow-card:  0 4px 12px rgba(0, 0, 0, 0.08); /* 影を少し強めてカードを浮かせる */
+  --shadow-glow:  0 0 15px rgba(166, 93, 71, 0.15);
+  --shadow-card:  0 8px 30px rgba(45, 41, 38, 0.04); /* 広く薄い影でアナログな紙の質感を */
 }
 
 /* ===== ベーススタイル ===== */

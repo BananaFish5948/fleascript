@@ -3,7 +3,7 @@
 ## System Status
 - **Phase**: Phase 4.2 Completed (AI Personalization, Best-Selling Time Analytics & Referral Code). Ready for Marketing/Promotion & Deployment.
 - **Framework**: Next.js 16.2.10 (App Router), Tailwind CSS v4, TypeScript.
-- **Design System**: "Flea Market Native" design (Coral Red `#ea352d` & Warm White) with Ambient Glassmorphism backgrounds.
+- **Design System**: "Aesthetic / Kinfolk" design (Terracotta & Sage with Earth Tones) replacing the old app-like design. Emojis replaced with Lucide icons for a refined, premium feel.
 - **External Services**: Supabase (Database & Auth), OpenAI (`gpt-4o-mini`).
 - **Core Features**: Inventory and profit management dashboard, AI description generation, IP/User-based rate limiting, Developer Mode, Monetization Mock, and **Cost-Driven Roadmap Gauge** (showing progress without absolute numbers).
 
@@ -68,6 +68,17 @@
     - If a user registers 500 items on Premium and downgrades to Free, they must NOT be allowed to access the excess 497 items.
     - Both `/api/inventory` and `/api/premium/analytics` enforce `.limit(maxLimit)` on database queries based on the user's *current* active subscription limit.
     - Excess items are safely locked in the DB (not deleted) but completely inaccessible from the network layer. If `totalCount > maxLimit`, the API returns `isLocked: true`, and the UI displays a warning banner urging an upgrade.
+12. **Zero-Cost Canvas Generation & OGP Virality (Storage Security)**:
+    - To avoid AI image generation API costs, the Monthly Activity Report strictly synthesizes images via client-side HTML5 `<canvas>`.
+    - Because Web Intents (`twitter.com/intent/tweet`) cannot directly attach raw image files, the canvas blob is uploaded to Supabase `temporary_shares`.
+    - **Security**: The `temporary_shares` bucket enforces strict RLS (1MB max, `.jpg`/`.png` only, fixed filename `[userId]/monthly_report.jpg`) to prevent spam/storage bloat.
+    - **OGP Trick**: Instead of sharing the raw image URL, we share a Next.js dynamic route (`/report/[uid]`) that contains `<meta property="og:image">`. This ensures the image renders beautifully as a large Twitter Card on social media timelines.
+13. **Agent Role Tags Requirement**:
+    - As defined in `.agents/AGENTS.md`, AI agents MUST prefix their messages with a role tag (e.g., `【ジェミリア（Coordinator）】` or `【ジェミナ（Frontend）】`) to maintain context clarity and prevent persona confusion.
+14. **Mobile UX Architecture (Bottom Navigation & Keyboard Defense)**:
+    - To reduce visual clutter for beginners, we pivoted from a long single-page scroll to a 4-tab Bottom Navigation SPA (`home`, `add`, `analytics`, `settings`).
+    - **Keyboard Protection**: Mobile software keyboards push up `fixed bottom-0` elements, obscuring input fields. We mitigate this by actively listening to `focusin` / `focusout` on `INPUT`/`TEXTAREA` elements to temporarily hide the `BottomNav`.
+    - **Ad Golden Zone**: Native affiliate ads (`NativeAdCard`) for free users are strictly injected directly below the `SummaryCard` on the Home tab. This ensures maximum impression rate ("Golden Zone" placement) without breaking the new tabbed UX layout.
 
 ## Next Potential Steps
 - [x] Phase 3: Auth Integration, UI Refinement, Share Bonus & Roadmap Gauge.
@@ -76,6 +87,8 @@
 - [x] **Phase 4.1**: AI Personalization (Seller Rules) & Multi-Platform Output (Mercari, Yahoo, Rakuma tabs).
 - [x] **Phase 4.2**: Dashboard Analytics (Best-Selling Time) & Viral Referral System (+3 slots).
 - [x] **Phase 4.4**: Premium Analytics Upgrade (AI Markdown Suggestion & Recharts Profit Donut Chart).
+- [x] **Phase 4.6**: Zero-Cost Virality (Canvas Monthly Activity Report, OGP Twitter Card Integration, Hybrid Shipping Calculator, 3-day stall detection).
+- [x] **Phase 4.7**: Bottom Navigation UX Pivot & Ad Placement Optimization (Golden Zone).
 - [ ] **Phase 4.3**: Promotion Strategy & Viral Copy. Invoke `@sns-marketer` (Gemika) to create copy.
 - [ ] **Phase 4.5**: Affiliate Monetization (Amazon Associates & Native Ads).
 - [ ] Production Deployment (Vercel) & Custom Domain setup.

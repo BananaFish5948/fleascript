@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { InventoryItem, InventoryStatus } from '@/types/inventory';
+import { List, Archive, AlertCircle, RefreshCw, PenTool, Sparkles, Trash2, Edit2, Zap } from 'lucide-react';
 
 
 interface InventoryListProps {
@@ -80,20 +81,21 @@ export default function InventoryList({ items, onUpdateStatus, onUpdateDescripti
   }
 
   const STATUS_LABELS: Record<InventoryStatus, { label: string; color: string }> = {
-    hand: { label: '手元保管', color: 'bg-gray-100 text-gray-600' },
-    mercari: { label: 'メルカリ出品中', color: 'bg-red-100 text-red-600' },
-    yahoo: { label: 'ヤフオク出品中', color: 'bg-yellow-100 text-yellow-700' },
-    sold: { label: '売却済', color: 'bg-emerald-100 text-emerald-600' },
+    hand: { label: '手元保管', color: 'bg-stone-100 text-[var(--color-text-secondary)]' },
+    mercari: { label: 'メルカリ出品中', color: 'bg-[var(--color-danger-bg)] text-[var(--color-danger)]' },
+    yahoo: { label: 'ヤフオク出品中', color: 'bg-[var(--color-info-bg)] text-[var(--color-info)]' },
+    sold: { label: '売却済', color: 'bg-[var(--color-success-bg)] text-[var(--color-success)]' },
   };
 
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-bold text-gray-700 mb-4 flex items-center gap-2">
-        <span>📋 在庫一覧</span>
+      <h3 className="text-sm font-medium tracking-[0.2em] text-[var(--color-text-secondary)] mb-4 flex items-center gap-2">
+        <List size={18} strokeWidth={1.5} />
+        <span>在庫一覧</span>
       </h3>
       
       {items.map((item) => (
-        <div key={item.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden transition-all hover:shadow-md">
+        <div key={item.id} className="bg-[var(--color-bg-surface)] rounded-2xl shadow-sm border border-[var(--color-border)] overflow-hidden transition-all hover:shadow-[var(--shadow-card)]">
           <div className="p-4 sm:p-5">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               
@@ -131,17 +133,24 @@ export default function InventoryList({ items, onUpdateStatus, onUpdateDescripti
                   </div>
                 ) : (
                   <>
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${STATUS_LABELS[item.status].color}`}>
+                    <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                      <span className={`text-[10px] font-medium tracking-wider px-2 py-0.5 rounded-full ${STATUS_LABELS[item.status].color}`}>
                         {STATUS_LABELS[item.status].label}
                       </span>
                       {item.box_number && (
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-100">
-                          📦 箱: {item.box_number}
+                        <span className="text-[10px] font-medium tracking-wider px-2 py-0.5 rounded-full bg-stone-100 text-[var(--color-text-secondary)] border border-[var(--color-border)] flex items-center">
+                          <Archive size={10} strokeWidth={1.5} className="mr-1" />
+                          箱: {item.box_number}
+                        </span>
+                      )}
+                      {(item.status === 'mercari' || item.status === 'yahoo') && isThreeDaysPassed(item.updated_at || item.created_at) && (
+                        <span className="text-[10px] font-medium tracking-wider px-2 py-0.5 rounded-full bg-[var(--color-warning-bg)] text-[var(--color-warning)] border border-[var(--color-warning)] animate-pulse shadow-sm flex items-center gap-1 opacity-80">
+                          <AlertCircle size={10} strokeWidth={1.5} />
+                          3日経過（スタミナ切れ）
                         </span>
                       )}
                     </div>
-                    <h4 className="font-bold text-gray-800 text-base">{item.item_name}</h4>
+                    <h4 className="font-medium tracking-wide text-[var(--color-text-primary)] text-base">{item.item_name}</h4>
                     <div className="flex gap-4 mt-2 text-xs text-gray-500">
                       <span>仕入: ¥{item.purchase_price.toLocaleString()}</span>
                       <span>売価: ¥{item.target_price.toLocaleString()}</span>
@@ -163,14 +172,14 @@ export default function InventoryList({ items, onUpdateStatus, onUpdateDescripti
                         setLoadingId(null);
                       }}
                       disabled={loadingId === item.id}
-                      className="text-xs font-bold bg-blue-500 text-white hover:bg-blue-600 px-3 py-1.5 rounded-lg transition-colors shadow-sm"
+                      className="text-xs font-medium tracking-wider bg-[var(--color-brand)] text-white hover:bg-[var(--color-brand-light)] px-3 py-1.5 rounded-full transition-colors shadow-sm"
                     >
                       保存
                     </button>
                     <button
                       onClick={() => setEditId(null)}
                       disabled={loadingId === item.id}
-                      className="text-xs font-bold bg-gray-100 text-gray-600 hover:bg-gray-200 px-3 py-1.5 rounded-lg transition-colors"
+                      className="text-xs font-medium tracking-wider bg-stone-100 text-[var(--color-text-secondary)] hover:bg-stone-200 px-3 py-1.5 rounded-full transition-colors"
                     >
                       キャンセル
                     </button>
@@ -181,16 +190,35 @@ export default function InventoryList({ items, onUpdateStatus, onUpdateDescripti
                       <button
                         onClick={() => handleStatusChange(item.id, 'sold')}
                         disabled={loadingId === item.id}
-                        className="text-xs font-bold bg-emerald-50 text-emerald-600 hover:bg-emerald-100 px-3 py-1.5 rounded-lg transition-colors border border-emerald-100"
+                        className="text-xs font-medium tracking-wider bg-[var(--color-success-bg)] text-[var(--color-success)] hover:bg-[var(--color-success)] hover:text-[var(--color-bg-base)] px-3 py-1.5 rounded-full transition-colors border border-[var(--color-success)]"
                       >
                         売却済にする
                       </button>
                     )}
+                    {(item.status === 'mercari' || item.status === 'yahoo') && isThreeDaysPassed(item.updated_at || item.created_at) && (
+                      <button
+                        onClick={() => {
+                          const text = item.description_stock || '';
+                          let copyText = text;
+                          try {
+                            const parsed = JSON.parse(text);
+                            if (parsed && typeof parsed === 'object') {
+                              copyText = parsed[item.status] || text;
+                            }
+                          } catch (e) {}
+                          navigator.clipboard.writeText(copyText);
+                          alert('説明文をコピーしました。フリマアプリで再出品を行ってください！');
+                        }}
+                        className="text-[10px] font-medium tracking-wide border border-[var(--color-brand)] text-[var(--color-brand)] hover:bg-[var(--color-brand)] hover:text-white px-3 py-1.5 rounded-full transition-colors shadow-sm flex items-center gap-1"
+                      >
+                        <RefreshCw size={12} strokeWidth={1.5} /> 再出品アシスト
+                      </button>
+                    )}
                     <button
-                      onClick={() => setExpandedId(expandedId === item.id ? null : item.id)}
-                      className="text-xs font-bold bg-gray-50 text-gray-600 hover:bg-gray-100 px-3 py-1.5 rounded-lg transition-colors border border-gray-100"
+                        onClick={() => setExpandedId(expandedId === item.id ? null : item.id)}
+                        className="text-xs font-medium tracking-wider border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:border-[var(--color-text-primary)] hover:text-[var(--color-text-primary)] px-3 py-1.5 rounded-full transition-colors flex items-center gap-1"
                     >
-                      {expandedId === item.id ? '閉じる' : '説明文AI'}
+                      {expandedId === item.id ? '閉じる' : <><Zap size={12} strokeWidth={1.5} /> 説明文AI</>}
                     </button>
                     <button
                       onClick={() => {
@@ -204,9 +232,9 @@ export default function InventoryList({ items, onUpdateStatus, onUpdateDescripti
                         });
                         setExpandedId(null);
                       }}
-                      className="text-xs font-bold bg-blue-50 text-blue-600 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors border border-blue-100"
+                      className="text-xs font-medium tracking-wider border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:border-[var(--color-brand)] hover:text-[var(--color-brand)] px-3 py-1.5 rounded-full transition-colors flex items-center gap-1"
                     >
-                      編集
+                      <Edit2 size={12} strokeWidth={1.5} /> 編集
                     </button>
                     <button
                       onClick={() => handleDelete(item.id)}
@@ -214,7 +242,7 @@ export default function InventoryList({ items, onUpdateStatus, onUpdateDescripti
                       className="text-xs p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                       title="削除"
                     >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                      <Trash2 className="w-4 h-4" strokeWidth={1.5} />
                     </button>
                   </>
                 )}
@@ -226,16 +254,18 @@ export default function InventoryList({ items, onUpdateStatus, onUpdateDescripti
           {expandedId === item.id && (
             <div className="bg-gray-50 p-4 sm:p-5 border-t border-gray-100">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-sm font-bold text-gray-700">✍️ AI説明文ストック</span>
+                <span className="text-xs font-medium tracking-[0.2em] text-[var(--color-text-secondary)] flex items-center gap-1.5">
+                  <PenTool size={14} strokeWidth={1.5} /> AI説明文ストック
+                </span>
                 <button
                   onClick={() => handleGenerateText(item)}
                   disabled={generatingId === item.id || loadingId === item.id}
-                  className="text-xs font-bold bg-gradient-to-r from-[var(--color-brand)] to-[var(--color-brand-light)] text-white px-3 py-1.5 rounded-lg shadow-sm hover:opacity-90 disabled:opacity-50 transition-all flex items-center gap-1"
+                  className="text-xs font-medium tracking-widest border border-[var(--color-brand)] text-[var(--color-brand)] hover:bg-[var(--color-brand)] hover:text-white px-3 py-1.5 rounded-full shadow-sm disabled:opacity-50 transition-all flex items-center gap-1.5"
                 >
                   {generatingId === item.id ? (
-                    <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <div className="w-3 h-3 border-2 border-[var(--color-brand)] border-t-transparent rounded-full animate-spin" />
                   ) : (
-                    <span>✨ AI一括生成</span>
+                    <><Sparkles size={12} strokeWidth={1.5} /> AI一括生成</>
                   )}
                 </button>
               </div>

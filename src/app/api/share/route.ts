@@ -30,13 +30,15 @@ export async function POST() {
   const currentPrefs = userData?.preferences || { box_capacity: 20 };
   const currentBonus = currentPrefs.bonus_slots || 0;
 
-  if (currentBonus >= 1) {
-    return NextResponse.json({ error: 'Bonus already claimed' }, { status: 400 });
+  // すでにシェアボーナスを獲得済みの場合は、エラーにせず成功として返す（シェア自体は許可する）
+  if (currentPrefs.share_bonus_claimed) {
+    return NextResponse.json({ success: true, already_claimed: true, bonus_slots: currentBonus });
   }
   
   const updatedPrefs = {
     ...currentPrefs,
-    bonus_slots: 1
+    share_bonus_claimed: true,
+    bonus_slots: currentBonus + 1
   };
 
   if (userData) {

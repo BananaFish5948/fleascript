@@ -16,23 +16,25 @@ export default function CustomShareModal({ isOpen, onClose, referralCode }: Cust
 
   if (!isOpen) return null;
 
-  const shareText = "フリマ出品を1秒でラクにするツール FleaScript！\nhttps://fleascript.vercel.app";
   const shareUrl = "https://fleascript.vercel.app";
+  const shareText = referralCode 
+    ? `送料で損してない？AIがフリマ出品と利益計算を1秒で終わらせる神ツール『FleaScript』📦✨\n私の招待コード【${referralCode}】を入れると、無料でAI作成枠が追加でもらえるよ！\n${shareUrl}`
+    : `送料で損してない？AIがフリマ出品と利益計算を1秒で終わらせる神ツール『FleaScript』📦✨\n${shareUrl}`;
 
-  const trackShare = async (): Promise<string | null> => {
+  const trackShare = async (): Promise<{ success: boolean; alreadyClaimed?: boolean; error?: string }> => {
     try {
       const res = await fetch('/api/share', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' }
       });
+      const data = await res.json();
       if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || 'API Error');
+        return { success: false, error: data.error || 'API Error' };
       }
-      return null;
+      return { success: true, alreadyClaimed: data.already_claimed };
     } catch (error: any) {
       console.error('[Share Error]', error);
-      return error.message;
+      return { success: false, error: error.message };
     }
   };
 
@@ -45,9 +47,9 @@ export default function CustomShareModal({ isOpen, onClose, referralCode }: Cust
 
   const handleInstagramShare = async () => {
     setIsProcessing(true);
-    const errMsg = await trackShare();
-    if (errMsg) {
-      alert(`エラーが発生しました: ${errMsg}`);
+    const result = await trackShare();
+    if (!result.success) {
+      alert(`エラーが発生しました: ${result.error}`);
       setIsProcessing(false);
       return;
     }
@@ -68,9 +70,9 @@ export default function CustomShareModal({ isOpen, onClose, referralCode }: Cust
 
   const handleXShare = async () => {
     setIsProcessing(true);
-    const errMsg = await trackShare();
-    if (errMsg) {
-      alert(`エラーが発生しました: ${errMsg}`);
+    const result = await trackShare();
+    if (!result.success) {
+      alert(`エラーが発生しました: ${result.error}`);
       setIsProcessing(false);
       return;
     }
@@ -80,9 +82,9 @@ export default function CustomShareModal({ isOpen, onClose, referralCode }: Cust
 
   const handleThreadsShare = async () => {
     setIsProcessing(true);
-    const errMsg = await trackShare();
-    if (errMsg) {
-      alert(`エラーが発生しました: ${errMsg}`);
+    const result = await trackShare();
+    if (!result.success) {
+      alert(`エラーが発生しました: ${result.error}`);
       setIsProcessing(false);
       return;
     }
@@ -92,9 +94,9 @@ export default function CustomShareModal({ isOpen, onClose, referralCode }: Cust
 
   const handleLineShare = async () => {
     setIsProcessing(true);
-    const errMsg = await trackShare();
-    if (errMsg) {
-      alert(`エラーが発生しました: ${errMsg}`);
+    const result = await trackShare();
+    if (!result.success) {
+      alert(`エラーが発生しました: ${result.error}`);
       setIsProcessing(false);
       return;
     }
@@ -105,15 +107,19 @@ export default function CustomShareModal({ isOpen, onClose, referralCode }: Cust
 
   const handleCopyLink = async () => {
     setIsProcessing(true);
-    const errMsg = await trackShare();
-    if (errMsg) {
-      alert(`エラーが発生しました: ${errMsg}`);
+    const result = await trackShare();
+    if (!result.success) {
+      alert(`エラーが発生しました: ${result.error}`);
       setIsProcessing(false);
       return;
     }
     try {
       await navigator.clipboard.writeText(shareText);
-      alert("クリップボードにコピーしました！アカウントにボーナス枠が永続的に1つ追加されました。");
+      if (result.alreadyClaimed) {
+        alert("クリップボードにコピーしました！");
+      } else {
+        alert("クリップボードにコピーしました！アカウントにボーナス枠が永続的に1つ追加されました。");
+      }
     } catch (e) {
       console.error(e);
     }

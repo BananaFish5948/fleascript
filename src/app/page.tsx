@@ -14,11 +14,14 @@ import LimitModal from '@/components/LimitModal'
 import CustomShareModal from '@/components/CustomShareModal'
 import ManagePlanModal from '@/components/ManagePlanModal'
 import RoadmapGauge from '@/components/RoadmapGauge'
+import MonthlyReportModal from '@/components/MonthlyReportModal'
 import { InventoryItem, InventoryStatus } from '@/types/inventory'
 import PremiumChart from '@/components/PremiumChart'
 import LandingPage from '@/components/LandingPage'
 import NativeAdCard from '@/components/NativeAdCard'
 import { AFFILIATE_ADS } from '@/lib/affiliateData'
+import BottomNav, { TabType } from '@/components/BottomNav'
+import { Archive, Crown, Download, RefreshCw, Sparkles, AlertCircle } from 'lucide-react'
 
 export default function Home() {
   const [items, setItems] = useState<InventoryItem[]>([])
@@ -55,6 +58,28 @@ export default function Home() {
   const [showManagePlanModal, setShowManagePlanModal] = useState(false)
   const [showShareModal, setShowShareModal] = useState(false)
   const [showAuthModal, setShowAuthModal] = useState(false)
+  const [showReportModal, setShowReportModal] = useState(false)
+
+  // タブ状態とキーボード検知
+  const [activeTab, setActiveTab] = useState<TabType>('home')
+  const [isKeyboardOpen, setIsKeyboardOpen] = useState(false)
+
+  useEffect(() => {
+    const handleFocus = (e: FocusEvent) => {
+      const target = e.target as HTMLElement;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) {
+        setIsKeyboardOpen(true);
+      }
+    };
+    const handleBlur = () => setIsKeyboardOpen(false);
+    
+    window.addEventListener('focusin', handleFocus);
+    window.addEventListener('focusout', handleBlur);
+    return () => {
+      window.removeEventListener('focusin', handleFocus);
+      window.removeEventListener('focusout', handleBlur);
+    };
+  }, []);
 
   // データフェッチ
   const fetchInventory = useCallback(async () => {
@@ -254,183 +279,214 @@ export default function Home() {
 
   return (
     <>
-      <main className="max-w-3xl mx-auto w-full px-4 py-8 flex-1 flex flex-col">
+      <main className="max-w-3xl mx-auto w-full px-4 md:px-8 pt-10 pb-28 flex-1 flex flex-col">
         {/* Header */}
-        <header className="mb-6 text-center relative mt-4">
+        <header className="mb-10 text-center relative mt-6">
           <div className="inline-block relative">
-            <h1 className="text-3xl md:text-4xl font-bold text-[var(--color-brand)] mb-3">
-              📦 FleaScript 在庫管理
+            <h1 className="text-3xl md:text-4xl font-medium tracking-wide text-[var(--color-brand)] mb-3 flex items-center justify-center gap-3">
+              <Archive strokeWidth={1.2} size={32} />
+              FleaScript 在庫管理
             </h1>
           </div>
-          <p className="text-[var(--color-text-secondary)] text-sm md:text-base font-medium mt-2">
+          <p className="text-[var(--color-text-secondary)] text-sm md:text-base font-normal tracking-wider mt-2">
             フリマ出品の「めんどくさい」を1秒で消し去る魔法
           </p>
         </header>
 
-        <div className="mb-8">
-        <StatusBar 
-          remaining={remaining} 
-          maxLimit={maxLimit}
-          isPremium={isPremium} 
-          isLoggedIn={isLoggedIn}
-          isDevMode={false}
-          subscriptionStatus={subscriptionStatus}
-          onUpgradeClick={() => window.location.href = '/checkout?plan=standard'} 
-          onManagePlanClick={() => setShowManagePlanModal(true)}
-          onLogoutClick={handleLogout}
-          onLoginClick={() => {}}
-          onOpenShareModal={() => setShowShareModal(true)}
-        />
-        </div>
+        {error && (
+          <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm animate-fade-in-up">
+            {error}
+          </div>
+        )}
 
-        <div className="glow-line mb-8" />
+        {isDataLocked && (
+          <div className="mb-6 p-4 rounded-xl bg-[var(--color-danger-bg)] border border-[var(--color-danger)] text-[var(--color-danger)] text-sm animate-fade-in-up flex items-start gap-3 shadow-sm">
+            <AlertCircle className="w-5 h-5 text-[var(--color-danger)] shrink-0 mt-0.5" strokeWidth={1.5} />
+            <div>
+              <p className="font-medium tracking-widest">現在のプラン上限（{maxLimit}件）を超過しています</p>
+              <p className="mt-1 opacity-80 text-xs">超過分のデータは安全に保護されていますが、現在は閲覧・編集がロックされています。<br />すべてのデータにアクセスするには、プランをアップグレードしてください。</p>
+            </div>
+          </div>
+        )}
 
-        {/* Dashboard Content */}
-        <div className="flex flex-col gap-6">
-            <SummaryCard items={items} remaining={remaining} maxLimit={maxLimit} isPremium={isPremium} />
-            
-            {error && (
-              <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm animate-fade-in-up">
-                {error}
+        <div className="flex flex-col gap-8">
+            {activeTab === 'home' && (
+              <div className="animate-fade-in-up flex flex-col gap-8">
+                <SummaryCard 
+                  items={items} 
+                  remaining={remaining} 
+                  maxLimit={maxLimit} 
+                  isPremium={isPremium} 
+                  onOpenReportModal={() => setShowReportModal(true)}
+                />
+                
+                {subscriptionStatus === 'free' && (
+                  <NativeAdCard 
+                    ad={AFFILIATE_ADS.find(a => a.id === 'ad-measure')!} 
+                    subscriptionStatus={subscriptionStatus} 
+                  />
+                )}
+
+                <InventoryList 
+                  items={items}
+                  onUpdateStatus={handleUpdateStatus}
+                  onUpdateDescription={handleUpdateDescription}
+                  onUpdateItem={handleUpdateItem}
+                  onDelete={handleDelete}
+                />
               </div>
             )}
 
-            <ShippingCalculator subscriptionStatus={subscriptionStatus} />
-
-            <InventoryForm 
-              onAdd={handleAdd} 
-              isLoading={isLoading} 
-              disabled={remaining === 0} 
-              subscriptionStatus={subscriptionStatus}
-              boxCapacity={preferences.box_capacity}
-              currentItems={items}
-              sellerRules={preferences.seller_rules || ''}
-            />
-            
-            {/* Dashboard Native Ad for Free Users */}
-            {subscriptionStatus === 'free' && (
-              <NativeAdCard 
-                ad={AFFILIATE_ADS.find(a => a.id === 'ad-measure')!} 
-                subscriptionStatus={subscriptionStatus} 
-              />
+            {activeTab === 'add' && (
+              <div className="animate-fade-in-up flex flex-col gap-8">
+                <ShippingCalculator subscriptionStatus={subscriptionStatus} />
+                <InventoryForm 
+                  onAdd={handleAdd} 
+                  isLoading={isLoading} 
+                  disabled={remaining === 0} 
+                  subscriptionStatus={subscriptionStatus}
+                  boxCapacity={preferences.box_capacity}
+                  currentItems={items}
+                  sellerRules={preferences.seller_rules || ''}
+                />
+              </div>
             )}
-            
-            {subscriptionStatus === 'premium' && (
-              <div className="bg-gradient-to-r from-amber-50 to-amber-100 border border-amber-200 rounded-2xl p-6 shadow-sm">
-                <h3 className="text-amber-800 font-bold mb-4 flex items-center gap-2">👑 プレミアム分析ダッシュボード</h3>
-                
-                {analytics ? (
-                  <div className="flex flex-col md:flex-row gap-6 mb-6">
-                    <PremiumChart data={analytics.chartData} />
-                    <div className="grid grid-cols-2 gap-4 flex-1">
-                      <div className="bg-white/60 p-4 rounded-xl text-center shadow-sm border border-amber-100 flex flex-col justify-center">
-                        <div className="text-xs text-amber-700 font-bold mb-1">登録総数</div>
-                        <div className="text-xl font-bold text-gray-800">{analytics.totalItems} <span className="text-sm font-normal">件</span></div>
+
+            {activeTab === 'analytics' && (
+              <div className="animate-fade-in-up flex flex-col gap-8">
+                {subscriptionStatus === 'premium' ? (
+                  <div className="bg-[var(--color-bg-surface)] border border-[var(--color-warning)] rounded-2xl p-6 md:p-8 shadow-sm">
+                    <h3 className="text-[var(--color-text-primary)] font-medium tracking-[0.2em] mb-6 flex items-center gap-2">
+                      <Crown strokeWidth={1.5} size={20} className="text-[var(--color-warning)]" /> プレミアム分析ダッシュボード
+                    </h3>
+                    
+                    {analytics ? (
+                      <div className="flex flex-col md:flex-row gap-6 mb-8">
+                        <PremiumChart data={analytics.chartData} />
+                        <div className="grid grid-cols-2 flex-1 gap-4">
+                          <div className="bg-[var(--color-bg-base)] p-4 rounded-xl text-center border border-[var(--color-border)] flex flex-col justify-center">
+                            <div className="text-xs text-[var(--color-text-secondary)] font-medium tracking-widest mb-1">登録総数</div>
+                            <div className="text-xl font-medium tracking-wide text-[var(--color-text-primary)]">{analytics.totalItems} <span className="text-sm font-normal text-[var(--color-text-muted)]">件</span></div>
+                          </div>
+                          <div className="bg-[var(--color-bg-base)] p-4 rounded-xl text-center border border-[var(--color-border)] flex flex-col justify-center">
+                            <div className="text-xs text-[var(--color-text-secondary)] font-medium tracking-widest mb-1">売却済</div>
+                            <div className="text-xl font-medium tracking-wide text-[var(--color-text-primary)]">{analytics.soldCount} <span className="text-sm font-normal text-[var(--color-text-muted)]">件</span></div>
+                          </div>
+                          <div className="bg-[var(--color-bg-base)] p-4 rounded-xl text-center border border-[var(--color-border)] flex flex-col justify-center col-span-2">
+                            <div className="text-xs text-[var(--color-text-secondary)] font-medium tracking-widest mb-1">想定利益総額</div>
+                            <div className="text-2xl font-medium tracking-wide text-[var(--color-success)]">¥ {analytics.totalProfitEstimate.toLocaleString()}</div>
+                          </div>
+                          <div className="bg-[var(--color-brand)] text-white p-4 rounded-xl text-center shadow-md relative overflow-hidden col-span-2 flex flex-col justify-center">
+                            <div className="text-xs font-medium tracking-widest mb-1 opacity-90 text-white/80 flex items-center justify-center gap-1">
+                              <Sparkles size={14} strokeWidth={1.5} /> 最も売れる時間
+                            </div>
+                            <div className="text-lg font-medium tracking-wide mt-1">{analytics.bestSellingTime || 'データ不足'}</div>
+                          </div>
+                        </div>
                       </div>
-                      <div className="bg-white/60 p-4 rounded-xl text-center shadow-sm border border-amber-100 flex flex-col justify-center">
-                        <div className="text-xs text-amber-700 font-bold mb-1">売却済</div>
-                        <div className="text-xl font-bold text-gray-800">{analytics.soldCount} <span className="text-sm font-normal">件</span></div>
-                      </div>
-                      <div className="bg-white/60 p-4 rounded-xl text-center shadow-sm border border-amber-100 flex flex-col justify-center col-span-2">
-                        <div className="text-xs text-amber-700 font-bold mb-1">想定利益総額</div>
-                        <div className="text-2xl font-bold text-emerald-600">¥ {analytics.totalProfitEstimate.toLocaleString()}</div>
-                      </div>
-                      <div className="bg-gradient-to-br from-amber-500 to-orange-500 text-white p-4 rounded-xl text-center shadow-md relative overflow-hidden col-span-2 flex flex-col justify-center">
-                        <div className="text-xs font-bold mb-1 opacity-90 text-amber-100">🔥 最も売れる時間</div>
-                        <div className="text-lg font-bold mt-1">{analytics.bestSellingTime || 'データ不足'}</div>
-                      </div>
+                    ) : (
+                      <div className="text-[var(--color-text-secondary)] text-sm mb-4 tracking-wide">分析データを読み込み中...</div>
+                    )}
+
+                    <div className="flex gap-4 flex-wrap">
+                      <button onClick={() => window.open('/api/premium/export', '_blank')} className="bg-[var(--color-bg-surface)] text-[var(--color-text-secondary)] border border-[var(--color-border)] px-5 py-2.5 rounded-full text-xs font-medium tracking-widest hover:border-[var(--color-text-primary)] hover:text-[var(--color-text-primary)] transition-colors flex items-center gap-2">
+                        <Download size={14} strokeWidth={1.5} /> CSVエクスポート
+                      </button>
+                      <button onClick={async () => {
+                        try {
+                          const res = await fetch('/api/premium/analytics');
+                          const data = await res.json();
+                          if (data.analytics) {
+                            setAnalytics(data.analytics);
+                            alert('データを最新に更新しました');
+                          }
+                        } catch(e) {
+                          alert('エラーが発生しました');
+                        }
+                      }} className="bg-[var(--color-bg-surface)] text-[var(--color-text-secondary)] border border-[var(--color-border)] px-5 py-2.5 rounded-full text-xs font-medium tracking-widest hover:border-[var(--color-brand)] hover:text-[var(--color-brand)] transition-colors flex items-center gap-2">
+                        <RefreshCw size={14} strokeWidth={1.5} /> データ更新
+                      </button>
                     </div>
+                    
+                    {/* AI Markdown Suggestions */}
+                    {analytics?.markdownSuggestions && analytics.markdownSuggestions.length > 0 && (
+                      <div className="mt-8 border-t border-[var(--color-border)] pt-8 animate-fade-in-up">
+                        <h4 className="text-xs font-medium tracking-[0.2em] text-[var(--color-text-primary)] mb-5 flex items-center gap-2">
+                          <Sparkles size={16} strokeWidth={1.5} className="text-[var(--color-brand)]" /> AI値下げサジェスト（上位表示ハック）
+                        </h4>
+                        <div className="flex flex-col gap-3">
+                          {analytics.markdownSuggestions.map(sug => (
+                            <div key={sug.id} className="bg-white rounded-xl p-4 border border-amber-200 flex flex-col md:flex-row md:items-center justify-between shadow-sm gap-4">
+                               <div className="flex-1">
+                                 <div className="font-bold text-gray-800">{sug.item_name}</div>
+                                 <div className="text-xs text-amber-600 mt-1">{sug.reason}</div>
+                               </div>
+                               <div className="flex items-center gap-4">
+                                 <div className="text-right flex flex-col items-end">
+                                   <div className="text-xs text-gray-400 line-through">¥{sug.current_price.toLocaleString()}</div>
+                                   <div className="text-lg font-bold text-red-500">¥{sug.suggested_price.toLocaleString()}</div>
+                                 </div>
+                                 <button
+                                   onClick={() => handleUpdateTargetPrice(sug.id, sug.suggested_price)}
+                                   className="border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:border-[var(--color-brand)] hover:text-[var(--color-brand)] px-5 py-2 rounded-full text-xs font-medium tracking-widest transition-all whitespace-nowrap"
+                                 >
+                                   この価格に変更
+                                 </button>
+                               </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ) : (
-                  <div className="text-amber-700 text-sm mb-4">分析データを読み込み中...</div>
-                )}
-
-                <div className="flex gap-4 flex-wrap">
-                  <button onClick={() => window.open('/api/premium/export', '_blank')} className="bg-white text-amber-700 px-5 py-2.5 rounded-xl text-sm font-bold shadow-sm hover:shadow-md transition flex items-center gap-2">
-                    📥 CSVエクスポート
-                  </button>
-                  <button onClick={async () => {
-                    try {
-                      const res = await fetch('/api/premium/analytics');
-                      const data = await res.json();
-                      if (data.analytics) {
-                        setAnalytics(data.analytics);
-                        alert('データを最新に更新しました');
-                      }
-                    } catch(e) {
-                      alert('エラーが発生しました');
-                    }
-                  }} className="bg-amber-200/50 text-amber-800 px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-amber-200 transition flex items-center gap-2 border border-amber-300">
-                    🔄 データ更新
-                  </button>
-                </div>
-                
-                {/* AI Markdown Suggestions */}
-                {analytics?.markdownSuggestions && analytics.markdownSuggestions.length > 0 && (
-                  <div className="mt-6 border-t border-amber-200/50 pt-6 animate-fade-in-up">
-                    <h4 className="text-sm font-bold text-amber-800 mb-4 flex items-center gap-2">
-                      🤖 AI値下げサジェスト（上位表示ハック）
-                    </h4>
-                    <div className="flex flex-col gap-3">
-                      {analytics.markdownSuggestions.map(sug => (
-                        <div key={sug.id} className="bg-white rounded-xl p-4 border border-amber-200 flex flex-col md:flex-row md:items-center justify-between shadow-sm gap-4">
-                           <div className="flex-1">
-                             <div className="font-bold text-gray-800">{sug.item_name}</div>
-                             <div className="text-xs text-amber-600 mt-1">{sug.reason}</div>
-                           </div>
-                           <div className="flex items-center gap-4">
-                             <div className="text-right flex flex-col items-end">
-                               <div className="text-xs text-gray-400 line-through">¥{sug.current_price.toLocaleString()}</div>
-                               <div className="text-lg font-bold text-red-500">¥{sug.suggested_price.toLocaleString()}</div>
-                             </div>
-                             <button
-                               onClick={() => handleUpdateTargetPrice(sug.id, sug.suggested_price)}
-                               className="bg-red-50 text-red-600 hover:bg-red-500 hover:text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors whitespace-nowrap border border-red-100"
-                             >
-                               この価格に変更
-                             </button>
-                           </div>
-                        </div>
-                      ))}
+                  <div className="bg-[var(--color-bg-surface)] p-8 rounded-2xl text-center shadow-sm border border-[var(--color-border)]">
+                    <div className="text-[var(--color-brand)] mb-4 flex justify-center">
+                      <Crown size={48} strokeWidth={1} />
                     </div>
+                    <h3 className="text-xl font-medium tracking-wide text-gray-800 mb-2">プレミアム分析機能</h3>
+                    <p className="text-sm text-gray-500 mb-6 leading-relaxed">最も商品が売れやすい時間帯の分析や、AIによる値下げ自動サジェストなど、売上を最大化する機能がアンロックされます。</p>
+                    <button onClick={() => window.location.href = '/checkout?plan=standard'} className="bg-[var(--color-brand)] text-white font-medium tracking-widest py-3 px-8 rounded-full shadow-[var(--shadow-card)] hover:bg-[var(--color-brand-light)] transition-colors inline-block mt-4">
+                      詳細を見る
+                    </button>
                   </div>
                 )}
               </div>
             )}
-            
-            {isDataLocked && (
-              <div className="p-4 mb-2 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm animate-fade-in-up flex items-start gap-3 shadow-sm">
-                <span className="text-xl">⚠️</span>
-                <div>
-                  <p className="font-bold text-red-700">現在のプラン上限（{maxLimit}件）を超過しています</p>
-                  <p className="mt-1 text-red-600/90 text-xs">超過分のデータは安全に保護されていますが、現在は閲覧・編集がロックされています。<br />すべてのデータにアクセスするには、プランをアップグレードしてください。</p>
+
+            {activeTab === 'settings' && (
+              <div className="animate-fade-in-up flex flex-col gap-8">
+                <StatusBar 
+                  remaining={remaining} 
+                  maxLimit={maxLimit}
+                  isPremium={isPremium} 
+                  isLoggedIn={isLoggedIn}
+                  isDevMode={false}
+                  subscriptionStatus={subscriptionStatus}
+                  onUpgradeClick={() => window.location.href = '/checkout?plan=standard'} 
+                  onManagePlanClick={() => setShowManagePlanModal(true)}
+                  onLogoutClick={handleLogout}
+                  onLoginClick={() => {}}
+                  onOpenShareModal={() => setShowShareModal(true)}
+                />
+                
+                <div className="mt-4">
+                  <RoadmapGauge progress={roadmapProgress} />
+                </div>
+                
+                <div className="mt-8 pt-8 border-t border-gray-100 flex flex-wrap justify-center gap-4 text-xs text-gray-400">
+                  <Link href="/legal/terms" className="hover:text-gray-600 hover:underline">利用規約</Link>
+                  <Link href="/legal/privacy" className="hover:text-gray-600 hover:underline">プライバシーポリシー</Link>
+                  <Link href="/legal/tokushoho" className="hover:text-gray-600 hover:underline">特定商取引法に基づく表記</Link>
                 </div>
               </div>
             )}
-            
-            <InventoryList 
-              items={items}
-              onUpdateStatus={handleUpdateStatus}
-              onUpdateDescription={handleUpdateDescription}
-              onUpdateItem={handleUpdateItem}
-              onDelete={handleDelete}
-            />
-          </div>
-
-        <div className="flex-1" />
-
-        {/* Roadmap Gauge (New Location) */}
-        <div className="mt-12 mb-4 px-2">
-          <RoadmapGauge progress={roadmapProgress} />
-        </div>
-
-        {/* Legal Links */}
-        <div className="mt-12 mb-4 pt-8 border-t border-gray-100 flex flex-wrap justify-center gap-4 text-xs text-gray-400">
-          <Link href="/legal/terms" className="hover:text-gray-600 hover:underline">利用規約</Link>
-          <Link href="/legal/privacy" className="hover:text-gray-600 hover:underline">プライバシーポリシー</Link>
-          <Link href="/legal/tokushoho" className="hover:text-gray-600 hover:underline">特定商取引法に基づく表記</Link>
         </div>
       </main>
+
+      {!isKeyboardOpen && (
+        <BottomNav activeTab={activeTab} onChangeTab={setActiveTab} />
+      )}
 
       <LimitModal 
         isOpen={showLimitModal} 
@@ -450,6 +506,12 @@ export default function Home() {
         deviceId="" // deviceIdは廃止されたため空文字（バックエンドでは不要になったが、コンポーネントのProps変更対応が必要なら空で渡す）
         onCanceled={fetchUserStatus}
         subscriptionStatus={subscriptionStatus}
+      />
+
+      <MonthlyReportModal
+        isOpen={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        items={items}
       />
     </>
   )

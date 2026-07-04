@@ -136,3 +136,46 @@ DROP POLICY IF EXISTS "Users can delete own inventory" ON public.inventory_items
 CREATE POLICY "Users can delete own inventory" 
 ON public.inventory_items FOR DELETE 
 USING (auth.uid() = user_id);
+
+-- =============================================
+-- Storage バケットとポリシーの設定
+-- =============================================
+
+-- 'temporary_shares' バケットを作成（既に存在する場合は無視）
+INSERT INTO storage.buckets (id, name, public) 
+VALUES ('temporary_shares', 'temporary_shares', true)
+ON CONFLICT (id) DO NOTHING;
+
+-- 'temporary_shares' バケットの公開読み取りポリシー
+DROP POLICY IF EXISTS "Public access for temporary_shares" ON storage.objects;
+CREATE POLICY "Public access for temporary_shares" 
+ON storage.objects FOR SELECT 
+USING (bucket_id = 'temporary_shares');
+
+-- 'temporary_shares' バケットの挿入・更新ポリシー (スパム迎撃用制限付き)
+-- 1. ファイルサイズ 1MB以下
+-- 2. 拡張子が .jpg または .png
+-- 3. ファイル名は `[ユーザーID]/monthly_report.jpg` または `.png`
+DROP POLICY IF EXISTS "Users can upload own monthly report" ON storage.objects;
+CREATE POLICY "Users can upload own monthly report" 
+ON storage.objects FOR INSERT 
+WITH CHECK (
+  bucket_id = 'temporary_shares' 
+  AND auth.uid()::text = (string_to_array(name, '/'))[1] 
+  AND (name LIKE '%/monthly_report.jpg' OR name LIKE '%/monthly_report.png')
+  AND (LENGTH(COALESCE(metadata->>'size', '0')::text) <= 1048576) -- 1MB
+);
+
+DROP POLICY IF EXISTS "Users can update own monthly report" ON storage.objects;
+CREATE POLICY "Users can update own monthly report" 
+ON storage.objects FOR UPDATE 
+USING (
+  bucket_id = 'temporary_shares' 
+  AND auth.uid()::text = (string_to_array(name, '/'))[1]
+)
+WITH CHECK (
+  bucket_id = 'temporary_shares' 
+  AND auth.uid()::text = (string_to_array(name, '/'))[1] 
+  AND (name LIKE '%/monthly_report.jpg' OR name LIKE '%/monthly_report.png')
+  AND (LENGTH(COALESCE(metadata->>'size', '0')::text) <= 1048576) -- 1MB
+);

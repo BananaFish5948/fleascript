@@ -1,7 +1,7 @@
 'use client'
 
-import React from 'react'
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts'
+import { PieChart as PieChartIcon } from 'lucide-react'
 
 interface ChartData {
   name: string
@@ -18,10 +18,10 @@ const PremiumChart: React.FC<PremiumChartProps> = ({ data = [] }) => {
 
   // ダミーデータ（モック用の美しいグラフ）
   const mockData = [
-    { name: '手取り利益', value: 75000, fill: '#10b981' }, // emerald
-    { name: '送料', value: 15000, fill: '#f59e0b' },      // amber
-    { name: 'プラットフォーム手数料', value: 10000, fill: '#ef4444' },    // red
-    { name: '仕入値', value: 30000, fill: '#6b7280' }     // gray
+    { name: '手取り利益', value: 75000, fill: '#5B6E53' }, // Deep Olive (Success)
+    { name: '送料', value: 15000, fill: '#C29B62' },      // Mustard (Warning)
+    { name: 'プラットフォーム手数料', value: 10000, fill: '#C4837A' },    // Dusty Red (Danger)
+    { name: '仕入値', value: 30000, fill: '#8B9B9E' }     // Slate Blue (Info)
   ];
 
   const chartData = hasData ? data : mockData;
@@ -34,9 +34,10 @@ const PremiumChart: React.FC<PremiumChartProps> = ({ data = [] }) => {
   };
 
   return (
-    <div className="bg-white rounded-2xl p-6 relative overflow-hidden flex-1 shadow-inner border border-amber-100">
-      <h4 className="text-sm font-bold text-amber-800 mb-2 flex items-center gap-2">
-        📊 利益構成比率
+    <div className="bg-[var(--color-bg-surface)] border border-[var(--color-border)] shadow-[var(--shadow-card)] rounded-2xl p-6 relative overflow-hidden flex-1">
+      <h4 className="text-xs font-medium tracking-[0.2em] text-[var(--color-text-primary)] mb-6 flex items-center gap-2">
+        <PieChartIcon size={16} strokeWidth={1.5} className="text-[var(--color-brand)]" />
+        <span>利益構成比率</span>
       </h4>
 
       <div className="w-full h-[250px] relative">
@@ -67,11 +68,11 @@ const PremiumChart: React.FC<PremiumChartProps> = ({ data = [] }) => {
 
         {/* Empty State Overlay */}
         {!hasData && (
-          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/70 backdrop-blur-[2px] rounded-xl">
-            <div className="bg-amber-100 text-amber-800 px-4 py-2 rounded-full font-bold text-sm shadow-sm mb-2 border border-amber-200">
+          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-[var(--color-bg-surface)]/70 backdrop-blur-[2px] rounded-xl">
+            <div className="bg-[var(--color-bg-base)] text-[var(--color-text-secondary)] px-4 py-2 rounded-full font-medium tracking-widest text-[10px] shadow-sm mb-2 border border-[var(--color-border)]">
               データ集計待ち
             </div>
-            <p className="text-gray-500 text-xs font-medium max-w-[200px] text-center">
+            <p className="text-[var(--color-text-secondary)] text-[10px] tracking-widest font-medium max-w-[200px] text-center leading-relaxed mt-2">
               商品が売却されると、ここに<br/>美しい利益構成グラフが描画されます
             </p>
           </div>

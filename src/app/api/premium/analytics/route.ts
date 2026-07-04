@@ -98,10 +98,10 @@ export async function GET() {
   });
 
   const chartData = soldItems.length > 0 ? [
-    { name: '手取り利益', value: Math.max(0, netProfit), fill: '#10b981' },
-    { name: '送料', value: totalPostage, fill: '#f59e0b' },
-    { name: 'プラットフォーム手数料', value: totalFees, fill: '#ef4444' },
-    { name: '仕入値', value: totalPurchase, fill: '#6b7280' }
+    { name: '手取り利益', value: Math.max(0, netProfit), fill: '#5B6E53' }, // Deep Olive (Success)
+    { name: '送料', value: totalPostage, fill: '#C29B62' },               // Mustard (Warning)
+    { name: 'プラットフォーム手数料', value: totalFees, fill: '#C4837A' },      // Dusty Red (Danger)
+    { name: '仕入値', value: totalPurchase, fill: '#8B9B9E' }               // Slate Blue (Info)
   ].filter(d => d.value > 0) : [];
 
   // AI値下げサジェストの生成
