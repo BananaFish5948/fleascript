@@ -280,6 +280,38 @@ export default function Home() {
     }
   };
 
+  const handleAddSample = async () => {
+    try {
+      const res = await fetch('/api/inventory', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          item_name: 'Apple AirPods Pro (第2世代) 🔰',
+          purchase_price: 15000,
+          target_price: 25000,
+          postage: 450,
+          status: 'hand',
+          description_stock: JSON.stringify({
+            mercari: '【美品】Apple AirPods Pro 第2世代です。\n数回使用しましたが、耳に合わなかったため出品します。\n付属品完備。動作確認済みです。\n※アルコール消毒済み',
+            yahoo: 'Apple AirPods Pro 第2世代の出品です。\n数回使用の美品。付属品は全て揃っています。',
+            rakuma: 'Apple AirPods Pro 第2世代\n数回使用しましたが綺麗な状態です。'
+          })
+        })
+      });
+      if (res.ok) {
+        await fetchUserStatus(); // 更新
+        alert('✨ サンプルデータを追加しました！\n\nまずはリストにある商品の「説明文AI」や「編集」ボタンを押して、FleaScriptの機能を試してみましょう。');
+        setActiveTab('list');
+      } else {
+        const err = await res.json();
+        alert(err.error || 'サンプル追加に失敗しました');
+      }
+    } catch (e) {
+      console.error(e);
+      alert('通信エラーが発生しました');
+    }
+  };
+
   const handleLogout = async () => {
     const supabase = createClient()
     await supabase.auth.signOut()
@@ -361,6 +393,8 @@ export default function Home() {
                   onUpdateDescription={handleUpdateDescription}
                   onUpdateItem={handleUpdateItem}
                   onDelete={handleDelete}
+                  onGoToAddTab={() => setActiveTab('add')}
+                  onAddSample={handleAddSample}
                 />
               </div>
             )}

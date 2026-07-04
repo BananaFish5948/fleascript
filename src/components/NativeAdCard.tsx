@@ -7,19 +7,20 @@ interface NativeAdCardProps {
   ad: NativeAdData
   subscriptionStatus: string
   className?: string
+  forceShowPremium?: boolean
 }
 
-export default function NativeAdCard({ ad, subscriptionStatus, className = '' }: NativeAdCardProps) {
-  // プレミアムユーザーには広告を表示しない（アドフリー体験）
-  if (subscriptionStatus === 'premium') {
+export default function NativeAdCard({ ad, subscriptionStatus, className = '', forceShowPremium = false }: NativeAdCardProps) {
+  // プレミアムユーザーには原則広告を表示しないが、ユーティリティとして強制表示する場合はスキップ
+  if (subscriptionStatus === 'premium' && !forceShowPremium) {
     return null
   }
 
   return (
-    <div className={`relative overflow-hidden rounded-2xl bg-[var(--color-bg-surface)] border border-[var(--color-border)] shadow-[var(--shadow-card)] hover:border-[var(--color-brand)] transition-all group ${className}`}>
+    <div className={`relative overflow-hidden rounded-2xl bg-[var(--color-bg-surface)] border ${subscriptionStatus === 'premium' ? 'border-[var(--color-brand)]/50' : 'border-[var(--color-border)]'} shadow-[var(--shadow-card)] hover:border-[var(--color-brand)] transition-all group ${className}`}>
       {/* "おすすめ (PR)" badge */}
-      <div className="absolute top-0 right-0 bg-[var(--color-bg-base)] text-[var(--color-text-secondary)] text-[10px] tracking-widest px-3 py-1 rounded-bl-lg font-medium z-10">
-        おすすめツール (PR)
+      <div className={`absolute top-0 right-0 ${subscriptionStatus === 'premium' ? 'bg-gradient-to-r from-[var(--color-brand)] to-[var(--color-info)] text-white' : 'bg-[var(--color-bg-base)] text-[var(--color-text-secondary)]'} text-[10px] tracking-widest px-3 py-1 rounded-bl-lg font-medium z-10`}>
+        {subscriptionStatus === 'premium' ? 'AIコンシェルジュ提案 (PR)' : 'おすすめツール (PR)'}
       </div>
       
       <a 

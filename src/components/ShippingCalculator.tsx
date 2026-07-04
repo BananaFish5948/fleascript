@@ -177,6 +177,7 @@ export default function ShippingCalculator({ subscriptionStatus = 'free' }: Ship
               || AFFILIATE_ADS.find(a => a.id === 'ad-measure')!
             }
             subscriptionStatus={subscriptionStatus} 
+            forceShowPremium={true}
           />
         )}
       </div>

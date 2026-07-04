@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { checkRateLimit } from '@/lib/rateLimit';
 
 const FREE_LIMIT = 3;
 const PREMIUM_LIMIT = 500; // 仕様変更: 無制限ではなく500件上限
 
 export async function GET(req: NextRequest) {
+  const ip = req.headers.get('x-real-ip') ?? '127.0.0.1';
   const ssrClient = await createClient();
   const { data: { user } } = await ssrClient.auth.getUser();
 
@@ -50,12 +52,18 @@ export async function GET(req: NextRequest) {
     .eq('user_id', user.id);
   
   const currentCount = count ?? 0;
+  
+  const rateLimitInfo = await checkRateLimit(ip, user.id);
+  const imageAnalysisMax = isPremium ? 3 : (subscriptionStatus === 'standard' ? 1 : 0);
+
   return NextResponse.json({ 
     remaining: Math.max(0, limit - currentCount), 
     maxLimit: limit,
     isPremium, 
     subscriptionStatus, 
     preferences, 
-    isLoggedIn: true 
+    isLoggedIn: true,
+    imageAnalysisRemaining: rateLimitInfo.remaining,
+    imageAnalysisMax
   });
 }

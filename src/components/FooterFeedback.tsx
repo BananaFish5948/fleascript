@@ -20,9 +20,9 @@ export default function FooterFeedback() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          feedback: 'comment', 
-          reason: '(匿名意見)', 
-          complaint 
+          rating: 'up', 
+          reason: '(匿名意見箱)', 
+          comment: complaint 
         }),
       })
 

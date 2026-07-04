@@ -1,7 +1,7 @@
 'use client';
-import { Home, PlusSquare, BarChart2, Settings } from 'lucide-react';
+import { Home, PlusSquare, BarChart2, Settings, List } from 'lucide-react';
 
-export type TabType = 'home' | 'add' | 'analytics' | 'settings';
+export type TabType = 'home' | 'add' | 'list' | 'analytics' | 'settings';
 
 interface BottomNavProps {
   activeTab: TabType;
@@ -12,6 +12,7 @@ export default function BottomNav({ activeTab, onChangeTab }: BottomNavProps) {
   const tabs = [
     { id: 'home', icon: <Home strokeWidth={1.2} size={22} />, label: 'HOME' },
     { id: 'add', icon: <PlusSquare strokeWidth={1.2} size={22} />, label: 'NEW' },
+    { id: 'list', icon: <List strokeWidth={1.2} size={22} />, label: 'LIST' },
     { id: 'analytics', icon: <BarChart2 strokeWidth={1.2} size={22} />, label: 'DATA' },
     { id: 'settings', icon: <Settings strokeWidth={1.2} size={22} />, label: 'MENU' },
   ] as const;

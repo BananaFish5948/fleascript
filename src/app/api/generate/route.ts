@@ -46,8 +46,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       );
     }
 
-    // ユーザー設定から seller_rules を取得
+    // ユーザー設定から seller_rules と customSignature を取得
     let sellerRules = '';
+    let customSignature = '';
     if (user) {
       const { data: dbUser } = await ssrClient
         .from('users')
@@ -56,6 +57,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         .maybeSingle();
       if (dbUser?.preferences?.seller_rules) {
         sellerRules = dbUser.preferences.seller_rules;
+      }
+      if (dbUser?.preferences?.customSignature) {
+        customSignature = dbUser.preferences.customSignature;
       }
     }
 
@@ -97,6 +101,12 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       ['mercari', 'yahoo', 'rakuma'].forEach(platform => {
         if (parsedOutput[platform]) {
           parsedOutput[platform] += footerTexts[Math.floor(Math.random() * footerTexts.length)];
+        }
+      });
+    } else if (customSignature) {
+      ['mercari', 'yahoo', 'rakuma'].forEach(platform => {
+        if (parsedOutput[platform]) {
+          parsedOutput[platform] += '\n\n' + customSignature;
         }
       });
     }

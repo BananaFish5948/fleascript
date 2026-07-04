@@ -99,11 +99,13 @@
 - [x] Native Ad Integration (UI & Dummy Data) & Layout Refinement completed.
 - [x] **Phase 4.1**: AI Personalization (Seller Rules) & Multi-Platform Output (Mercari, Yahoo, Rakuma tabs).
 - [x] **Phase 4.2**: Dashboard Analytics (Best-Selling Time) & Viral Referral System (+3 slots).
-- [x] **Phase 5**: Vercel Deployment Preparation & Theme Engine (Kinfolk / Sunset).
-  - Implemented dynamic CSS variables for multiple themes.
-  - Added ThemeToggle component.
+- [x] **Phase 5**: Vercel Deployment Preparation, Theme Engine, & Onboarding UX.
+  - Implemented dynamic CSS variables for multiple themes (Kinfolk / Sunset Orange).
   - Setup production Supabase tables (`ip_rate_limits`, `feedback_logs`).
-  - Fixed TypeScript build errors and UI routing bugs.
+  - Fixed TypeScript build errors, UI routing bugs, and Hydration mismatches.
+  - Renamed `.env.local.example` to `.env.example` to prevent accidental credential leaks.
+  - Enhanced Empty State CTA to prevent new user churn.
+  - Implemented manual sample data injection (AirPods Pro) with Ah-ha moment routing.
 - [x] **Phase 4.4**: Premium Analytics Upgrade (AI Markdown Suggestion & Recharts Profit Donut Chart).
 - [x] **Phase 4.6**: Zero-Cost Virality (Canvas Monthly Activity Report, OGP Twitter Card Integration, Hybrid Shipping Calculator, 3-day stall detection).
 - [x] **Phase 4.7**: Bottom Navigation UX Pivot & Ad Placement Optimization (Golden Zone).

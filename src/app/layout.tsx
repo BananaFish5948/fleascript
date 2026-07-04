@@ -42,7 +42,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="ja" className={`${zenMaruGothic.className} h-full`}>
+    <html lang="ja" className={`${zenMaruGothic.className} h-full`} suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{

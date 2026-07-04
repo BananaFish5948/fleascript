@@ -11,10 +11,13 @@ interface InventoryListProps {
   onUpdateDescription: (id: string, text: string) => Promise<void>;
   onUpdateItem: (id: string, updates: Partial<InventoryItem>) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
+  onGoToAddTab?: () => void;
+  onAddSample?: () => Promise<void>;
 }
 
-export default function InventoryList({ items, onUpdateStatus, onUpdateDescription, onUpdateItem, onDelete }: InventoryListProps) {
+export default function InventoryList({ items, onUpdateStatus, onUpdateDescription, onUpdateItem, onDelete, onGoToAddTab, onAddSample }: InventoryListProps) {
   const [loadingId, setLoadingId] = useState<string | null>(null);
+  const [isSampleAdding, setIsSampleAdding] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [generatingId, setGeneratingId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'mercari' | 'yahoo' | 'rakuma'>('mercari');
@@ -74,8 +77,41 @@ export default function InventoryList({ items, onUpdateStatus, onUpdateDescripti
 
   if (items.length === 0) {
     return (
-      <div className="text-center py-10 text-gray-400 bg-white/50 rounded-2xl border border-dashed border-gray-200">
-        <p>在庫アイテムはまだ登録されていません</p>
+      <div className="text-center py-12 px-4 bg-[var(--color-bg-surface)] rounded-2xl border border-dashed border-[var(--color-border)] flex flex-col items-center">
+        <div className="w-16 h-16 bg-[var(--color-brand)]/10 rounded-full flex items-center justify-center text-[var(--color-brand)] mb-4">
+          <Sparkles size={32} strokeWidth={1.5} />
+        </div>
+        <h3 className="text-lg font-bold text-[var(--color-text-primary)] mb-2">在庫はまだ登録されていません</h3>
+        <p className="text-sm text-[var(--color-text-secondary)] mb-8 max-w-sm leading-relaxed">
+          まずはここから、魔法のように出品文を作ってみましょう ✨
+        </p>
+        
+        <div className="flex flex-col gap-3 w-full max-w-xs">
+          <button
+            onClick={onGoToAddTab}
+            className="w-full bg-[var(--color-brand)] hover:bg-[var(--color-brand-light)] text-white font-bold py-3 px-4 rounded-xl shadow-md transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2"
+          >
+            <PenTool size={18} strokeWidth={2} /> 新しいアイテムを追加
+          </button>
+          
+          <button
+            onClick={async () => {
+              if (onAddSample) {
+                setIsSampleAdding(true);
+                await onAddSample();
+                setIsSampleAdding(false);
+              }
+            }}
+            disabled={isSampleAdding}
+            className="w-full bg-[var(--color-bg-elevated)] hover:bg-stone-100 text-[var(--color-text-primary)] border border-[var(--color-border)] font-medium py-3 px-4 rounded-xl transition-colors text-sm flex items-center justify-center gap-2"
+          >
+            {isSampleAdding ? (
+              <div className="w-4 h-4 border-2 border-[var(--color-brand)] border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <>🔰 サンプルデータで機能を試す</>
+            )}
+          </button>
+        </div>
       </div>
     );
   }
