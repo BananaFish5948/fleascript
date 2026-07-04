@@ -58,6 +58,7 @@
 9. **Supabase Schema Evolution & Admin Bypass (Critical DB Traps)**:
    - **The `IF NOT EXISTS` Trap**: `CREATE TABLE IF NOT EXISTS` alone does NOT add new columns or update existing constraints (e.g., `CHECK`) on existing tables. Always pair it with explicit `ALTER TABLE` commands (like `ADD COLUMN IF NOT EXISTS` or `DROP/ADD CONSTRAINT`) when evolving schema, otherwise the database will silently enforce outdated rules.
    - **Mandatory DB Update Announcements**: When updating `schema.sql`, the AI MUST explicitly notify the Master that a manual SQL execution on Supabase is required, providing the exact SQL snippet.
+   - **Data Loss Prevention (Zero-Cost Backup)**: Before executing any destructive SQL or schema migration on the Free Plan, AI MUST explicitly prompt the Master to perform a manual CSV export from the Supabase Table Editor. This is a strict rule defined in `.agents/AGENTS.md`.
    - When the backend needs to update system records (e.g., granting bonus slots), doing so under the user's session may fail due to Row Level Security (RLS). Always use the `SUPABASE_SERVICE_ROLE_KEY` to instantiate an Admin Client and bypass RLS safely from API routes.
    - **Never swallow API errors (Robustness Rule)**: Do not use generic fallback messages like "An error occurred." Always extract the actual error payload from the API (`errorData.error`) and display it to the user. This immediately isolates DB/constraint issues from frontend bugs.
 10. **Testing Time-Based Triggers**:
@@ -98,6 +99,11 @@
 - [x] Native Ad Integration (UI & Dummy Data) & Layout Refinement completed.
 - [x] **Phase 4.1**: AI Personalization (Seller Rules) & Multi-Platform Output (Mercari, Yahoo, Rakuma tabs).
 - [x] **Phase 4.2**: Dashboard Analytics (Best-Selling Time) & Viral Referral System (+3 slots).
+- [x] **Phase 5**: Vercel Deployment Preparation & Theme Engine (Kinfolk / Sunset).
+  - Implemented dynamic CSS variables for multiple themes.
+  - Added ThemeToggle component.
+  - Setup production Supabase tables (`ip_rate_limits`, `feedback_logs`).
+  - Fixed TypeScript build errors and UI routing bugs.
 - [x] **Phase 4.4**: Premium Analytics Upgrade (AI Markdown Suggestion & Recharts Profit Donut Chart).
 - [x] **Phase 4.6**: Zero-Cost Virality (Canvas Monthly Activity Report, OGP Twitter Card Integration, Hybrid Shipping Calculator, 3-day stall detection).
 - [x] **Phase 4.7**: Bottom Navigation UX Pivot & Ad Placement Optimization (Golden Zone).
@@ -106,12 +112,16 @@
   - Built IP-based 15-minute Rate Limit Cooldown (3 consecutive failures).
   - Designed "Tuning Navigator" with clipboard integration and deep-link fallbacks.
   - Optimized Auth to Google + Magic Links (Cost Defense).
+  - Refined Bottom Navigation Architecture: Segregated `InventoryList` into a dedicated 5th tab (`LIST`) to declutter the HOME dashboard.
+  - Enhanced Transparency: Explicitly displayed daily remaining limits for multimodal image analysis directly inside the UI button.
 - [ ] **Phase 4.3**: Promotion Strategy & Viral Copy. Invoke `@sns-marketer` (Gemika) to create copy.
 - [ ] **Phase 4.5**: Affiliate Monetization (Amazon Associates & Native Ads).
 - [ ] Production Deployment (Vercel) & Custom Domain setup.
 - [ ] Real Stripe Integration (Replace Mock).
 - [ ] **Future UI Improvement**: Inline Edit Profit Simulator. (Currently, the inline edit mode in `InventoryList.tsx` provides a minimal editing experience. If requested, port the real-time profit calculation logic from `InventoryForm.tsx` into the inline edit form to allow users to adjust prices while watching the profit change in real-time.)
 - [ ] **Future Feature**: Theme Customization (To satisfy users' desire for self-expression, implement a feature to switch themes. See below for proposed themes).
+- [ ] **Future Feature**: PremiumInsightPanel Advanced Analytics (Upgrade the current frontend-only mockup logic of `PremiumInsightPanel` to a backend OpenAI-driven algorithm. By analyzing past sales data to deduce the *actual* best-selling times, this insight panel will become a powerful driver for premium subscription retention.)
+- [ ] **Future Feature**: Premium Auto-Generate on Save (Implement a toggle for Premium users to automatically generate AI descriptions simultaneously when saving an inventory item. This highly requested UX enhancement becomes economically viable only under a paid subscription model where API costs are absorbed by the MRR.)
 
 ### Theme Proposals for Future Customization
 **🎨 Proposal B: Stone & Espresso**

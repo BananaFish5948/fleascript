@@ -19,9 +19,11 @@ import { InventoryItem, InventoryStatus } from '@/types/inventory'
 import PremiumChart from '@/components/PremiumChart'
 import LandingPage from '@/components/LandingPage'
 import NativeAdCard from '@/components/NativeAdCard'
+import PremiumInsightPanel from '@/components/PremiumInsightPanel'
 import { AFFILIATE_ADS } from '@/lib/affiliateData'
 import BottomNav, { TabType } from '@/components/BottomNav'
 import { Archive, Crown, Download, RefreshCw, Sparkles, AlertCircle } from 'lucide-react'
+import { seoCategories } from '@/data/seoCategories'
 
 export default function Home() {
   const [items, setItems] = useState<InventoryItem[]>([])
@@ -34,10 +36,12 @@ export default function Home() {
   const [maxLimit, setMaxLimit] = useState<number>(3)
   const [isPremium, setIsPremium] = useState(false)
   const [subscriptionStatus, setSubscriptionStatus] = useState<string>('free')
-  const [preferences, setPreferences] = useState<{box_capacity: number; bonus_slots?: number; seller_rules?: string; referral_code?: string}>({ box_capacity: 20 })
+  const [preferences, setPreferences] = useState<{box_capacity: number; bonus_slots?: number; seller_rules?: string; referral_code?: string; customSignature?: string}>({ box_capacity: 20 })
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [isAuthLoading, setIsAuthLoading] = useState(true)
   const [roadmapProgress, setRoadmapProgress] = useState(35)
+  const [imageAnalysisRemaining, setImageAnalysisRemaining] = useState<number>(0)
+  const [imageAnalysisMax, setImageAnalysisMax] = useState<number>(0)
   type MarkdownSuggestion = {
     id: string;
     item_name: string;
@@ -63,6 +67,21 @@ export default function Home() {
   // タブ状態とキーボード検知
   const [activeTab, setActiveTab] = useState<TabType>('home')
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false)
+  const [templateInput, setTemplateInput] = useState('')
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const searchParams = new URLSearchParams(window.location.search);
+      const templateId = searchParams.get('template');
+      if (templateId && seoCategories[templateId]) {
+        setActiveTab('add');
+        setTemplateInput(seoCategories[templateId].exampleInput);
+        
+        // パラメータを消してURLを綺麗にする
+        window.history.replaceState({}, '', '/');
+      }
+    }
+  }, []);
 
   useEffect(() => {
     const handleFocus = (e: FocusEvent) => {
@@ -106,6 +125,8 @@ export default function Home() {
       if (data.isPremium !== undefined) setIsPremium(data.isPremium);
       if (data.subscriptionStatus !== undefined) setSubscriptionStatus(data.subscriptionStatus);
       if (data.preferences !== undefined) setPreferences(data.preferences);
+      if (data.imageAnalysisRemaining !== undefined) setImageAnalysisRemaining(data.imageAnalysisRemaining);
+      if (data.imageAnalysisMax !== undefined) setImageAnalysisMax(data.imageAnalysisMax);
       
       if (data.isLoggedIn) {
         await fetchInventory();
@@ -320,13 +341,20 @@ export default function Home() {
                   onOpenReportModal={() => setShowReportModal(true)}
                 />
                 
-                {subscriptionStatus === 'free' && (
+                {subscriptionStatus !== 'premium' && (
                   <NativeAdCard 
                     ad={AFFILIATE_ADS.find(a => a.id === 'ad-measure')!} 
                     subscriptionStatus={subscriptionStatus} 
                   />
                 )}
+                {subscriptionStatus === 'premium' && (
+                  <PremiumInsightPanel items={items} />
+                )}
+              </div>
+            )}
 
+            {activeTab === 'list' && (
+              <div className="animate-fade-in-up flex flex-col gap-8">
                 <InventoryList 
                   items={items}
                   onUpdateStatus={handleUpdateStatus}
@@ -348,6 +376,11 @@ export default function Home() {
                   boxCapacity={preferences.box_capacity}
                   currentItems={items}
                   sellerRules={preferences.seller_rules || ''}
+                  customSignature={preferences.customSignature || ''}
+                  imageAnalysisRemaining={imageAnalysisRemaining}
+                  imageAnalysisMax={imageAnalysisMax}
+                  onAnalysisUsed={() => setImageAnalysisRemaining(prev => Math.max(0, prev - 1))}
+                  initialItemName={templateInput}
                 />
               </div>
             )}

@@ -1,25 +1,20 @@
 @import "tailwindcss";
 
-/* ===== デザイントークン ===== */
-@theme inline {
-  /* カラーパレット: オーガニック・スローライフ（Kinfolk風） */
+/* ===== テーマ定義 (CSS Variables) ===== */
+:root {
+  /* カラーパレット: オーガニック・スローライフ（Kinfolk風・デフォルト） */
   --color-bg-base:        #F5F2EB;   /* リネンのような温かみのあるエクリュ */
   --color-bg-surface:     #ffffff;   /* UIカードは白 */
   --color-bg-elevated:    #ffffff;
-
   --color-brand:          #A65D47;   /* テラコッタ・レンガ色 */
   --color-brand-light:    #C27A65;   /* ホバー時 */
   --color-brand-dim:      rgba(166, 93, 71, 0.08);
-
   --color-accent:         #7A8B76;   /* セージグリーン（自然の緑） */
   --color-text-primary:   #2D2926;   /* 温かみのあるチャコールグレー */
   --color-text-secondary: #78716C;   /* stone-500相当 */
   --color-text-muted:     #A8A29E;   /* stone-400相当 */
-
   --color-border:         #E7E5E4;   /* より柔らかい境界線（stone-200） */
   --color-border-focus:   rgba(166, 93, 71, 0.4);
-
-  /* セマンティックカラー（Kinfolk風くすみカラー） */
   --color-success:        #5B6E53;   /* ディープオリーブ（深みのある緑） */
   --color-success-bg:     #E9ECE7;   /* 淡いオリーブ */
   --color-warning:        #C29B62;   /* マスタード（警告など） */
@@ -28,13 +23,69 @@
   --color-danger-bg:      #F8F3F2;
   --color-info:           #8B9B9E;   /* スレートブルー（ヤフオク出品中など） */
   --color-info-bg:        #F2F4F5;
+  --shadow-glow:          0 0 15px rgba(166, 93, 71, 0.15);
+  --shadow-card:          0 8px 30px rgba(45, 41, 38, 0.04);
+}
+
+[data-theme="sunset"] {
+  /* サンセットオレンジ ＆ ティール（グラスモーフィズム対応） */
+  --color-bg-base:        #FFF7F2;   /* ほんのり温かい白（サンセットの余韻） */
+  --color-bg-surface:     rgba(255, 255, 255, 0.85); /* 半透明（グラスモーフィズム用） */
+  --color-bg-elevated:    rgba(255, 255, 255, 0.95);
+  --color-brand:          #FF7A59;   /* 鮮やかなサンセットオレンジ */
+  --color-brand-light:    #FF9A7C;   /* ホバー時 */
+  --color-brand-dim:      rgba(255, 122, 89, 0.1);
+  --color-accent:         #2D8CFF;   /* ソフトティール（クリアな青緑/水色） */
+  --color-text-primary:   #1C1E21;   /* 視認性の高いダークグレー */
+  --color-text-secondary: #4A5568;   /* 柔らかいグレー */
+  --color-text-muted:     #A0AEC0;
+  --color-border:         rgba(255, 255, 255, 0.5);  /* ガラスの反射をイメージしたボーダー */
+  --color-border-focus:   rgba(255, 122, 89, 0.4);
+  --color-success:        #38A169;
+  --color-success-bg:     #F0FFF4;
+  --color-warning:        #DD6B20;
+  --color-warning-bg:     #FFFAF0;
+  --color-danger:         #E53E3E;
+  --color-danger-bg:      #FFF5F5;
+  --color-info:           #3182CE;
+  --color-info-bg:        #EBF8FF;
+  --shadow-glow:          0 0 20px rgba(255, 122, 89, 0.25);
+  --shadow-card:          0 10px 40px rgba(0, 0, 0, 0.06);
+}
+
+/* ===== Tailwind テーママッピング ===== */
+@theme inline {
+  --color-bg-base:        var(--color-bg-base);
+  --color-bg-surface:     var(--color-bg-surface);
+  --color-bg-elevated:    var(--color-bg-elevated);
+
+  --color-brand:          var(--color-brand);
+  --color-brand-light:    var(--color-brand-light);
+  --color-brand-dim:      var(--color-brand-dim);
+
+  --color-accent:         var(--color-accent);
+  --color-text-primary:   var(--color-text-primary);
+  --color-text-secondary: var(--color-text-secondary);
+  --color-text-muted:     var(--color-text-muted);
+
+  --color-border:         var(--color-border);
+  --color-border-focus:   var(--color-border-focus);
+
+  --color-success:        var(--color-success);
+  --color-success-bg:     var(--color-success-bg);
+  --color-warning:        var(--color-warning);
+  --color-warning-bg:     var(--color-warning-bg);
+  --color-danger:         var(--color-danger);
+  --color-danger-bg:      var(--color-danger-bg);
+  --color-info:           var(--color-info);
+  --color-info-bg:        var(--color-info-bg);
 
   /* フォント */
   --font-sans: 'Zen Maru Gothic', 'Noto Sans JP', system-ui, sans-serif;
 
-  /* シャドウ（柔らかい影） */
-  --shadow-glow:  0 0 15px rgba(166, 93, 71, 0.15);
-  --shadow-card:  0 8px 30px rgba(45, 41, 38, 0.04); /* 広く薄い影でアナログな紙の質感を */
+  /* シャドウ */
+  --shadow-glow:  var(--shadow-glow);
+  --shadow-card:  var(--shadow-card);
 }
 
 /* ===== ベーススタイル ===== */
@@ -160,4 +211,16 @@ body {
   border: 1px solid var(--color-border);
   border-radius: 24px;
   box-shadow: var(--shadow-card);
+}
+
+/* ===== グラスモーフィズム ===== */
+.glass-panel {
+  background: var(--color-bg-surface);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--color-border);
+  border-radius: 24px;
+  box-shadow: var(--shadow-card);
+  /* 内側のハイライト（ガラスの反射感） */
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.4), var(--shadow-card);
 }

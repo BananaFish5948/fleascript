@@ -18,10 +18,10 @@ const PremiumChart: React.FC<PremiumChartProps> = ({ data = [] }) => {
 
   // ダミーデータ（モック用の美しいグラフ）
   const mockData = [
-    { name: '手取り利益', value: 75000, fill: '#5B6E53' }, // Deep Olive (Success)
-    { name: '送料', value: 15000, fill: '#C29B62' },      // Mustard (Warning)
-    { name: 'プラットフォーム手数料', value: 10000, fill: '#C4837A' },    // Dusty Red (Danger)
-    { name: '仕入値', value: 30000, fill: '#8B9B9E' }     // Slate Blue (Info)
+    { name: '手取り利益', value: 75000, fill: 'var(--color-success)' },
+    { name: '送料', value: 15000, fill: 'var(--color-warning)' },
+    { name: 'プラットフォーム手数料', value: 10000, fill: 'var(--color-danger)' },
+    { name: '仕入値', value: 30000, fill: 'var(--color-info)' }
   ];
 
   const chartData = hasData ? data : mockData;

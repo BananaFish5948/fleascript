@@ -13,6 +13,11 @@ interface InventoryFormProps {
   boxCapacity?: number;
   currentItems?: InventoryItem[];
   sellerRules?: string;
+  customSignature?: string;
+  imageAnalysisRemaining?: number;
+  imageAnalysisMax?: number;
+  onAnalysisUsed?: () => void;
+  initialItemName?: string;
 }
 
 const STATUS_OPTIONS: { value: InventoryStatus; label: string; defaultFee: number }[] = [
@@ -22,8 +27,8 @@ const STATUS_OPTIONS: { value: InventoryStatus; label: string; defaultFee: numbe
   { value: 'sold', label: '売却済', defaultFee: 10.0 },
 ];
 
-export default function InventoryForm({ onAdd, isLoading, disabled, subscriptionStatus = 'free', boxCapacity = 20, currentItems = [], sellerRules = '' }: InventoryFormProps) {
-  const [itemName, setItemName] = useState('');
+export default function InventoryForm({ onAdd, isLoading, disabled, subscriptionStatus = 'free', boxCapacity = 20, currentItems = [], sellerRules = '', customSignature = '', imageAnalysisRemaining, imageAnalysisMax, onAnalysisUsed, initialItemName = '' }: InventoryFormProps) {
+  const [itemName, setItemName] = useState(initialItemName);
   const [purchasePrice, setPurchasePrice] = useState<number | ''>('');
   const [targetPrice, setTargetPrice] = useState<number | ''>('');
   const [postage, setPostage] = useState<number | ''>('');
@@ -36,6 +41,8 @@ export default function InventoryForm({ onAdd, isLoading, disabled, subscription
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isPriceEstimated, setIsPriceEstimated] = useState(false);
   const [isPostageEstimated, setIsPostageEstimated] = useState(false);
+  const [localCustomSignature, setLocalCustomSignature] = useState(customSignature);
+  const [isSavingSignature, setIsSavingSignature] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // ステータス変更時にデフォルト手数料をセット
@@ -58,7 +65,14 @@ export default function InventoryForm({ onAdd, isLoading, disabled, subscription
 
   useEffect(() => {
     setLocalSellerRules(sellerRules);
-  }, [sellerRules]);
+    setLocalCustomSignature(customSignature);
+  }, [sellerRules, customSignature]);
+
+  useEffect(() => {
+    if (initialItemName) {
+      setItemName(initialItemName);
+    }
+  }, [initialItemName]);
 
   const handleSaveRules = async () => {
     setIsSavingRules(true);
@@ -74,6 +88,24 @@ export default function InventoryForm({ onAdd, isLoading, disabled, subscription
       alert('保存に失敗しました');
     } finally {
       setIsSavingRules(false);
+    }
+  };
+
+  const handleSaveSignature = async () => {
+    setIsSavingSignature(true);
+    try {
+      const res = await fetch('/api/user-status/preferences', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ customSignature: localCustomSignature }),
+      });
+      if (!res.ok) throw new Error('Failed to save signature');
+      alert('カスタム署名を保存しました');
+    } catch (e) {
+      console.error(e);
+      alert('保存に失敗しました');
+    } finally {
+      setIsSavingSignature(false);
     }
   };
 
@@ -145,6 +177,8 @@ export default function InventoryForm({ onAdd, isLoading, disabled, subscription
         throw new Error(data.error || '画像解析に失敗しました');
       }
 
+      onAnalysisUsed?.();
+
       // 3. 抽出結果を「商品名」に自動セット
       const f = data.features;
       const newNameParts = [];
@@ -205,23 +239,37 @@ export default function InventoryForm({ onAdd, isLoading, disabled, subscription
       <form onSubmit={handleSubmit} className="space-y-4">
         
         {/* 画像アップロード UI */}
-        <div className="flex items-center gap-3 mb-4 p-3 bg-stone-50 border border-stone-200 rounded-xl">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-4 p-3 bg-stone-50 border border-stone-200 rounded-xl">
           <button
             type="button"
-            disabled={isAnalyzing || disabled}
+            disabled={isAnalyzing || disabled || imageAnalysisRemaining === 0}
             onClick={() => fileInputRef.current?.click()}
-            className="flex-shrink-0 flex items-center justify-center gap-2 bg-white border border-stone-300 text-stone-700 hover:bg-stone-50 disabled:opacity-50 px-4 py-2 rounded-lg text-xs font-bold transition-colors shadow-sm"
+            className="flex-shrink-0 flex items-center justify-center gap-2 bg-white border border-stone-300 text-stone-700 hover:bg-stone-50 disabled:opacity-50 px-4 py-2 rounded-lg text-xs font-bold transition-colors shadow-sm relative overflow-hidden"
           >
             {isAnalyzing ? (
               <Loader2 className="w-4 h-4 animate-spin text-stone-500" />
             ) : (
               <Camera className="w-4 h-4" />
             )}
-            画像からAI自動入力
+            <span className="flex items-center gap-1.5">
+              画像からAI自動入力
+              {imageAnalysisMax !== undefined && imageAnalysisMax > 0 && (
+                <span className="bg-stone-100 text-stone-500 border border-stone-200 px-1.5 py-0.5 rounded text-[10px] tracking-tighter">
+                  {imageAnalysisRemaining}/{imageAnalysisMax}
+                </span>
+              )}
+            </span>
           </button>
-          <p className="text-[10px] text-stone-500 leading-tight">
-            写真を撮るだけで、ブランド名や<br/>カテゴリなどの特徴を自動抽出します。
-          </p>
+          <div className="flex flex-col">
+            <p className="text-[10px] text-stone-500 leading-tight">
+              写真を撮るだけで、ブランド名やカテゴリなどの特徴を自動抽出します。
+            </p>
+            {imageAnalysisRemaining === 0 && imageAnalysisMax !== undefined && imageAnalysisMax > 0 && (
+              <p className="text-[10px] text-[var(--color-warning)] font-medium mt-1">
+                本日の利用枠に達しました（1日で回復します）
+              </p>
+            )}
+          </div>
           <input
             type="file"
             accept="image/*"
@@ -405,6 +453,35 @@ export default function InventoryForm({ onAdd, isLoading, disabled, subscription
           </button>
         </div>
       </div>
+
+      {subscriptionStatus === 'premium' && (
+        <div className="mt-6 pt-6 border-t border-[var(--color-border)]">
+          <h4 className="text-xs font-medium tracking-[0.2em] text-[var(--color-brand)] mb-3 flex items-center gap-2">
+            <Crown size={16} strokeWidth={1.5} />
+            <span>カスタム署名（プレミアム限定）</span>
+          </h4>
+          <p className="text-[10px] tracking-wide text-[var(--color-text-secondary)] mb-4 leading-relaxed">
+            AI生成テキストの末尾に、あなた専用のショップ名や定型文を自動付与します。
+          </p>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={localCustomSignature}
+              onChange={(e) => setLocalCustomSignature(e.target.value)}
+              placeholder="例: ご覧いただきありがとうございます！他商品も出品中です。"
+              className="flex-1 bg-amber-50 border border-amber-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] transition-shadow"
+            />
+            <button
+              type="button"
+              onClick={handleSaveSignature}
+              disabled={isSavingSignature}
+              className="bg-[var(--color-brand)] text-white px-5 py-2 rounded-full text-xs font-medium tracking-widest shadow-sm hover:opacity-90 disabled:opacity-50 transition-all"
+            >
+              {isSavingSignature ? '保存中...' : '保存'}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
