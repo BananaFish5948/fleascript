@@ -87,7 +87,11 @@
     - When calling `gpt-4o-mini` with image inputs (`api/analyze-image`), **you MUST explicitly define the JSON schema and the output language in the system prompt** (e.g., "値は全て「日本語」で出力してください").
     - If you only say "output as JSON", the AI will invent its own keys (e.g., `{"特徴": "..."}` instead of `{"category": "..."}`) or output English based on the image context, causing frontend destructuring to fail (`undefined`).
     - The API now infers `estimated_target_price` and `estimated_postage` at zero extra cost, which the frontend (`InventoryForm`) automatically applies as highlighted "estimations" that disappear upon manual user edits.
-
+18. **Human-mimicking Dev Log System (Stealth UI & Next.js Routing Gotcha)**:
+    - To prevent the "Uncanny Valley" effect of AI generating instant release notes, we implemented a Human-in-the-Loop (HITL) architecture.
+    - AI agents must insert draft logs to the `release_logs` table via `POST /api/dev/patch-log` with `status: 'draft'`.
+    - The Master manually reviews and publishes them from the Stealth Admin UI.
+    - **Gotcha**: The Admin UI URL is `http://localhost:3001/backstage/logs`. Next.js App Router ignores folders prefixed with an underscore (`_`) as "Private Folders". We intentionally named the folder `backstage` inside `(stealth-ops)` so it routes correctly while remaining obscure. Do NOT use `_backstage` for routable pages.
 ## Next Potential Steps
 - [x] Phase 3: Auth Integration, UI Refinement, Share Bonus & Roadmap Gauge.
 - [x] Landing Page (LP) Implementation using Switcher pattern (`src/app/page.tsx`).

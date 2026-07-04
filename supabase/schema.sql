@@ -209,3 +209,22 @@ WITH CHECK (
   AND (name LIKE '%/monthly_report.jpg' OR name LIKE '%/monthly_report.png')
   AND (LENGTH(COALESCE(metadata->>'size', '0')::text) <= 1048576) -- 1MB
 );
+
+-- =============================================
+-- 5. 開発ログ（Human-in-the-Loop 用）テーブル (新設)
+-- =============================================
+CREATE TABLE IF NOT EXISTS public.release_logs (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  tier integer NOT NULL CHECK (tier IN (1, 2, 3)),
+  message text NOT NULL,
+  status text NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'published')),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  published_at timestamptz
+);
+
+ALTER TABLE public.release_logs ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Anyone can view published release_logs" ON public.release_logs;
+CREATE POLICY "Anyone can view published release_logs" 
+ON public.release_logs FOR SELECT 
+USING (status = 'published');

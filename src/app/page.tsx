@@ -482,6 +482,8 @@ export default function Home() {
               </div>
             )}
         </div>
+        
+        <FooterFeedback />
       </main>
 
       {!isKeyboardOpen && (

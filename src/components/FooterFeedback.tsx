@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { seoCategories } from '@/data/seoCategories'
 import Link from 'next/link'
+import DevLogs from './DevLogs'
 
 export default function FooterFeedback() {
   const [complaint, setComplaint] = useState('')
@@ -54,6 +55,8 @@ export default function FooterFeedback() {
           ))}
         </div>
       </div>
+
+      <DevLogs />
 
       {/* Anonymous Feedback Form */}
       <div className="bg-[var(--color-bg-elevated)] p-6 rounded-2xl border border-[var(--color-border)] max-w-md mx-auto">
