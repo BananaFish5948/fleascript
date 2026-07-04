@@ -14,11 +14,11 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     const ssrClient = await createClient();
     const { data: { user } } = await ssrClient.auth.getUser();
 
-    const { allowed, remaining, isPremium } = await checkRateLimit(ip, deviceId, isDevMode, user?.id, pageLoadId);
+    const { allowed, remaining, isPremium, lockReason } = await checkRateLimit(ip, user?.id);
 
     if (!allowed) {
       return NextResponse.json(
-        { error: "本日の利用上限に達しました。", limitReached: true },
+        { error: lockReason || "本日の利用上限に達しました。", limitReached: true },
         { status: 429 }
       );
     }
