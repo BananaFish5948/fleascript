@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { LockKeyhole, Mail } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
 interface AuthModalProps {
@@ -71,16 +72,20 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
 
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-orange-500/30">
-            <span className="text-2xl">{isMagicLinkSent ? '✉️' : '🔒'}</span>
+          <div className="w-16 h-16 bg-stone-100 border border-stone-200 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
+            {isMagicLinkSent ? (
+              <Mail className="w-8 h-8 text-stone-600" />
+            ) : (
+              <LockKeyhole className="w-8 h-8 text-stone-600" />
+            )}
           </div>
-          <h2 className="text-2xl font-bold text-[var(--color-text-primary)] mb-2">
+          <h2 className="text-2xl font-bold text-stone-800 mb-2">
             {isMagicLinkSent ? 'メールを確認してください' : 'ログインが必要です'}
           </h2>
-          <p className="text-sm text-[var(--color-text-muted)]">
+          <p className="text-sm text-stone-500 leading-relaxed">
             {isMagicLinkSent 
               ? '入力されたメールアドレスにログイン用のリンクを送信しました。メール内のリンクをタップしてログインを完了してください。' 
-              : 'プレミアムプランの登録にはアカウントが必要です。Googleアカウントまたはメールアドレスで安全にログインしてください。'
+              : '機能のご利用、およびプランの登録にはアカウントが必要です。Googleアカウントまたはメールアドレスで安全にログインしてください。'
             }
           </p>
         </div>

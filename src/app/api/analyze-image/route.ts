@@ -31,7 +31,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       messages: [
         {
           role: 'system',
-          content: 'あなたはフリマ出品のプロです。画像から商品の特徴（カテゴリ、ブランド、色、状態など）を抽出し、JSON形式で出力してください。また、解析の確実性を 0.00〜1.00 の confidence_score として必ず含めてください。判断不能な場合は低いスコアを設定してください。'
+          content: 'あなたはフリマ出品のプロです。画像から商品の特徴を抽出し、必ず以下のJSONスキーマに従って出力してください。\n{\n  "category": "商品の種類（例：アイスティー、ワンピース等）",\n  "brand": "ブランド名（不明な場合は空文字）",\n  "color": "メインカラー（例：ブラウン）",\n  "condition": "状態（例：グラス提供）",\n  "estimated_target_price": 3500,\n  "estimated_postage": 750,\n  "confidence_score": 0.95\n}\n※ estimated_target_price には画像から推測される一般的なフリマアプリでの中古販売相場価格（数値のみ）を、estimated_postage には商品のサイズ感から推測される標準的な送料（例: 薄手なら210、中型なら500、大型なら800など、数値のみ）を入れてください。\n値は全て「日本語」で出力してください。また、解析の確実性を 0.00〜1.00 の confidence_score として必ず含めてください。判断不能な場合は低いスコアを設定してください。'
         },
         {
           role: 'user',

@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { InventoryStatus, InventoryItem } from '@/types/inventory';
-import { PackagePlus, Crown, Lightbulb, Bot, Settings2 } from 'lucide-react';
+import { PackagePlus, Crown, Lightbulb, Bot, Settings2, Camera, Loader2 } from 'lucide-react';
+import type { ImageWorkerRequest, ImageWorkerResponse } from '@/workers/imageWorker';
 
 interface InventoryFormProps {
   onAdd: (data: any) => Promise<void>;
@@ -32,6 +33,10 @@ export default function InventoryForm({ onAdd, isLoading, disabled, subscription
   const [locationTag, setLocationTag] = useState('');
   const [localSellerRules, setLocalSellerRules] = useState(sellerRules);
   const [isSavingRules, setIsSavingRules] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isPriceEstimated, setIsPriceEstimated] = useState(false);
+  const [isPostageEstimated, setIsPostageEstimated] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // ステータス変更時にデフォルト手数料をセット
   useEffect(() => {
@@ -100,6 +105,94 @@ export default function InventoryForm({ onAdd, isLoading, disabled, subscription
     setBoxNumber('');
     setLocationTag('');
     setStatus('hand');
+    setIsPriceEstimated(false);
+    setIsPostageEstimated(false);
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    // UIをフリーズさせないための初期化
+    setIsAnalyzing(true);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+
+    try {
+      // 1. Web Workerに画像を投げてオフスクリーンでリサイズとBase64化を実行
+      const worker = new Worker(new URL('@/workers/imageWorker', import.meta.url));
+      
+      const workerResult = await new Promise<ImageWorkerResponse>((resolve, reject) => {
+        worker.onmessage = (event: MessageEvent<ImageWorkerResponse>) => resolve(event.data);
+        worker.onerror = (err) => reject(err);
+        worker.postMessage({ file } as ImageWorkerRequest);
+      });
+      
+      worker.terminate();
+
+      if (!workerResult.success || !workerResult.base64) {
+        throw new Error(workerResult.error || '画像の処理に失敗しました');
+      }
+
+      // 2. Base64文字列を /api/analyze-image に送信して特徴量抽出
+      const res = await fetch('/api/analyze-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ base64Image: workerResult.base64 }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || '画像解析に失敗しました');
+      }
+
+      // 3. 抽出結果を「商品名」に自動セット
+      const f = data.features;
+      const newNameParts = [];
+      if (f.brand) newNameParts.push(f.brand);
+      if (f.category) newNameParts.push(f.category);
+      if (f.color) newNameParts.push(f.color);
+      if (f.condition) newNameParts.push(`(${f.condition})`);
+      
+      const newName = newNameParts.join(' ') || '特徴を検出できませんでした';
+      setItemName(newName);
+      
+      // 相場と送料の自動入力（仮値）
+      if (typeof f.estimated_target_price === 'number') {
+        setTargetPrice(f.estimated_target_price);
+        setIsPriceEstimated(true);
+      }
+      if (typeof f.estimated_postage === 'number') {
+        setPostage(f.estimated_postage);
+        setIsPostageEstimated(true);
+      }
+      
+      if (workerResult.isDegraded) {
+        console.warn("Worker execution time exceeded limit. Degraded mode was activated.");
+      }
+
+    } catch (error: any) {
+      let errorMessage = error.message || '画像の処理中にエラーが発生しました。';
+      
+      // Workerからのエラーコードをユーザーフレンドリーな日本語に変換
+      switch (errorMessage) {
+        case 'TOO_BRIGHT':
+          errorMessage = '画像が明るすぎます（白飛び）。もう少し暗い場所で撮影してください。';
+          break;
+        case 'TOO_DARK':
+          errorMessage = '画像が暗すぎます。もう少し明るい場所で撮影してください。';
+          break;
+        case 'UNSUPPORTED_BROWSER':
+          errorMessage = 'お使いのブラウザは画像解析に対応していません。';
+          break;
+        case 'CANVAS_ERROR':
+          errorMessage = '画像の読み込みに失敗しました。別の画像をお試しください。';
+          break;
+      }
+
+      alert(errorMessage);
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
 
   return (
@@ -110,6 +203,34 @@ export default function InventoryForm({ onAdd, isLoading, disabled, subscription
       </h3>
       
       <form onSubmit={handleSubmit} className="space-y-4">
+        
+        {/* 画像アップロード UI */}
+        <div className="flex items-center gap-3 mb-4 p-3 bg-stone-50 border border-stone-200 rounded-xl">
+          <button
+            type="button"
+            disabled={isAnalyzing || disabled}
+            onClick={() => fileInputRef.current?.click()}
+            className="flex-shrink-0 flex items-center justify-center gap-2 bg-white border border-stone-300 text-stone-700 hover:bg-stone-50 disabled:opacity-50 px-4 py-2 rounded-lg text-xs font-bold transition-colors shadow-sm"
+          >
+            {isAnalyzing ? (
+              <Loader2 className="w-4 h-4 animate-spin text-stone-500" />
+            ) : (
+              <Camera className="w-4 h-4" />
+            )}
+            画像からAI自動入力
+          </button>
+          <p className="text-[10px] text-stone-500 leading-tight">
+            写真を撮るだけで、ブランド名や<br/>カテゴリなどの特徴を自動抽出します。
+          </p>
+          <input
+            type="file"
+            accept="image/*"
+            ref={fileInputRef}
+            onChange={handleImageUpload}
+            className="hidden"
+          />
+        </div>
+
         <div>
           <label className="block text-[10px] font-medium tracking-widest text-[var(--color-text-secondary)] mb-1">商品名 <span className="text-[var(--color-danger)]">*</span></label>
           <input 
@@ -136,25 +257,37 @@ export default function InventoryForm({ onAdd, isLoading, disabled, subscription
             />
           </div>
           <div>
-            <label className="block text-[10px] font-medium tracking-widest text-[var(--color-text-secondary)] mb-1">目標売価 (¥)</label>
+            <label className="block text-[10px] font-medium tracking-widest text-[var(--color-text-secondary)] mb-1 flex items-center justify-between">
+              <span>目標売価 (¥)</span>
+              {isPriceEstimated && <span className="text-[8px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-full font-bold ml-1 flex items-center gap-0.5"><Bot size={8} />AI推測（仮）</span>}
+            </label>
             <input 
               type="number" 
               value={targetPrice} 
-              onChange={e => setTargetPrice(e.target.value ? Number(e.target.value) : '')} 
+              onChange={e => {
+                setTargetPrice(e.target.value ? Number(e.target.value) : '');
+                setIsPriceEstimated(false); // 手動変更でフラグ解除
+              }} 
               disabled={disabled}
               placeholder="0" 
-              className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] transition-shadow disabled:opacity-50"
+              className={`w-full bg-white border ${isPriceEstimated ? 'border-purple-300 ring-1 ring-purple-300 bg-purple-50/30' : 'border-gray-200'} rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] transition-shadow disabled:opacity-50`}
             />
           </div>
           <div>
-            <label className="block text-[10px] font-medium tracking-widest text-[var(--color-text-secondary)] mb-1">想定送料 (¥)</label>
+            <label className="block text-[10px] font-medium tracking-widest text-[var(--color-text-secondary)] mb-1 flex items-center justify-between">
+              <span>想定送料 (¥)</span>
+              {isPostageEstimated && <span className="text-[8px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-full font-bold ml-1 flex items-center gap-0.5"><Bot size={8} />AI推測（仮）</span>}
+            </label>
             <input 
               type="number" 
               value={postage} 
-              onChange={e => setPostage(e.target.value ? Number(e.target.value) : '')} 
+              onChange={e => {
+                setPostage(e.target.value ? Number(e.target.value) : '');
+                setIsPostageEstimated(false); // 手動変更でフラグ解除
+              }} 
               disabled={disabled}
               placeholder="0" 
-              className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] transition-shadow disabled:opacity-50"
+              className={`w-full bg-white border ${isPostageEstimated ? 'border-purple-300 ring-1 ring-purple-300 bg-purple-50/30' : 'border-gray-200'} rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] transition-shadow disabled:opacity-50`}
             />
           </div>
           <div className="relative">

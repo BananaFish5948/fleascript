@@ -83,6 +83,10 @@
     - AI agents frequently overwrite files faster than the Next.js (Turbopack/Webpack) watcher can process, leading to `ELIFECYCLE` or `EPERM` crashes on the local dev server. Master should stop `npm run dev` while AI is writing code, or restart it if it crashes.
 16. **Cost Optimization for Auth (Apple vs Google/Magic Link)**:
     - "Sign in with Apple" requires a $99/year Apple Developer Program subscription. To maintain strict MVP costs, Apple Login was scrapped. We utilize Google OAuth as primary, and Supabase Magic Links (OTP) as the fallback for pure iCloud/iOS users.
+17. **Multimodal API Integration & JSON Schema Enforcement (Gotcha)**:
+    - When calling `gpt-4o-mini` with image inputs (`api/analyze-image`), **you MUST explicitly define the JSON schema and the output language in the system prompt** (e.g., "値は全て「日本語」で出力してください").
+    - If you only say "output as JSON", the AI will invent its own keys (e.g., `{"特徴": "..."}` instead of `{"category": "..."}`) or output English based on the image context, causing frontend destructuring to fail (`undefined`).
+    - The API now infers `estimated_target_price` and `estimated_postage` at zero extra cost, which the frontend (`InventoryForm`) automatically applies as highlighted "estimations" that disappear upon manual user edits.
 
 ## Next Potential Steps
 - [x] Phase 3: Auth Integration, UI Refinement, Share Bonus & Roadmap Gauge.
