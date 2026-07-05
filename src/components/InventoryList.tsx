@@ -52,6 +52,15 @@ export default function InventoryList({
     return t - p - s - fee;
   };
 
+  const calcItemProfit = (item: InventoryItem) => {
+    const t = item.target_price || 0;
+    const p = item.purchase_price || 0;
+    const s = item.postage || 0;
+    const feeRate = item.fee_rate ?? 10.0;
+    const fee = t * (feeRate / 100);
+    return t - p - s - fee;
+  };
+
   const handleStatusChange = async (id: string, status: InventoryStatus) => {
     setLoadingId(id);
     await onUpdateStatus(id, status);
@@ -237,10 +246,19 @@ export default function InventoryList({
                       )}
                     </div>
                     <h4 className="font-medium tracking-wide text-[var(--color-text-primary)] text-base">{item.item_name}</h4>
-                    <div className="flex gap-4 mt-2 text-xs text-gray-500">
+                    <div className="flex gap-4 mt-2 text-xs text-[var(--color-text-secondary)] items-center flex-wrap">
                       <span>仕入: ¥{item.purchase_price.toLocaleString()}</span>
                       <span>売価: ¥{item.target_price.toLocaleString()}</span>
                       <span>送料: ¥{item.postage.toLocaleString()}</span>
+                      <span className="hidden sm:inline text-stone-300">|</span>
+                      {(() => {
+                        const profit = calcItemProfit(item);
+                        return (
+                          <span className={`font-semibold ${profit >= 0 ? 'text-[var(--color-success)]' : 'text-[var(--color-danger)]'}`}>
+                            予測利益: ¥{Math.floor(profit).toLocaleString()}
+                          </span>
+                        );
+                      })()}
                     </div>
                   </>
                 )}
