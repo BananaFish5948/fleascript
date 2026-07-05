@@ -43,6 +43,15 @@ export default function InventoryList({
     return (now.getTime() - date.getTime()) > 3 * 24 * 60 * 60 * 1000;
   };
 
+  const calcEditProfit = () => {
+    const t = Number(editData.target_price) || 0;
+    const p = Number(editData.purchase_price) || 0;
+    const s = Number(editData.postage) || 0;
+    const feeRate = editData.fee_rate ?? 10.0;
+    const fee = t * (feeRate / 100);
+    return t - p - s - fee;
+  };
+
   const handleStatusChange = async (id: string, status: InventoryStatus) => {
     setLoadingId(id);
     await onUpdateStatus(id, status);
@@ -165,24 +174,39 @@ export default function InventoryList({
                         className="w-full text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-[var(--color-brand)]"
                       />
                     </div>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
                       <div>
                         <label className="text-[10px] font-bold text-gray-500 mb-1 block">仕入 (¥)</label>
-                        <input type="number" value={editData.purchase_price ?? ''} onChange={e => setEditData({ ...editData, purchase_price: Number(e.target.value) })} className="w-full text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-[var(--color-brand)]" />
+                        <input type="number" value={editData.purchase_price ?? ''} onChange={e => setEditData({ ...editData, purchase_price: Number(e.target.value) })} className="w-full text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-[var(--color-brand)] focus:outline-none" />
                       </div>
                       <div>
                         <label className="text-[10px] font-bold text-gray-500 mb-1 block">売価 (¥)</label>
-                        <input type="number" value={editData.target_price ?? ''} onChange={e => setEditData({ ...editData, target_price: Number(e.target.value) })} className="w-full text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-[var(--color-brand)]" />
+                        <input type="number" value={editData.target_price ?? ''} onChange={e => setEditData({ ...editData, target_price: Number(e.target.value) })} className="w-full text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-[var(--color-brand)] focus:outline-none" />
                       </div>
                       <div>
                         <label className="text-[10px] font-bold text-gray-500 mb-1 block">送料 (¥)</label>
-                        <input type="number" value={editData.postage ?? ''} onChange={e => setEditData({ ...editData, postage: Number(e.target.value) })} className="w-full text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-[var(--color-brand)]" />
+                        <input type="number" value={editData.postage ?? ''} onChange={e => setEditData({ ...editData, postage: Number(e.target.value) })} className="w-full text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-[var(--color-brand)] focus:outline-none" />
                       </div>
                       <div>
+                        <label className="text-[10px] font-bold text-gray-500 mb-1 block">手数料 (%)</label>
+                        <input type="number" step="0.1" value={editData.fee_rate ?? ''} onChange={e => setEditData({ ...editData, fee_rate: Number(e.target.value) })} className="w-full text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-[var(--color-brand)] focus:outline-none" />
+                      </div>
+                      <div className="col-span-2 sm:col-span-1">
                         <label className="text-[10px] font-bold text-gray-500 mb-1 block">箱番号</label>
-                        <input type="text" value={editData.box_number || ''} onChange={e => setEditData({ ...editData, box_number: e.target.value })} className="w-full text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-[var(--color-brand)]" />
+                        <input type="text" value={editData.box_number || ''} onChange={e => setEditData({ ...editData, box_number: e.target.value })} className="w-full text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-[var(--color-brand)] focus:outline-none" />
                       </div>
                     </div>
+                    {(() => {
+                      const editProfit = calcEditProfit();
+                      return (
+                        <div className="mt-2.5 text-xs font-semibold flex items-center justify-between bg-stone-50 border border-stone-200 rounded-xl px-3.5 py-2.5">
+                          <span className="text-stone-500 tracking-wider">予測純利益</span>
+                          <span className={`tracking-wide ${editProfit >= 0 ? 'text-[var(--color-success)] font-bold' : 'text-[var(--color-danger)] font-bold'}`}>
+                            ¥ {Math.floor(editProfit).toLocaleString()}
+                          </span>
+                        </div>
+                      );
+                    })()}
                   </div>
                 ) : (
                   <>
@@ -301,6 +325,7 @@ export default function InventoryList({
                           target_price: item.target_price,
                           postage: item.postage,
                           box_number: item.box_number || '',
+                          fee_rate: item.fee_rate,
                         });
                         setExpandedId(null);
                       }}
