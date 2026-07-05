@@ -126,7 +126,7 @@
 - [ ] Production Deployment (Vercel) & Custom Domain setup.
 - [ ] Real Stripe Integration (Replace Mock).
 - [x] **Future UI Improvement**: Inline Edit Profit Simulator. (Ported real-time profit/fee calculation logic from `InventoryForm.tsx` into the inline edit form to allow live adjustments.)
-- [ ] **Future Feature**: Theme Customization (To satisfy users' desire for self-expression, implement a feature to switch themes. See below for proposed themes).
+- [x] **Future Feature**: Theme Customization (Implemented Stone & Espresso and Linen & Slate themes, with switchers in settings and header toggle.)
 - [x] **Future Feature**: PremiumInsightPanel Advanced Analytics (Upgraded mock logic of `PremiumInsightPanel` to a backend OpenAI gpt-4o-mini driven algorithm with 24h caching in `users.preferences`.)
 - [ ] **Future Feature**: Premium Auto-Generate on Save (Implement a toggle for Premium users to automatically generate AI descriptions simultaneously when saving an inventory item. This highly requested UX enhancement becomes economically viable only under a paid subscription model where API costs are absorbed by the MRR.)
 
