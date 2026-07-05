@@ -105,7 +105,7 @@
 - [x] **Phase 4.1**: AI Personalization (Seller Rules) & Multi-Platform Output (Mercari, Yahoo, Rakuma tabs).
 - [x] **Phase 4.2**: Dashboard Analytics (Best-Selling Time) & Viral Referral System (+3 slots).
 - [x] **Phase 5**: Vercel Deployment Preparation, Theme Engine, & Onboarding UX.
-  - Implemented dynamic CSS variables for multiple themes (Kinfolk / Sunset Orange).
+  - Implemented dynamic CSS variables for 4 themes (Kinfolk / Sunset / Stone / Linen). Selector integrated inside Settings panel, removing redundant header toggles.
   - Setup production Supabase tables (`ip_rate_limits`, `feedback_logs`).
   - Fixed TypeScript build errors, UI routing bugs, and Hydration mismatches.
   - Renamed `.env.local.example` to `.env.example` to prevent accidental credential leaks.
