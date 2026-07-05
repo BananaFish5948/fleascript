@@ -71,21 +71,21 @@ export default function PremiumInsightPanel({
   const expectedTotalSales = activeItems.reduce((acc, item) => acc + item.target_price, 0);
 
   return (
-    <div className="bg-gradient-to-br from-[var(--color-bg-surface)] to-[var(--color-bg-base)] border border-amber-200 shadow-[var(--shadow-card)] rounded-2xl p-6 relative overflow-hidden group">
-      {/* プレミアム感のある背景グラデーション */}
-      <div className="absolute inset-0 bg-amber-50/10 pointer-events-none" />
-      <div className="absolute -top-10 -right-10 w-40 h-40 bg-amber-100/30 blur-3xl rounded-full" />
+    <div className="bg-gradient-to-br from-[var(--color-bg-surface)] to-[var(--color-bg-base)] border border-[var(--color-brand)]/20 shadow-[var(--shadow-card)] rounded-2xl p-6 relative overflow-hidden group">
+      {/* プレミアム感のある背景グラデーション（テラコッタの薄い膜） */}
+      <div className="absolute inset-0 bg-[var(--color-brand-dim)] pointer-events-none" />
+      <div className="absolute -top-10 -right-10 w-40 h-40 bg-[var(--color-brand)]/5 blur-3xl rounded-full" />
       
       {/* ヘッダー */}
       <div className="flex items-center gap-2 mb-6 relative z-10">
-        <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 shadow-inner">
+        <div className="w-8 h-8 rounded-full bg-[var(--color-brand-dim)] flex items-center justify-center text-[var(--color-brand)] shadow-inner">
           <Sparkles size={16} strokeWidth={2} className="animate-pulse" />
         </div>
         <div>
           <h3 className="text-xs font-bold tracking-[0.2em] text-[var(--color-text-secondary)] uppercase">AIコンシェルジュ</h3>
           <h4 className="text-sm font-semibold tracking-wider text-[var(--color-text-primary)]">フリマ販売診断インサイト</h4>
         </div>
-        <span className="ml-auto text-[9px] bg-gradient-to-r from-amber-500 to-amber-600 text-white px-3 py-1 rounded-full font-bold tracking-widest shadow-md">
+        <span className="ml-auto text-[9px] bg-[var(--color-brand)] text-white px-3 py-1 rounded-full font-bold tracking-widest shadow-md">
           PREMIUM
         </span>
       </div>
@@ -94,10 +94,10 @@ export default function PremiumInsightPanel({
       <div className="relative z-10 space-y-6">
         
         {/* 基本ダッシュボードデータ */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-white/60 backdrop-blur-sm p-4 rounded-xl border border-stone-100">
-          <div className="flex flex-col gap-1 border-r border-stone-100 last:border-r-0 pr-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-white/60 backdrop-blur-sm p-4 rounded-xl border border-[var(--color-border)]">
+          <div className="flex flex-col gap-1 border-r border-[var(--color-border)] last:border-r-0 pr-2">
             <span className="text-[10px] text-[var(--color-text-secondary)] tracking-widest flex items-center gap-1">
-              <TrendingUp size={12} className="text-amber-500" /> 出品中・保管中の想定総売上
+              <TrendingUp size={12} className="text-[var(--color-brand)]" /> 出品中・保管中の想定総売上
             </span>
             <span className="text-xl font-bold text-[var(--color-text-primary)]">
               ¥ {expectedTotalSales.toLocaleString()}
@@ -105,7 +105,7 @@ export default function PremiumInsightPanel({
           </div>
           <div className="flex flex-col gap-1 pl-2">
             <span className="text-[10px] text-[var(--color-text-secondary)] tracking-widest flex items-center gap-1">
-              <Calendar size={12} className="text-amber-500" /> 前回AI分析日時
+              <Calendar size={12} className="text-[var(--color-brand)]" /> 前回AI分析日時
             </span>
             <span className="text-sm font-medium text-[var(--color-text-primary)] py-0.5">
               {lastAiAnalysisAt ? formatDate(lastAiAnalysisAt) : '未実行'}
@@ -116,7 +116,7 @@ export default function PremiumInsightPanel({
         {/* AI診断結果表示 */}
         {isAnalyzing ? (
           <div className="py-12 flex flex-col items-center justify-center gap-3">
-            <Loader2 className="w-8 h-8 animate-spin text-amber-500" />
+            <Loader2 className="w-8 h-8 animate-spin text-[var(--color-brand)]" />
             <p className="text-xs text-[var(--color-text-secondary)] font-medium tracking-widest animate-pulse">
               AIがあなたの出品データを診断中... (約10〜15秒かかります)
             </p>
@@ -127,14 +127,14 @@ export default function PremiumInsightPanel({
             {/* 診断インサイト（箇条書き） */}
             {aiInsights.insights && aiInsights.insights.length > 0 && (
               <div className="space-y-3">
-                <h5 className="text-[11px] font-bold tracking-widest text-[var(--color-text-secondary)] flex items-center gap-1.5 border-b border-stone-100 pb-1.5">
-                  <CheckCircle2 size={13} className="text-emerald-500" />
+                <h5 className="text-[11px] font-bold tracking-widest text-[var(--color-text-secondary)] flex items-center gap-1.5 border-b border-[var(--color-border)] pb-1.5">
+                  <CheckCircle2 size={13} className="text-[var(--color-success)]" />
                   経営・販売状況の気づき
                 </h5>
                 <ul className="space-y-2.5">
                   {aiInsights.insights.map((insight, idx) => (
-                    <li key={idx} className="text-xs text-[var(--color-text-primary)] leading-relaxed flex items-start gap-2 bg-stone-50/50 p-2.5 rounded-lg border border-stone-100">
-                      <ArrowUpRight size={14} className="text-amber-500 shrink-0 mt-0.5" />
+                    <li key={idx} className="text-xs text-[var(--color-text-primary)] leading-relaxed flex items-start gap-2 bg-[var(--color-bg-base)]/40 p-2.5 rounded-lg border border-[var(--color-border)]">
+                      <ArrowUpRight size={14} className="text-[var(--color-brand)] shrink-0 mt-0.5" />
                       <span>{insight}</span>
                     </li>
                   ))}
@@ -145,12 +145,12 @@ export default function PremiumInsightPanel({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* 売れ筋タイム診断 */}
               {aiInsights.best_selling_time_advice && (
-                <div className="bg-amber-50/30 border border-amber-100 p-4 rounded-xl flex flex-col gap-2">
-                  <div className="flex items-center gap-1.5 text-[11px] font-bold text-amber-700 tracking-wider">
+                <div className="bg-[var(--color-info-bg)] border border-[var(--color-info)]/20 p-4 rounded-xl flex flex-col gap-2">
+                  <div className="flex items-center gap-1.5 text-[11px] font-bold text-[var(--color-info)] tracking-wider">
                     <Clock size={14} />
                     <span>おすすめ再出品タイム</span>
                   </div>
-                  <p className="text-xs text-stone-700 leading-relaxed font-medium">
+                  <p className="text-xs text-[var(--color-text-primary)] leading-relaxed font-medium">
                     {aiInsights.best_selling_time_advice}
                   </p>
                 </div>
@@ -158,12 +158,12 @@ export default function PremiumInsightPanel({
 
               {/* 価格戦略アドバイス */}
               {aiInsights.pricing_strategy && (
-                <div className="bg-purple-50/30 border border-purple-100 p-4 rounded-xl flex flex-col gap-2">
-                  <div className="flex items-center gap-1.5 text-[11px] font-bold text-purple-700 tracking-wider">
+                <div className="bg-[var(--color-brand-dim)] border border-[var(--color-brand)]/20 p-4 rounded-xl flex flex-col gap-2">
+                  <div className="flex items-center gap-1.5 text-[11px] font-bold text-[var(--color-brand)] tracking-wider">
                     <TrendingUp size={14} />
                     <span>値付け＆価格戦略</span>
                   </div>
-                  <p className="text-xs text-stone-700 leading-relaxed font-medium">
+                  <p className="text-xs text-[var(--color-text-primary)] leading-relaxed font-medium">
                     {aiInsights.pricing_strategy}
                   </p>
                 </div>
@@ -173,8 +173,8 @@ export default function PremiumInsightPanel({
           </div>
         ) : (
           /* 未実行（またはデータ不足）時の表示 */
-          <div className="bg-white/40 border border-stone-200 rounded-xl p-8 text-center flex flex-col items-center justify-center gap-4 border-dashed animate-fade-in-up">
-            <div className="w-12 h-12 bg-amber-50 border border-amber-200 text-amber-500 rounded-full flex items-center justify-center shadow-inner">
+          <div className="bg-white/40 border border-[var(--color-border)] rounded-xl p-8 text-center flex flex-col items-center justify-center gap-4 border-dashed animate-fade-in-up">
+            <div className="w-12 h-12 bg-[var(--color-brand-dim)] border border-[var(--color-brand)]/20 text-[var(--color-brand)] rounded-full flex items-center justify-center shadow-inner">
               <Sparkles size={22} className="animate-pulse" />
             </div>
             <div className="max-w-xs">
@@ -189,9 +189,9 @@ export default function PremiumInsightPanel({
         )}
 
         {/* コスト防御・更新エリア */}
-        <div className="pt-4 border-t border-stone-100/60 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+        <div className="pt-4 border-t border-[var(--color-border)]/60 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-1.5 text-[10px] text-[var(--color-text-secondary)]">
-            <AlertCircle size={12} className="text-stone-400" />
+            <AlertCircle size={12} className="text-[var(--color-text-muted)]" />
             <span>AI分析は24時間に1回まで実行できます。</span>
           </div>
           
@@ -199,7 +199,7 @@ export default function PremiumInsightPanel({
             type="button"
             onClick={onUpdateAnalysis}
             disabled={isAnalyzing || timeLeft !== null || items.length === 0}
-            className="w-full sm:w-auto bg-[var(--color-text-primary)] text-white hover:opacity-90 disabled:opacity-50 disabled:hover:opacity-50 px-6 py-2.5 rounded-full font-bold tracking-widest shadow-sm flex items-center justify-center gap-2 transition-all"
+            className="w-full sm:w-auto bg-[var(--color-brand)] text-white hover:bg-[var(--color-brand-light)] disabled:opacity-50 disabled:hover:opacity-50 px-6 py-2.5 rounded-full font-bold tracking-widest shadow-sm flex items-center justify-center gap-2 transition-all cursor-pointer"
           >
             {isAnalyzing ? (
               <>
