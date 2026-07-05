@@ -93,6 +93,9 @@
     - AI agents must insert draft logs to the `release_logs` table via `POST /api/dev/patch-log` with `status: 'draft'`.
     - The Master manually reviews and publishes them from the Stealth Admin UI.
     - **Gotcha**: The Admin UI URL is `http://localhost:3001/backstage/logs`. Next.js App Router ignores folders prefixed with an underscore (`_`) as "Private Folders". We intentionally named the folder `backstage` inside `(stealth-ops)` so it routes correctly while remaining obscure. Do NOT use `_backstage` for routable pages.
+19. **Object Iteration Order (Frontend Rendering Gotcha)**:
+    - Data constants like `seoCategories` are defined as `Record<string, Type>`. When rendering these in the UI (e.g., via `Object.values()`), the display order relies entirely on the JavaScript engine's default insertion order (ES2015+ spec for non-numeric string keys).
+    - If a feature request asks to "sort categories by popularity" or "reorder items," DO NOT rely on rearranging the object properties. You MUST refactor the data structure to an array `Type[]` or add an explicit `order` property for safe, deterministic sorting.
 ## Next Potential Steps
 - [x] Phase 3: Auth Integration, UI Refinement, Share Bonus & Roadmap Gauge.
 - [x] Landing Page (LP) Implementation using Switcher pattern (`src/app/page.tsx`).

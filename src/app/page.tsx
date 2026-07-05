@@ -395,6 +395,7 @@ export default function Home() {
                   onDelete={handleDelete}
                   onGoToAddTab={() => setActiveTab('add')}
                   onAddSample={handleAddSample}
+                  isDataLocked={isDataLocked}
                 />
               </div>
             )}

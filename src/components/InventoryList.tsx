@@ -13,9 +13,19 @@ interface InventoryListProps {
   onDelete: (id: string) => Promise<void>;
   onGoToAddTab?: () => void;
   onAddSample?: () => Promise<void>;
+  isDataLocked?: boolean;
 }
 
-export default function InventoryList({ items, onUpdateStatus, onUpdateDescription, onUpdateItem, onDelete, onGoToAddTab, onAddSample }: InventoryListProps) {
+export default function InventoryList({ 
+  items, 
+  onUpdateStatus, 
+  onUpdateDescription, 
+  onUpdateItem, 
+  onDelete, 
+  onGoToAddTab, 
+  onAddSample,
+  isDataLocked = false 
+}: InventoryListProps) {
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [isSampleAdding, setIsSampleAdding] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -131,7 +141,14 @@ export default function InventoryList({ items, onUpdateStatus, onUpdateDescripti
       </h3>
       
       {items.map((item) => (
-        <div key={item.id} className="bg-[var(--color-bg-surface)] rounded-2xl shadow-sm border border-[var(--color-border)] overflow-hidden transition-all hover:shadow-[var(--shadow-card)]">
+        <div 
+          key={item.id} 
+          className={`bg-[var(--color-bg-surface)] rounded-2xl shadow-sm border ${
+            isDataLocked 
+              ? 'border-red-100 opacity-70' 
+              : 'border-[var(--color-border)] hover:shadow-[var(--shadow-card)]'
+          } overflow-hidden transition-all`}
+        >
           <div className="p-4 sm:p-5">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               
@@ -170,20 +187,29 @@ export default function InventoryList({ items, onUpdateStatus, onUpdateDescripti
                 ) : (
                   <>
                     <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-                      <span className={`text-[10px] font-medium tracking-wider px-2 py-0.5 rounded-full ${STATUS_LABELS[item.status].color}`}>
-                        {STATUS_LABELS[item.status].label}
-                      </span>
-                      {item.box_number && (
-                        <span className="text-[10px] font-medium tracking-wider px-2 py-0.5 rounded-full bg-stone-100 text-[var(--color-text-secondary)] border border-[var(--color-border)] flex items-center">
-                          <Archive size={10} strokeWidth={1.5} className="mr-1" />
-                          箱: {item.box_number}
+                      {isDataLocked ? (
+                        <span className="text-[10px] font-medium tracking-wider px-2 py-0.5 rounded-full bg-[var(--color-danger-bg)] text-[var(--color-danger)] border border-[var(--color-danger)] flex items-center gap-1 shadow-sm font-bold">
+                          <AlertCircle size={10} strokeWidth={2} />
+                          ロック中
                         </span>
-                      )}
-                      {(item.status === 'mercari' || item.status === 'yahoo') && isThreeDaysPassed(item.updated_at || item.created_at) && (
-                        <span className="text-[10px] font-medium tracking-wider px-2 py-0.5 rounded-full bg-[var(--color-warning-bg)] text-[var(--color-warning)] border border-[var(--color-warning)] animate-pulse shadow-sm flex items-center gap-1 opacity-80">
-                          <AlertCircle size={10} strokeWidth={1.5} />
-                          3日経過（スタミナ切れ）
-                        </span>
+                      ) : (
+                        <>
+                          <span className={`text-[10px] font-medium tracking-wider px-2 py-0.5 rounded-full ${STATUS_LABELS[item.status].color}`}>
+                            {STATUS_LABELS[item.status].label}
+                          </span>
+                          {item.box_number && (
+                            <span className="text-[10px] font-medium tracking-wider px-2 py-0.5 rounded-full bg-stone-100 text-[var(--color-text-secondary)] border border-[var(--color-border)] flex items-center">
+                              <Archive size={10} strokeWidth={1.5} className="mr-1" />
+                              箱: {item.box_number}
+                            </span>
+                          )}
+                          {(item.status === 'mercari' || item.status === 'yahoo') && isThreeDaysPassed(item.updated_at || item.created_at) && (
+                            <span className="text-[10px] font-medium tracking-wider px-2 py-0.5 rounded-full bg-[var(--color-warning-bg)] text-[var(--color-warning)] border border-[var(--color-warning)] animate-pulse shadow-sm flex items-center gap-1 opacity-80">
+                              <AlertCircle size={10} strokeWidth={1.5} />
+                              3日経過（スタミナ切れ）
+                            </span>
+                          )}
+                        </>
                       )}
                     </div>
                     <h4 className="font-medium tracking-wide text-[var(--color-text-primary)] text-base">{item.item_name}</h4>
@@ -198,7 +224,17 @@ export default function InventoryList({ items, onUpdateStatus, onUpdateDescripti
 
               {/* アクションボタン */}
               <div className="flex flex-wrap items-center gap-2 self-end sm:self-auto mt-2 sm:mt-0">
-                {editId === item.id ? (
+                {isDataLocked ? (
+                  <button
+                    onClick={() => handleDelete(item.id)}
+                    disabled={loadingId === item.id}
+                    className="text-xs font-bold tracking-widest border border-red-200 text-red-500 hover:bg-red-50 px-4 py-2 rounded-full transition-colors flex items-center gap-1.5 shadow-sm"
+                    title="このアイテムを削除して枠を空ける"
+                  >
+                    <Trash2 className="w-4 h-4" strokeWidth={1.5} />
+                    <span>削除して枠を空ける</span>
+                  </button>
+                ) : editId === item.id ? (
                   <>
                     <button
                       onClick={async () => {
@@ -287,7 +323,7 @@ export default function InventoryList({ items, onUpdateStatus, onUpdateDescripti
           </div>
 
           {/* 拡張エリア (AI文章ストッカー) */}
-          {expandedId === item.id && (
+          {expandedId === item.id && !isDataLocked && (
             <div className="bg-gray-50 p-4 sm:p-5 border-t border-gray-100">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-xs font-medium tracking-[0.2em] text-[var(--color-text-secondary)] flex items-center gap-1.5">
