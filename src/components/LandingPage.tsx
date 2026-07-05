@@ -1,6 +1,6 @@
 'use client'
 
-import { Sparkles, Edit3, ClipboardCopy, ArrowRight, Bot, Truck, LayoutDashboard, BrainCircuit, TrendingUp, Gift, Package } from 'lucide-react'
+import { Sparkles, Edit3, ClipboardCopy, ArrowRight, Bot, Truck, LayoutDashboard, BrainCircuit, TrendingUp, Gift, Package, Check } from 'lucide-react'
 
 interface LandingPageProps {
   onLoginClick: () => void;
@@ -20,13 +20,13 @@ export default function LandingPage({ onLoginClick }: LandingPageProps) {
         </p>
         <button
           onClick={onLoginClick}
-          className="group relative inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-bold text-white bg-orange-800 rounded-full overflow-hidden shadow-md shadow-orange-900/10 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300"
+          className="group relative inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-bold text-white bg-[var(--color-brand)] rounded-full overflow-hidden shadow-md shadow-stone-900/10 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 cursor-pointer"
         >
           <span className="relative z-10 flex items-center gap-2 tracking-wide">
-            完全無料で始める
+            無料で試してみる
             <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
           </span>
-          <div className="absolute inset-0 h-full w-full bg-orange-900 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <div className="absolute inset-0 h-full w-full bg-[var(--color-brand-light)] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
         </button>
       </section>
 
@@ -34,11 +34,11 @@ export default function LandingPage({ onLoginClick }: LandingPageProps) {
       <section className="py-24 bg-white border-y border-stone-200">
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center mb-16">
-            <span className="text-orange-800 font-bold tracking-widest text-xs uppercase bg-orange-50 px-4 py-1.5 rounded-full border border-orange-100">All-in-One</span>
-            <h2 className="text-2xl md:text-4xl font-bold mt-6 text-stone-800">
+            <span className="text-[var(--color-brand)] font-bold tracking-widest text-xs uppercase bg-[var(--color-brand-dim)] px-4 py-1.5 rounded-full border border-[var(--color-brand)]/10">All-in-One</span>
+            <h2 className="text-2xl md:text-4xl font-bold mt-6 text-[var(--color-text-primary)]">
               フリマ出品に必要なすべてを、この1つに。
             </h2>
-            <p className="text-stone-600 mt-4 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-[var(--color-text-secondary)] mt-4 max-w-2xl mx-auto leading-relaxed">
               ただの文章作成ツールではありません。在庫管理から利益最大化の分析まで、あなたのフリマライフを劇的に効率化します。
             </p>
           </div>
@@ -89,9 +89,9 @@ export default function LandingPage({ onLoginClick }: LandingPageProps) {
             </div>
 
             {/* Feature 5 */}
-            <div className="bg-white p-8 rounded-2xl border-2 border-teal-800 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 relative overflow-hidden">
-              <div className="absolute top-0 right-0 bg-teal-800 text-white text-[10px] uppercase tracking-wider font-bold px-3 py-1.5 rounded-bl-xl">Premium</div>
-              <div className="w-12 h-12 bg-teal-50 text-teal-800 border border-teal-100 rounded-xl flex items-center justify-center mb-6 shadow-sm">
+            <div className="bg-[var(--color-bg-surface)] p-8 rounded-2xl border-2 border-[var(--color-brand)] shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 relative overflow-hidden">
+              <div className="absolute top-0 right-0 bg-[var(--color-brand)] text-white text-[10px] uppercase tracking-wider font-bold px-3 py-1.5 rounded-bl-xl">Premium</div>
+              <div className="w-12 h-12 bg-[var(--color-brand-dim)] text-[var(--color-brand)] border border-[var(--color-brand)]/10 rounded-xl flex items-center justify-center mb-6 shadow-sm">
                 <TrendingUp className="w-6 h-6" />
               </div>
               <h3 className="text-xl font-bold text-stone-800 mb-3">売れ筋タイム分析</h3>
@@ -138,7 +138,7 @@ export default function LandingPage({ onLoginClick }: LandingPageProps) {
               </div>
 
               <div className="relative flex flex-col items-center text-center">
-                <div className="w-20 h-20 bg-orange-800 rounded-2xl shadow-md flex items-center justify-center mb-6 z-10 relative">
+                <div className="w-20 h-20 bg-[var(--color-brand)] rounded-2xl shadow-md flex items-center justify-center mb-6 z-10 relative">
                   <Sparkles className="w-8 h-8 text-white" />
                   <div className="absolute -top-2 -right-2 w-7 h-7 bg-stone-800 text-stone-50 rounded-full flex items-center justify-center text-sm font-bold border-2 border-white">2</div>
                 </div>
@@ -159,6 +159,138 @@ export default function LandingPage({ onLoginClick }: LandingPageProps) {
         </div>
       </section>
 
+      {/* Pricing Section */}
+      <section className="py-24 bg-white border-t border-stone-200">
+        <div className="max-w-5xl mx-auto px-4">
+          <div className="text-center mb-16">
+            <span className="text-[var(--color-brand)] font-bold tracking-widest text-xs uppercase bg-[var(--color-brand-dim)] px-4 py-1.5 rounded-full border border-[var(--color-brand)]/10">PRICING</span>
+            <h2 className="text-2xl md:text-4xl font-bold mt-6 text-[var(--color-text-primary)]">
+              シンプルで透明な料金プラン
+            </h2>
+            <p className="text-[var(--color-text-secondary)] mt-4 max-w-2xl mx-auto leading-relaxed">
+              定額の月額課金のみ。追加のトークン課金や隠れた費用は一切ありません。<br />
+              まずは無料プランでツールの使い心地をお試しください。
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch max-w-4xl mx-auto">
+            {/* Free Plan */}
+            <div className="bg-[var(--color-bg-base)]/30 rounded-2xl p-8 border border-[var(--color-border)] shadow-sm flex flex-col justify-between transition-all hover:shadow-md">
+              <div>
+                <h3 className="text-lg font-bold text-[var(--color-text-primary)] mb-2">フリー (Free)</h3>
+                <p className="text-xs text-[var(--color-text-secondary)] mb-6 leading-relaxed">まずは気軽に使い心地を試したい方に</p>
+                <div className="mb-6">
+                  <span className="text-3xl font-extrabold text-[var(--color-text-primary)]">¥0</span>
+                  <span className="text-xs text-[var(--color-text-muted)] ml-1">/ 永続</span>
+                </div>
+                <ul className="space-y-3.5 text-xs text-[var(--color-text-secondary)] mb-8">
+                  <li className="flex items-center gap-2">
+                    <Check size={14} className="text-[var(--color-accent)] shrink-0" strokeWidth={2.5} />
+                    <span>在庫登録上限: <strong>3件</strong></span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check size={14} className="text-[var(--color-accent)] shrink-0" strokeWidth={2.5} />
+                    <span>AI文章生成: 日常利用可能</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check size={14} className="text-[var(--color-accent)] shrink-0" strokeWidth={2.5} />
+                    <span>最安送料判定 ＆ 利益計算</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check size={14} className="text-[var(--color-accent)] shrink-0" strokeWidth={2.5} />
+                    <span>マイルール記憶機能</span>
+                  </li>
+                </ul>
+              </div>
+              <button
+                onClick={onLoginClick}
+                className="w-full py-3 px-4 rounded-xl border border-[var(--color-border)] text-[var(--color-text-primary)] font-bold text-xs tracking-widest hover:bg-[var(--color-bg-base)] transition-colors cursor-pointer"
+              >
+                無料で始める
+              </button>
+            </div>
+
+            {/* Standard Plan */}
+            <div className="bg-[var(--color-bg-surface)] rounded-2xl p-8 border border-[var(--color-accent)]/30 shadow-sm flex flex-col justify-between transition-all hover:shadow-md relative">
+              <div className="absolute top-0 right-6 -translate-y-1/2 bg-[var(--color-accent)] text-white text-[9px] font-bold tracking-widest px-3 py-1 rounded-full uppercase shadow-sm">
+                Standard
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-[var(--color-text-primary)] mb-2">スタンダード</h3>
+                <p className="text-xs text-[var(--color-text-secondary)] mb-6 leading-relaxed">一般の出品者・整理整頓を進めたい方に</p>
+                <div className="mb-6">
+                  <span className="text-3xl font-extrabold text-[var(--color-text-primary)]">¥500</span>
+                  <span className="text-xs text-[var(--color-text-muted)] ml-1">/ 月 (税込)</span>
+                </div>
+                <ul className="space-y-3.5 text-xs text-[var(--color-text-secondary)] mb-8">
+                  <li className="flex items-center gap-2">
+                    <Check size={14} className="text-[var(--color-accent)] shrink-0" strokeWidth={2.5} />
+                    <span>在庫登録上限: <strong>100件</strong></span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check size={14} className="text-[var(--color-accent)] shrink-0" strokeWidth={2.5} />
+                    <span>1日のAI生成回数: <strong>15回</strong></span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check size={14} className="text-[var(--color-accent)] shrink-0" strokeWidth={2.5} />
+                    <span>入力文字数上限: <strong>1,500文字</strong></span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check size={14} className="text-[var(--color-accent)] shrink-0" strokeWidth={2.5} />
+                    <span>文章末尾のコピーライト非表示</span>
+                  </li>
+                </ul>
+              </div>
+              <button
+                onClick={onLoginClick}
+                className="w-full py-3 px-4 rounded-xl bg-[var(--color-accent)] text-white font-bold text-xs tracking-widest hover:opacity-90 transition-opacity cursor-pointer shadow-sm shadow-[var(--color-accent)]/10"
+              >
+                スタンダードを選択
+              </button>
+            </div>
+
+            {/* Premium Plan */}
+            <div className="bg-[var(--color-bg-surface)] rounded-2xl p-8 border-2 border-[var(--color-brand)] shadow-sm flex flex-col justify-between transition-all hover:shadow-md relative">
+              <div className="absolute top-0 right-6 -translate-y-1/2 bg-[var(--color-brand)] text-white text-[9px] font-bold tracking-widest px-3 py-1 rounded-full uppercase shadow-sm">
+                イチオシ
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-[var(--color-text-primary)] mb-2">プレミアム</h3>
+                <p className="text-xs text-[var(--color-text-secondary)] mb-6 leading-relaxed">販売を本格化・利益を最大化させたい方に</p>
+                <div className="mb-6">
+                  <span className="text-3xl font-extrabold text-[var(--color-text-primary)]">¥1,000</span>
+                  <span className="text-xs text-[var(--color-text-muted)] ml-1">/ 月 (税込)</span>
+                </div>
+                <ul className="space-y-3.5 text-xs text-[var(--color-text-secondary)] mb-8">
+                  <li className="flex items-center gap-2">
+                    <Check size={14} className="text-[var(--color-brand)] shrink-0" strokeWidth={2.5} />
+                    <span>在庫登録上限: <strong>500件</strong></span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check size={14} className="text-[var(--color-brand)] shrink-0" strokeWidth={2.5} />
+                    <span>1日のAI生成回数: <strong>50回</strong></span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check size={14} className="text-[var(--color-brand)] shrink-0" strokeWidth={2.5} />
+                    <span>すべてのAI高度診断機能</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check size={14} className="text-[var(--color-brand)] shrink-0" strokeWidth={2.5} />
+                    <span>プレミアム限定カスタム署名</span>
+                  </li>
+                </ul>
+              </div>
+              <button
+                onClick={onLoginClick}
+                className="w-full py-3 px-4 rounded-xl bg-[var(--color-brand)] text-white font-bold text-xs tracking-widest hover:bg-[var(--color-brand-light)] transition-colors cursor-pointer shadow-sm shadow-[var(--color-brand)]/10"
+              >
+                プレミアムを選択
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Bottom CTA Section */}
       <section className="py-20 bg-stone-100 border-t border-stone-200">
         <div className="max-w-4xl mx-auto px-4 text-center">
@@ -166,13 +298,13 @@ export default function LandingPage({ onLoginClick }: LandingPageProps) {
             さあ、フリマ出品をハックしよう。
           </h2>
           <p className="text-stone-600 mb-10">
-            初期費用も月額料金も不要。Googleアカウントなどですぐに始められます。
+            無料プランから気軽にお試し可能。いつでもプラン切り替え・解約が可能です。
           </p>
           <button
             onClick={onLoginClick}
-            className="inline-flex items-center justify-center gap-2 px-10 py-4 text-base font-bold text-white bg-stone-800 rounded-full shadow-md hover:bg-stone-900 hover:-translate-y-0.5 transition-all duration-300"
+            className="inline-flex items-center justify-center gap-2 px-10 py-4 text-base font-bold text-white bg-[var(--color-brand)] rounded-full shadow-md hover:bg-[var(--color-brand-light)] hover:-translate-y-0.5 transition-all duration-300 cursor-pointer"
           >
-            完全無料で始める
+            無料で試してみる
             <ArrowRight className="w-5 h-5" />
           </button>
         </div>
