@@ -22,7 +22,7 @@ import NativeAdCard from '@/components/NativeAdCard'
 import PremiumInsightPanel from '@/components/PremiumInsightPanel'
 import { AFFILIATE_ADS } from '@/lib/affiliateData'
 import BottomNav, { TabType } from '@/components/BottomNav'
-import { Archive, Crown, Download, RefreshCw, Sparkles, AlertCircle } from 'lucide-react'
+import { Archive, Crown, Download, RefreshCw, Sparkles, AlertCircle, Palette } from 'lucide-react'
 import { seoCategories } from '@/data/seoCategories'
 
 export default function Home() {
@@ -172,6 +172,34 @@ export default function Home() {
     fetchUserStatus();
     fetchRoadmapProgress();
   }, [fetchUserStatus, fetchRoadmapProgress]);
+
+  const [currentTheme, setCurrentTheme] = useState<'kinfolk' | 'sunset' | 'stone' | 'linen'>('kinfolk');
+
+  useEffect(() => {
+    const updateThemeState = () => {
+      const storedTheme = localStorage.getItem('theme') as any;
+      if (storedTheme) {
+        setCurrentTheme(storedTheme);
+      } else {
+        setCurrentTheme('kinfolk');
+      }
+    };
+    
+    updateThemeState();
+    window.addEventListener('themechange', updateThemeState);
+    return () => window.removeEventListener('themechange', updateThemeState);
+  }, []);
+
+  const handleSelectTheme = (newTheme: 'kinfolk' | 'sunset' | 'stone' | 'linen') => {
+    setCurrentTheme(newTheme);
+    localStorage.setItem('theme', newTheme);
+    if (newTheme === 'kinfolk') {
+      document.documentElement.removeAttribute('data-theme');
+    } else {
+      document.documentElement.setAttribute('data-theme', newTheme);
+    }
+    window.dispatchEvent(new Event('themechange'));
+  };
 
   const [isAIAnalyzing, setIsAIAnalyzing] = useState(false);
 
@@ -582,7 +610,92 @@ export default function Home() {
                   onLoginClick={() => {}}
                   onOpenShareModal={() => setShowShareModal(true)}
                 />
-                
+
+                {/* カラーテーマ設定カード */}
+                <div className="bg-[var(--color-bg-surface)] p-6 rounded-2xl border border-[var(--color-border)] shadow-sm animate-fade-in-up">
+                  <h3 className="font-bold text-[var(--color-text-primary)] mb-2 flex items-center gap-1.5 tracking-wider text-sm">
+                    <Palette size={16} className="text-[var(--color-brand)] shrink-0" strokeWidth={2} />
+                    <span>カラーテーマ設定</span>
+                  </h3>
+                  <p className="text-xs text-[var(--color-text-secondary)] mb-6 leading-relaxed">
+                    アプリ全体のビジュアルスタイルを変更できます。その日の気分や環境に合わせてお選びください。
+                  </p>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    {/* Kinfolk */}
+                    <button
+                      onClick={() => handleSelectTheme('kinfolk')}
+                      className={`p-3.5 rounded-xl border-2 flex flex-col items-center text-center gap-2.5 transition-all cursor-pointer ${
+                        currentTheme === 'kinfolk' 
+                          ? 'border-[var(--color-brand)] bg-[var(--color-brand-dim)]' 
+                          : 'border-[var(--color-border)] bg-[var(--color-bg-base)]/20 hover:bg-[var(--color-bg-base)]/50'
+                      }`}
+                    >
+                      <div className="flex gap-1 justify-center">
+                        <span className="w-4 h-4 rounded-full border border-stone-200" style={{ backgroundColor: '#F5F2EB' }} />
+                        <span className="w-4 h-4 rounded-full border border-stone-200" style={{ backgroundColor: '#A65D47' }} />
+                        <span className="w-4 h-4 rounded-full border border-stone-200" style={{ backgroundColor: '#7A8B76' }} />
+                      </div>
+                      <div className="text-xs font-bold text-[var(--color-text-primary)]">Kinfolk</div>
+                      <div className="text-[10px] text-[var(--color-text-secondary)]">オーガニック</div>
+                    </button>
+
+                    {/* Sunset */}
+                    <button
+                      onClick={() => handleSelectTheme('sunset')}
+                      className={`p-3.5 rounded-xl border-2 flex flex-col items-center text-center gap-2.5 transition-all cursor-pointer ${
+                        currentTheme === 'sunset' 
+                          ? 'border-[var(--color-brand)] bg-[var(--color-brand-dim)]' 
+                          : 'border-[var(--color-border)] bg-[var(--color-bg-base)]/20 hover:bg-[var(--color-bg-base)]/50'
+                      }`}
+                    >
+                      <div className="flex gap-1 justify-center">
+                        <span className="w-4 h-4 rounded-full border border-stone-200" style={{ backgroundColor: '#FFF7F2' }} />
+                        <span className="w-4 h-4 rounded-full border border-stone-200" style={{ backgroundColor: '#FF7A59' }} />
+                        <span className="w-4 h-4 rounded-full border border-stone-200" style={{ backgroundColor: '#2D8CFF' }} />
+                      </div>
+                      <div className="text-xs font-bold text-[var(--color-text-primary)]">Sunset</div>
+                      <div className="text-[10px] text-[var(--color-text-secondary)]">サンセット</div>
+                    </button>
+
+                    {/* Stone & Espresso */}
+                    <button
+                      onClick={() => handleSelectTheme('stone')}
+                      className={`p-3.5 rounded-xl border-2 flex flex-col items-center text-center gap-2.5 transition-all cursor-pointer ${
+                        currentTheme === 'stone' 
+                          ? 'border-[var(--color-brand)] bg-[var(--color-brand-dim)]' 
+                          : 'border-[var(--color-border)] bg-[var(--color-bg-base)]/20 hover:bg-[var(--color-bg-base)]/50'
+                      }`}
+                    >
+                      <div className="flex gap-1 justify-center">
+                        <span className="w-4 h-4 rounded-full border border-stone-200" style={{ backgroundColor: '#EAE6E1' }} />
+                        <span className="w-4 h-4 rounded-full border border-stone-200" style={{ backgroundColor: '#3E2723' }} />
+                        <span className="w-4 h-4 rounded-full border border-stone-200" style={{ backgroundColor: '#7A8B76' }} />
+                      </div>
+                      <div className="text-xs font-bold text-[var(--color-text-primary)]">Stone</div>
+                      <div className="text-[10px] text-[var(--color-text-secondary)]">モダンカフェ</div>
+                    </button>
+
+                    {/* Linen & Slate */}
+                    <button
+                      onClick={() => handleSelectTheme('linen')}
+                      className={`p-3.5 rounded-xl border-2 flex flex-col items-center text-center gap-2.5 transition-all cursor-pointer ${
+                        currentTheme === 'linen' 
+                          ? 'border-[var(--color-brand)] bg-[var(--color-brand-dim)]' 
+                          : 'border-[var(--color-border)] bg-[var(--color-bg-base)]/20 hover:bg-[var(--color-bg-base)]/50'
+                      }`}
+                    >
+                      <div className="flex gap-1 justify-center">
+                        <span className="w-4 h-4 rounded-full border border-stone-200" style={{ backgroundColor: '#F9F8F6' }} />
+                        <span className="w-4 h-4 rounded-full border border-stone-200" style={{ backgroundColor: '#5C6B73' }} />
+                        <span className="w-4 h-4 rounded-full border border-stone-200" style={{ backgroundColor: '#9CA894' }} />
+                      </div>
+                      <div className="text-xs font-bold text-[var(--color-text-primary)]">Linen</div>
+                      <div className="text-[10px] text-[var(--color-text-secondary)]">北欧スロー</div>
+                    </button>
+                  </div>
+                </div>
+
                 <div className="mt-4">
                   <RoadmapGauge progress={roadmapProgress} />
                 </div>

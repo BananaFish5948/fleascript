@@ -53,6 +53,58 @@
   --shadow-card:          0 10px 40px rgba(0, 0, 0, 0.06);
 }
 
+[data-theme="stone"] {
+  /* Stone & Espresso: グレージュと焦げ茶を基調とした、落ち着いたモダンカフェ風トーン */
+  --color-bg-base:        #EAE6E1;   /* グレージュ */
+  --color-bg-surface:     #ffffff;
+  --color-bg-elevated:    #ffffff;
+  --color-brand:          #3E2723;   /* エスプレッソ・焦げ茶 */
+  --color-brand-light:    #5D4037;   /* ホバー時 */
+  --color-brand-dim:      rgba(62, 39, 35, 0.08);
+  --color-accent:         #7A8B76;   /* セージグリーン */
+  --color-text-primary:   #1C1B1A;   /* オフブラック */
+  --color-text-secondary: #5D5750;
+  --color-text-muted:     #8E867E;
+  --color-border:         #DCD7CE;
+  --color-border-focus:   rgba(62, 39, 35, 0.4);
+  --color-success:        #73795C;   /* オリーブ */
+  --color-success-bg:     #ECEFEA;
+  --color-warning:        #A05E4C;   /* ラスト・サビ色 */
+  --color-warning-bg:     #FAF1EE;
+  --color-danger:         #BA8A85;   /* ダスティモーブ */
+  --color-danger-bg:      #F8F3F2;
+  --color-info:           #5C6B73;   /* スレートブルー */
+  --color-info-bg:        #F0F2F3;
+  --shadow-glow:          0 0 15px rgba(62, 39, 35, 0.15);
+  --shadow-card:          0 8px 30px rgba(28, 27, 26, 0.04);
+}
+
+[data-theme="linen"] {
+  /* Linen & Slate: 北欧風のクリーンで涼しげなスローライフ風トーン */
+  --color-bg-base:        #F9F8F6;   /* リネンホワイト */
+  --color-bg-surface:     #ffffff;
+  --color-bg-elevated:    #ffffff;
+  --color-brand:          #5C6B73;   /* スレートブルー */
+  --color-brand-light:    #708090;   /* ホバー時 */
+  --color-brand-dim:      rgba(92, 107, 115, 0.08);
+  --color-accent:         #9CA894;   /* 抹茶グリーン */
+  --color-text-primary:   #253237;   /* ディープスレート */
+  --color-text-secondary: #52636C;
+  --color-text-muted:     #8BA3A9;
+  --color-border:         #E5E6E4;
+  --color-border-focus:   rgba(92, 107, 115, 0.4);
+  --color-success:        #9CA894;   /* 抹茶グリーン */
+  --color-success-bg:     #EFF1EE;
+  --color-warning:        #B27C7C;   /* ダスティローズ */
+  --color-warning-bg:     #FAF0F0;
+  --color-danger:         #B27C7C;
+  --color-danger-bg:      #FAF0F0;
+  --color-info:           #8B9B9E;
+  --color-info-bg:        #F2F4F5;
+  --shadow-glow:          0 0 15px rgba(92, 107, 115, 0.15);
+  --shadow-card:          0 8px 30px rgba(37, 50, 55, 0.04);
+}
+
 /* ===== Tailwind テーママッピング ===== */
 @theme inline {
   --color-bg-base:        var(--color-bg-base);

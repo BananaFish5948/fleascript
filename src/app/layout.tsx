@@ -49,8 +49,8 @@ export default function RootLayout({
             __html: `
               try {
                 const storedTheme = localStorage.getItem('theme');
-                if (storedTheme === 'sunset') {
-                  document.documentElement.setAttribute('data-theme', 'sunset');
+                if (storedTheme && storedTheme !== 'kinfolk') {
+                  document.documentElement.setAttribute('data-theme', storedTheme);
                 }
               } catch (e) {}
             `,
