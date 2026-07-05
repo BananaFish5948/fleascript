@@ -1,7 +1,6 @@
 import { ImageResponse } from 'next/og'
 import { NextRequest } from 'next/server'
 import fs from 'fs'
-import path from 'path'
 
 export const runtime = 'nodejs'
 
@@ -23,6 +22,7 @@ const COLORS = {
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const slide = searchParams.get('slide') || '1'
+  const platform = searchParams.get('platform') || 'x'
 
   // Windowsのローカルフォント (游明朝: yumin.ttf) を直接読み込む
   let fontData: ArrayBuffer | null = null
@@ -51,11 +51,28 @@ export async function GET(req: NextRequest) {
   const borderOuterColor = 'rgba(45, 41, 38, 0.08)'
 
   // スライド別のJSXレンダリング
-  let content = null
+  const isInsta = platform === 'instagram'
+  const content = isInsta 
+    ? renderInstagramSlide(slide, borderOuterColor)
+    : renderXSlide(slide, borderOuterColor)
 
+  const width = 1080
+  const height = isInsta ? 1350 : 1080
+
+  // 指定の解像度でPNGとしてレンダリングして返却
+  return new ImageResponse(content, {
+    width,
+    height,
+    fonts: fontOptions
+  })
+}
+
+// ----------------------------------------------------
+// X / Twitter用スライド (1080x1080)
+// ----------------------------------------------------
+function renderXSlide(slide: string, borderOuterColor: string) {
   if (slide === '1') {
-    // 1枚目：ファーストビュー
-    content = (
+    return (
       <div
         style={{
           width: '100%',
@@ -103,8 +120,7 @@ export async function GET(req: NextRequest) {
       </div>
     )
   } else if (slide === '2') {
-    // 2枚目：機会損失の可視化
-    content = (
+    return (
       <div
         style={{
           width: '100%',
@@ -182,8 +198,7 @@ export async function GET(req: NextRequest) {
       </div>
     )
   } else if (slide === '3') {
-    // 3枚目：解決策のドロップ
-    content = (
+    return (
       <div
         style={{
           width: '100%',
@@ -237,8 +252,7 @@ export async function GET(req: NextRequest) {
       </div>
     )
   } else {
-    // 4枚目：コンバージョン
-    content = (
+    return (
       <div
         style={{
           width: '100%',
@@ -283,11 +297,200 @@ export async function GET(req: NextRequest) {
       </div>
     )
   }
+}
 
-  // 1080x1080 の解像度でPNGとしてレンダリングして返却
-  return new ImageResponse(content, {
-    width: 1080,
-    height: 1080,
-    fonts: fontOptions
-  })
+// ----------------------------------------------------
+// Instagram用縦長広告スライド (1080x1350)
+// ----------------------------------------------------
+function renderInstagramSlide(slide: string, borderOuterColor: string) {
+  if (slide === '1') {
+    return (
+      <div
+        style={{
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          backgroundColor: COLORS.bgBase,
+          padding: '100px 80px',
+          boxSizing: 'border-box',
+          border: `1px solid ${borderOuterColor}`,
+          position: 'relative',
+        }}
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', marginTop: '160px' }}>
+          <span style={{ color: COLORS.accent, fontSize: '24px', fontWeight: 600, letterSpacing: '4px', marginBottom: '40px' }}>
+            // Slow Living
+          </span>
+          <h2 style={{ fontSize: '64px', fontWeight: 300, color: COLORS.textPrimary, lineHeight: 1.4, margin: 0, letterSpacing: '2px', display: 'flex', flexDirection: 'column' }}>
+            <span>出品のあわただしさ、</span>
+            <span>手放そう。</span>
+          </h2>
+          <p style={{ fontSize: '28px', color: COLORS.textSecondary, marginTop: '60px', lineHeight: 1.6, maxWidth: '800px' }}>
+            商品説明作成や配送手段の調査に奪われる時間に、静かな「余白」を。
+          </p>
+        </div>
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{ fontSize: '18px', fontFamily: 'monospace', color: COLORS.textSecondary, letterSpacing: '4px' }}>
+            FleaScript
+          </span>
+          <span style={{ fontSize: '18px', fontFamily: 'monospace', color: COLORS.textSecondary }}>
+            1 / 4
+          </span>
+        </div>
+      </div>
+    )
+  } else if (slide === '2') {
+    return (
+      <div
+        style={{
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          backgroundColor: COLORS.bgBase,
+          padding: '100px 80px',
+          boxSizing: 'border-box',
+          border: `1px solid ${borderOuterColor}`,
+        }}
+      >
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <span style={{ color: COLORS.brand, fontSize: '24px', fontWeight: 600, letterSpacing: '4px', marginBottom: '20px' }}>
+            // The Comparison
+          </span>
+          <h3 style={{ fontSize: '48px', fontWeight: 600, color: COLORS.textPrimary, margin: 0, lineHeight: 1.3 }}>
+            迷う時間を、1秒のスマートさに変える。
+          </h3>
+        </div>
+
+        {/* 比較グラフィックス（縦並び配置で縦長画面を活用） */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', margin: '40px 0', gap: '30px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', backgroundColor: COLORS.bgSurface, padding: '30px 40px', borderRadius: '24px', border: `1px solid ${COLORS.border}`, width: '450px', alignItems: 'center', justifyContent: 'center' }}>
+            <span style={{ fontSize: '14px', textTransform: 'uppercase', letterSpacing: '2px', color: COLORS.textSecondary }}>Manual Time</span>
+            <span style={{ fontSize: '48px', fontWeight: 200, color: COLORS.textSecondary, textDecoration: 'line-through', margin: '10px 0' }}>15 min</span>
+            <span style={{ fontSize: '16px', color: COLORS.textSecondary }}>悩む・調べる・書く</span>
+          </div>
+
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M12 4V20M12 20L6 14M12 20L18 14" stroke={COLORS.textSecondary} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+
+          <div style={{ display: 'flex', flexDirection: 'column', backgroundColor: COLORS.successBg, padding: '35px 40px', borderRadius: '24px', border: `1px solid rgba(91, 110, 83, 0.2)`, width: '450px', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+            <div style={{ position: 'absolute', top: 0, right: 0, backgroundColor: COLORS.success, color: '#ffffff', fontSize: '14px', padding: '8px 16px', borderBottomLeftRadius: '24px' }}>Active</div>
+            <span style={{ fontSize: '14px', textTransform: 'uppercase', letterSpacing: '2px', color: COLORS.success, fontWeight: 600 }}>FleaScript</span>
+            <span style={{ fontSize: '56px', fontWeight: 800, color: COLORS.success, margin: '10px 0' }}>1 sec</span>
+            <span style={{ fontSize: '16px', color: COLORS.success, fontWeight: 600 }}>自動最適化＆調律</span>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{ fontSize: '18px', fontFamily: 'monospace', color: COLORS.textSecondary, letterSpacing: '4px' }}>
+            Optimized Life
+          </span>
+          <span style={{ fontSize: '18px', fontFamily: 'monospace', color: COLORS.textSecondary }}>
+            2 / 4
+          </span>
+        </div>
+      </div>
+    )
+  } else if (slide === '3') {
+    return (
+      <div
+        style={{
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          backgroundColor: COLORS.bgBase,
+          padding: '100px 80px',
+          boxSizing: 'border-box',
+          border: `1px solid ${borderOuterColor}`,
+        }}
+      >
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <span style={{ color: COLORS.accent, fontSize: '24px', fontWeight: 600, letterSpacing: '4px', marginBottom: '20px' }}>
+            // Mindful Moments
+          </span>
+          <h3 style={{ fontSize: '48px', fontWeight: 600, color: COLORS.textPrimary, margin: 0, lineHeight: 1.3 }}>
+            生まれた時間は、あなたを豊かにする余白へ。
+          </h3>
+        </div>
+
+        {/* 抽象的なオーガニックデザイン (SVG) */}
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', height: '400px', margin: '20px 0' }}>
+          <svg width="320" height="320" viewBox="0 0 200 200">
+            {/* セージグリーンの大きな有機的な円 */}
+            <circle cx="90" cy="100" r="70" fill={COLORS.successBg} opacity="0.8" />
+            {/* テラコッタの小さな円が重なる */}
+            <circle cx="130" cy="80" r="45" fill="rgba(166, 93, 71, 0.15)" />
+            {/* 心地よい波線（ゆらぎ・スローライフ） */}
+            <path d="M 30 110 Q 60 90 90 110 T 150 110" fill="none" stroke={COLORS.brand} strokeWidth="2.5" strokeLinecap="round" />
+            <circle cx="150" cy="110" r="4" fill={COLORS.brand} />
+          </svg>
+        </div>
+
+        <p style={{ fontSize: '26px', color: COLORS.textSecondary, textAlign: 'center', lineHeight: 1.6, margin: '0 auto 40px auto', maxWidth: '850px' }}>
+          回収した「余白の時間」で、お気に入りの本を読んだり、淹れたての珈琲を味わったり。忙しい毎日に、ひと呼吸を。
+        </p>
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{ fontSize: '18px', fontFamily: 'monospace', color: COLORS.textSecondary, letterSpacing: '4px' }}>
+            Yohaku
+          </span>
+          <span style={{ fontSize: '18px', fontFamily: 'monospace', color: COLORS.textSecondary }}>
+            3 / 4
+          </span>
+        </div>
+      </div>
+    )
+  } else {
+    return (
+      <div
+        style={{
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          backgroundColor: COLORS.bgBase,
+          padding: '100px 80px',
+          boxSizing: 'border-box',
+          border: `1px solid ${borderOuterColor}`,
+        }}
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, marginTop: '80px' }}>
+          <div style={{ width: '130px', height: '130px', borderRadius: '36px', backgroundColor: COLORS.brand, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff', fontSize: '72px', fontWeight: 800, boxShadow: '0 8px 30px rgba(166, 93, 71, 0.2)' }}>
+            FS
+          </div>
+          <h3 style={{ fontSize: '56px', fontWeight: 800, color: COLORS.textPrimary, margin: '30px 0 0 0' }}>
+            FleaScript
+          </h3>
+          <p style={{ fontSize: '22px', color: COLORS.textSecondary, letterSpacing: '6px', textTransform: 'uppercase', margin: '10px 0 60px 0' }}>
+            フリマ商品説明ジェネレーター
+          </p>
+          
+          <div style={{ padding: '18px 48px', border: `1px solid ${COLORS.brand}`, backgroundColor: 'rgba(166, 93, 71, 0.05)', borderRadius: '100px', fontSize: '22px', fontWeight: 600, color: COLORS.brand, letterSpacing: '4px', marginBottom: '60px' }}>
+            事前登録受付中
+          </div>
+
+          <p style={{ fontSize: '24px', color: COLORS.textSecondary, textAlign: 'center', lineHeight: 1.6, maxWidth: '750px' }}>
+            プロフィールのリンクから、最優先で「余白」を手に入れましょう。
+          </p>
+        </div>
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{ fontSize: '18px', fontFamily: 'monospace', color: COLORS.textSecondary, letterSpacing: '4px' }}>
+            Get Started
+          </span>
+          <span style={{ fontSize: '18px', fontFamily: 'monospace', color: COLORS.textSecondary }}>
+            4 / 4
+          </span>
+        </div>
+      </div>
+    )
+  }
 }
