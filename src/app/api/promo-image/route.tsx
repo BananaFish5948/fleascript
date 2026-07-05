@@ -274,7 +274,7 @@ function renderXSlide(slide: string, borderOuterColor: string) {
             FleaScript
           </h3>
           <p style={{ fontSize: '20px', color: COLORS.textSecondary, letterSpacing: '6px', textTransform: 'uppercase', margin: '8px 0 40px 0' }}>
-            フリマ商品説明ジェネレーター
+            フリマ出品調律ツール
           </p>
           
           <div style={{ padding: '16px 40px', border: `1px solid ${COLORS.brand}`, backgroundColor: 'rgba(166, 93, 71, 0.05)', borderRadius: '100px', fontSize: '20px', fontWeight: 600, color: COLORS.brand, letterSpacing: '4px' }}>
@@ -470,7 +470,7 @@ function renderInstagramSlide(slide: string, borderOuterColor: string) {
             FleaScript
           </h3>
           <p style={{ fontSize: '22px', color: COLORS.textSecondary, letterSpacing: '6px', textTransform: 'uppercase', margin: '10px 0 60px 0' }}>
-            フリマ商品説明ジェネレーター
+            フリマ出品調律ツール
           </p>
           
           <div style={{ padding: '18px 48px', border: `1px solid ${COLORS.brand}`, backgroundColor: 'rgba(166, 93, 71, 0.05)', borderRadius: '100px', fontSize: '22px', fontWeight: 600, color: COLORS.brand, letterSpacing: '4px', marginBottom: '60px' }}>

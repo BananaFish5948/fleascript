@@ -222,7 +222,7 @@ export default function XCarouselMock() {
                 FleaScript
               </h3>
               <p className="text-xs text-[var(--color-text-secondary)] mt-1.5 tracking-widest uppercase">
-                フリマ商品説明ジェネレーター
+                フリマ出品調律ツール
               </p>
               
               <div className="mt-6 px-6 py-2 border border-[var(--color-brand)]/20 bg-[var(--color-brand-dim)] rounded-full text-xs font-semibold text-[var(--color-brand)] tracking-widest">
