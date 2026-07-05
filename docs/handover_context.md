@@ -98,6 +98,13 @@
     - If a feature request asks to "sort categories by popularity" or "reorder items," DO NOT rely on rearranging the object properties. You MUST refactor the data structure to an array `Type[]` or add an explicit `order` property for safe, deterministic sorting.
     - **UIデザインシステム・CSSカラー変数の絶対死守ルール (重要)**: FleaScriptのデザインコンセプト（オーガニック・スローライフ/Kinfolk風）を守るため、Tailwindのデフォルトカラー（`bg-amber-100` や `text-purple-600` など）を直接ハードコードすることは原則禁止です。必ず `globals.css` に定義されテーママッピングされているCSS変数（`var(--color-brand)` [テラコッタ], `var(--color-accent)` [セージ] 等）を使用してください。これはテーマエンジン（sunsetテーマ等への切り替え）が正しく稼働するための絶対前提です。
     - **Premium AI分析キャッシュと24時間制限**: プレミアムのAI分析機能（`POST /api/premium/analytics`）は、マスターのOpenAIトークン浪費を防ぐため、結果を `users.preferences.ai_insights` にキャッシュし、前回実行日時 `last_ai_analysis_at` から24時間以内の二重実行を制限（`429` エラーを返却）するガードレールを設けています。
+21. **Satori (next/og) 画像合成API開発における極めて重大な仕様制限 (Gotchas)**:
+    - **日本語の隔離と対話品質（最重要）**: 開発中、思考プロセスや結果報告に生のエラーログや英語をそのまま流すのは厳禁。必ず綺麗な日本語に翻訳・クレンジングした上でマスターと対話し、許可を得てからコマンドや修正を行うこと。
+    - **SVG `<text>` の完全非サポート**: SatoriはSVGの `<text>` タグをサポートしておらずクラッシュ（TypeError）します。テキストはすべてHTML（`div` / `span`）を用いて `position: absolute` で上に重ね合わせて配置すること。
+    - **直接属性の禁止**: `fontSize` や `fontWeight` 等をタグ属性として直接指定するとパースエラーになるため、必ず `style={{ fontSize: '18px', fontWeight: 'bold' }}` のようにインライン `style` に記述すること。
+    - **テキスト内 `<span>` の重なりバグ**: `<p>` や `<div>` の中に `<span>` をネストして部分的な装飾（カラー変更や太字化）を行うと、Satori内部の幅計算バグで文字がグチャグチャに重なります。必ずプレーンなテキストにするか、Flexboxで明示的に並べること。
+    - **フォント読み込み形式制限**: 可変フォント（VF）や TTC コレクション形式は描画エンジンをクラッシュさせます。ローカルフォントを使用する際は、Windows標準の `yumin.ttf`（游明朝の単一TTF）などを `fs.readFileSync` で直接 `ArrayBuffer` に読み込ませて使用すること。
+
 ## Next Potential Steps
 - [x] Phase 3: Auth Integration, UI Refinement, Share Bonus & Roadmap Gauge.
 - [x] Landing Page (LP) Implementation using Switcher pattern (`src/app/page.tsx`).
