@@ -1,7 +1,7 @@
 # FleaScript Handover Context (For AI Agents)
 
 ## System Status
-- **Phase**: Phase 4.2 Completed (AI Personalization, Best-Selling Time Analytics & Referral Code). Ready for Marketing/Promotion & Deployment.
+- **Phase**: Premium Analytics & Advanced AI Insights Completed. UI Color Theme Guardrails & Pricing Transparency added. Ready for Marketing/Promotion & Deployment.
 - **Framework**: Next.js 16.2.10 (App Router), Tailwind CSS v4, TypeScript.
 - **Design System**: "Aesthetic / Kinfolk" design (Terracotta & Sage with Earth Tones) replacing the old app-like design. Emojis replaced with Lucide icons for a refined, premium feel.
 - **External Services**: Supabase (Database & Auth), OpenAI (`gpt-4o-mini`).
@@ -96,6 +96,8 @@
 19. **Object Iteration Order (Frontend Rendering Gotcha)**:
     - Data constants like `seoCategories` are defined as `Record<string, Type>`. When rendering these in the UI (e.g., via `Object.values()`), the display order relies entirely on the JavaScript engine's default insertion order (ES2015+ spec for non-numeric string keys).
     - If a feature request asks to "sort categories by popularity" or "reorder items," DO NOT rely on rearranging the object properties. You MUST refactor the data structure to an array `Type[]` or add an explicit `order` property for safe, deterministic sorting.
+    - **UIデザインシステム・CSSカラー変数の絶対死守ルール (重要)**: FleaScriptのデザインコンセプト（オーガニック・スローライフ/Kinfolk風）を守るため、Tailwindのデフォルトカラー（`bg-amber-100` や `text-purple-600` など）を直接ハードコードすることは原則禁止です。必ず `globals.css` に定義されテーママッピングされているCSS変数（`var(--color-brand)` [テラコッタ], `var(--color-accent)` [セージ] 等）を使用してください。これはテーマエンジン（sunsetテーマ等への切り替え）が正しく稼働するための絶対前提です。
+    - **Premium AI分析キャッシュと24時間制限**: プレミアムのAI分析機能（`POST /api/premium/analytics`）は、マスターのOpenAIトークン浪費を防ぐため、結果を `users.preferences.ai_insights` にキャッシュし、前回実行日時 `last_ai_analysis_at` から24時間以内の二重実行を制限（`429` エラーを返却）するガードレールを設けています。
 ## Next Potential Steps
 - [x] Phase 3: Auth Integration, UI Refinement, Share Bonus & Roadmap Gauge.
 - [x] Landing Page (LP) Implementation using Switcher pattern (`src/app/page.tsx`).
@@ -123,9 +125,9 @@
 - [ ] **Phase 4.5**: Affiliate Monetization (Amazon Associates & Native Ads).
 - [ ] Production Deployment (Vercel) & Custom Domain setup.
 - [ ] Real Stripe Integration (Replace Mock).
-- [ ] **Future UI Improvement**: Inline Edit Profit Simulator. (Currently, the inline edit mode in `InventoryList.tsx` provides a minimal editing experience. If requested, port the real-time profit calculation logic from `InventoryForm.tsx` into the inline edit form to allow users to adjust prices while watching the profit change in real-time.)
+- [x] **Future UI Improvement**: Inline Edit Profit Simulator. (Ported real-time profit/fee calculation logic from `InventoryForm.tsx` into the inline edit form to allow live adjustments.)
 - [ ] **Future Feature**: Theme Customization (To satisfy users' desire for self-expression, implement a feature to switch themes. See below for proposed themes).
-- [ ] **Future Feature**: PremiumInsightPanel Advanced Analytics (Upgrade the current frontend-only mockup logic of `PremiumInsightPanel` to a backend OpenAI-driven algorithm. By analyzing past sales data to deduce the *actual* best-selling times, this insight panel will become a powerful driver for premium subscription retention.)
+- [x] **Future Feature**: PremiumInsightPanel Advanced Analytics (Upgraded mock logic of `PremiumInsightPanel` to a backend OpenAI gpt-4o-mini driven algorithm with 24h caching in `users.preferences`.)
 - [ ] **Future Feature**: Premium Auto-Generate on Save (Implement a toggle for Premium users to automatically generate AI descriptions simultaneously when saving an inventory item. This highly requested UX enhancement becomes economically viable only under a paid subscription model where API costs are absorbed by the MRR.)
 
 ### Theme Proposals for Future Customization
