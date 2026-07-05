@@ -177,19 +177,19 @@ export default function InventoryList({
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
                       <div>
                         <label className="text-[10px] font-bold text-gray-500 mb-1 block">仕入 (¥)</label>
-                        <input type="number" value={editData.purchase_price ?? ''} onChange={e => setEditData({ ...editData, purchase_price: Number(e.target.value) })} className="w-full text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-[var(--color-brand)] focus:outline-none" />
+                        <input type="number" placeholder="0" value={editData.purchase_price === 0 ? '' : (editData.purchase_price ?? '')} onChange={e => setEditData({ ...editData, purchase_price: e.target.value === '' ? 0 : Number(e.target.value) })} className="w-full text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-[var(--color-brand)] focus:outline-none" />
                       </div>
                       <div>
                         <label className="text-[10px] font-bold text-gray-500 mb-1 block">売価 (¥)</label>
-                        <input type="number" value={editData.target_price ?? ''} onChange={e => setEditData({ ...editData, target_price: Number(e.target.value) })} className="w-full text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-[var(--color-brand)] focus:outline-none" />
+                        <input type="number" placeholder="0" value={editData.target_price === 0 ? '' : (editData.target_price ?? '')} onChange={e => setEditData({ ...editData, target_price: e.target.value === '' ? 0 : Number(e.target.value) })} className="w-full text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-[var(--color-brand)] focus:outline-none" />
                       </div>
                       <div>
                         <label className="text-[10px] font-bold text-gray-500 mb-1 block">送料 (¥)</label>
-                        <input type="number" value={editData.postage ?? ''} onChange={e => setEditData({ ...editData, postage: Number(e.target.value) })} className="w-full text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-[var(--color-brand)] focus:outline-none" />
+                        <input type="number" placeholder="0" value={editData.postage === 0 ? '' : (editData.postage ?? '')} onChange={e => setEditData({ ...editData, postage: e.target.value === '' ? 0 : Number(e.target.value) })} className="w-full text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-[var(--color-brand)] focus:outline-none" />
                       </div>
                       <div>
                         <label className="text-[10px] font-bold text-gray-500 mb-1 block">手数料 (%)</label>
-                        <input type="number" step="0.1" value={editData.fee_rate ?? ''} onChange={e => setEditData({ ...editData, fee_rate: Number(e.target.value) })} className="w-full text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-[var(--color-brand)] focus:outline-none" />
+                        <input type="number" step="0.1" placeholder="0" value={editData.fee_rate === 0 ? '' : (editData.fee_rate ?? '')} onChange={e => setEditData({ ...editData, fee_rate: e.target.value === '' ? 0 : Number(e.target.value) })} className="w-full text-sm border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-[var(--color-brand)] focus:outline-none" />
                       </div>
                       <div className="col-span-2 sm:col-span-1">
                         <label className="text-[10px] font-bold text-gray-500 mb-1 block">箱番号</label>
