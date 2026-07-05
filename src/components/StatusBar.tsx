@@ -1,6 +1,5 @@
 'use client';
 import { Crown, Gift, Sparkles, Settings2 } from 'lucide-react';
-import ThemeToggle from './ThemeToggle';
 
 interface StatusBarProps {
   remaining: number | null;
@@ -49,7 +48,6 @@ export default function StatusBar({ remaining, maxLimit, isPremium, isLoggedIn, 
       </div>
       
       <div className="flex items-center gap-2">
-        <ThemeToggle />
         {!isLoggedIn && onLoginClick && (
           <button 
             onClick={onLoginClick}
