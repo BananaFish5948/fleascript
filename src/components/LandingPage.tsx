@@ -1,6 +1,7 @@
 'use client'
 
 import { Sparkles, Edit3, ClipboardCopy, ArrowRight, Bot, Truck, LayoutDashboard, BrainCircuit, TrendingUp, Gift, Package, Check } from 'lucide-react'
+import XCarouselMock from './XCarouselMock'
 
 interface LandingPageProps {
   onLoginClick: () => void;
@@ -28,6 +29,22 @@ export default function LandingPage({ onLoginClick }: LandingPageProps) {
           </span>
           <div className="absolute inset-0 h-full w-full bg-[var(--color-brand-light)] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
         </button>
+      </section>
+
+      {/* X (Twitter) Carousel Mock Section */}
+      <section className="py-20 bg-stone-100/40 border-t border-stone-200">
+        <div className="max-w-4xl mx-auto px-4 text-center">
+          <span className="text-[var(--color-brand)] font-bold tracking-widest text-xs uppercase bg-[var(--color-brand-dim)] px-4 py-1.5 rounded-full border border-[var(--color-brand)]/10">
+            Concept Preview
+          </span>
+          <h2 className="text-2xl md:text-4xl font-bold mt-6 text-[var(--color-text-primary)]">
+            SNSで話題の「暮らしの調律」体験
+          </h2>
+          <p className="text-sm md:text-base text-[var(--color-text-secondary)] mt-4 mb-10 max-w-lg mx-auto leading-relaxed">
+            アースカラーの美学で体験する、フリマライフのハック＆最適化。
+          </p>
+          <XCarouselMock />
+        </div>
       </section>
 
       {/* Features Grid Section */}

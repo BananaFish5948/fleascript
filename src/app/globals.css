@@ -276,3 +276,14 @@ body {
   /* 内側のハイライト（ガラスの反射感） */
   box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.4), var(--shadow-card);
 }
+
+/* ===== カルーセル用アニメーション ===== */
+@keyframes fade-in-out {
+  0%, 100% { opacity: 0.15; }
+  50% { opacity: 0.95; }
+}
+
+.animate-fade-in-out {
+  animation: fade-in-out 1s ease-in-out infinite;
+}
+
