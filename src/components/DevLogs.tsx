@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { BookOpen } from 'lucide-react'
 
 type ReleaseLog = {
   id: string
@@ -38,19 +39,19 @@ export default function DevLogs() {
 
   return (
     <div className="max-w-md mx-auto mb-8 text-left">
-      <div className="bg-orange-50/60 rounded-2xl p-5 border border-orange-100 shadow-sm relative overflow-hidden">
+      <div className="bg-[var(--color-bg-base)]/40 rounded-2xl p-5 border border-[var(--color-border)] shadow-sm relative overflow-hidden">
         {/* Subtle decorative elements */}
-        <div className="absolute top-0 right-0 w-24 h-24 bg-orange-200/40 rounded-full blur-2xl -mr-8 -mt-8 pointer-events-none" />
+        <div className="absolute top-0 right-0 w-24 h-24 bg-[var(--color-brand)]/5 rounded-full blur-2xl -mr-8 -mt-8 pointer-events-none" />
         
-        <h3 className="text-[var(--color-text-primary)] font-bold mb-4 flex items-center gap-2 text-sm">
-          <span className="text-orange-400">📝</span> 
-          開発日記（最近のカイゼン）
+        <h3 className="text-[var(--color-text-primary)] font-bold mb-4 flex items-center gap-2 text-sm tracking-wider">
+          <BookOpen size={16} className="text-[var(--color-brand)] shrink-0" strokeWidth={2} /> 
+          <span>開発日記（最近のカイゼン）</span>
         </h3>
         
         <div className="space-y-4 relative z-10">
           {logs.map((log, index) => (
-            <div key={log.id} className={index !== 0 ? 'pt-4 border-t border-orange-100/60' : ''}>
-              <div className="text-[11px] text-gray-400 mb-1 font-medium">
+            <div key={log.id} className={index !== 0 ? 'pt-4 border-t border-[var(--color-border)]/50' : ''}>
+              <div className="text-[11px] text-[var(--color-text-muted)] mb-1 font-medium">
                 {new Date(log.published_at).toLocaleDateString('ja-JP', { 
                   month: 'short', 
                   day: 'numeric',
@@ -58,7 +59,7 @@ export default function DevLogs() {
                   minute: '2-digit'
                 })}
               </div>
-              <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">
+              <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed whitespace-pre-wrap">
                 {log.message}
               </p>
             </div>
