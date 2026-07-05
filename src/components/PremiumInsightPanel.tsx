@@ -1,59 +1,222 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { InventoryItem } from '@/types/inventory';
-import { Sparkles, TrendingUp, Clock } from 'lucide-react';
+import { Sparkles, TrendingUp, Clock, Loader2, AlertCircle, Calendar, ArrowUpRight, CheckCircle2 } from 'lucide-react';
 
 interface PremiumInsightPanelProps {
   items: InventoryItem[];
+  aiInsights: {
+    best_selling_time_advice?: string;
+    pricing_strategy?: string;
+    insights?: string[];
+  } | null;
+  lastAiAnalysisAt: string | null;
+  isAnalyzing: boolean;
+  onUpdateAnalysis: () => Promise<void>;
 }
 
-export default function PremiumInsightPanel({ items }: PremiumInsightPanelProps) {
+export default function PremiumInsightPanel({ 
+  items, 
+  aiInsights, 
+  lastAiAnalysisAt, 
+  isAnalyzing, 
+  onUpdateAnalysis 
+}: PremiumInsightPanelProps) {
+  const [timeLeft, setTimeLeft] = useState<number | null>(null);
+
+  // カウントダウン処理
+  useEffect(() => {
+    if (!lastAiAnalysisAt) {
+      setTimeLeft(null);
+      return;
+    }
+
+    const updateCountdown = () => {
+      const lastTime = new Date(lastAiAnalysisAt).getTime();
+      const limit = 24 * 60 * 60 * 1000; // 24時間
+      const diff = Date.now() - lastTime;
+
+      if (diff < limit) {
+        setTimeLeft(limit - diff);
+      } else {
+        setTimeLeft(null);
+      }
+    };
+
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 1000);
+    return () => clearInterval(interval);
+  }, [lastAiAnalysisAt]);
+
+  const formatTimeLeft = (ms: number) => {
+    const hours = Math.floor(ms / (1000 * 60 * 60));
+    const minutes = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((ms % (1000 * 60)) / 1000);
+    return `${hours}時間${minutes}分${seconds}秒`;
+  };
+
+  const formatDate = (isoString: string | null) => {
+    if (!isoString) return '';
+    const date = new Date(isoString);
+    return date.toLocaleString('ja-JP', {
+      month: 'numeric',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
   const activeItems = items.filter(item => item.status !== 'sold');
-  
-  // 簡易的な分析ロジック
   const expectedTotalSales = activeItems.reduce((acc, item) => acc + item.target_price, 0);
-  
-  const highValueItem = activeItems.length > 0 
-    ? activeItems.reduce((prev, current) => (prev.target_price > current.target_price) ? prev : current)
-    : null;
 
   return (
-    <div className="bg-gradient-to-r from-[var(--color-bg-surface)] to-[var(--color-bg-base)] border border-[var(--color-brand)]/30 shadow-[var(--shadow-card)] rounded-2xl p-5 relative overflow-hidden group">
-      {/* プレミアム感のある背景エフェクト */}
-      <div className="absolute inset-0 bg-[var(--color-brand)]/5 pointer-events-none" />
-      <div className="absolute -top-10 -right-10 w-32 h-32 bg-[var(--color-brand)]/10 blur-3xl rounded-full" />
+    <div className="bg-gradient-to-br from-[var(--color-bg-surface)] to-[var(--color-bg-base)] border border-amber-200 shadow-[var(--shadow-card)] rounded-2xl p-6 relative overflow-hidden group">
+      {/* プレミアム感のある背景グラデーション */}
+      <div className="absolute inset-0 bg-amber-50/10 pointer-events-none" />
+      <div className="absolute -top-10 -right-10 w-40 h-40 bg-amber-100/30 blur-3xl rounded-full" />
       
-      <div className="flex items-center gap-2 mb-4 relative z-10">
-        <Sparkles size={16} className="text-[var(--color-brand)]" />
-        <h3 className="text-xs font-medium tracking-[0.2em] text-[var(--color-text-primary)]">AI コンシェルジュ・インサイト</h3>
-        <span className="ml-auto text-[10px] bg-[var(--color-brand)] text-white px-2 py-0.5 rounded-full font-bold tracking-widest shadow-sm">
+      {/* ヘッダー */}
+      <div className="flex items-center gap-2 mb-6 relative z-10">
+        <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 shadow-inner">
+          <Sparkles size={16} strokeWidth={2} className="animate-pulse" />
+        </div>
+        <div>
+          <h3 className="text-xs font-bold tracking-[0.2em] text-[var(--color-text-secondary)] uppercase">AIコンシェルジュ</h3>
+          <h4 className="text-sm font-semibold tracking-wider text-[var(--color-text-primary)]">フリマ販売診断インサイト</h4>
+        </div>
+        <span className="ml-auto text-[9px] bg-gradient-to-r from-amber-500 to-amber-600 text-white px-3 py-1 rounded-full font-bold tracking-widest shadow-md">
           PREMIUM
         </span>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 relative z-10">
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-1.5 text-[10px] text-[var(--color-text-secondary)] tracking-widest">
-            <TrendingUp size={12} />
-            <span>出品待機中の想定総売上</span>
+      {/* コンテンツエリア */}
+      <div className="relative z-10 space-y-6">
+        
+        {/* 基本ダッシュボードデータ */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-white/60 backdrop-blur-sm p-4 rounded-xl border border-stone-100">
+          <div className="flex flex-col gap-1 border-r border-stone-100 last:border-r-0 pr-2">
+            <span className="text-[10px] text-[var(--color-text-secondary)] tracking-widest flex items-center gap-1">
+              <TrendingUp size={12} className="text-amber-500" /> 出品中・保管中の想定総売上
+            </span>
+            <span className="text-xl font-bold text-[var(--color-text-primary)]">
+              ¥ {expectedTotalSales.toLocaleString()}
+            </span>
           </div>
-          <span className="text-lg font-medium text-[var(--color-text-primary)]">¥{expectedTotalSales.toLocaleString()}</span>
+          <div className="flex flex-col gap-1 pl-2">
+            <span className="text-[10px] text-[var(--color-text-secondary)] tracking-widest flex items-center gap-1">
+              <Calendar size={12} className="text-amber-500" /> 前回AI分析日時
+            </span>
+            <span className="text-sm font-medium text-[var(--color-text-primary)] py-0.5">
+              {lastAiAnalysisAt ? formatDate(lastAiAnalysisAt) : '未実行'}
+            </span>
+          </div>
         </div>
 
-        {highValueItem ? (
-          <div className="flex flex-col gap-1">
-            <div className="flex items-center gap-1.5 text-[10px] text-[var(--color-text-secondary)] tracking-widest">
-              <Clock size={12} />
-              <span>注目のアイテム</span>
+        {/* AI診断結果表示 */}
+        {isAnalyzing ? (
+          <div className="py-12 flex flex-col items-center justify-center gap-3">
+            <Loader2 className="w-8 h-8 animate-spin text-amber-500" />
+            <p className="text-xs text-[var(--color-text-secondary)] font-medium tracking-widest animate-pulse">
+              AIがあなたの出品データを診断中... (約10〜15秒かかります)
+            </p>
+          </div>
+        ) : aiInsights ? (
+          <div className="space-y-6 animate-fade-in-up">
+            
+            {/* 診断インサイト（箇条書き） */}
+            {aiInsights.insights && aiInsights.insights.length > 0 && (
+              <div className="space-y-3">
+                <h5 className="text-[11px] font-bold tracking-widest text-[var(--color-text-secondary)] flex items-center gap-1.5 border-b border-stone-100 pb-1.5">
+                  <CheckCircle2 size={13} className="text-emerald-500" />
+                  経営・販売状況の気づき
+                </h5>
+                <ul className="space-y-2.5">
+                  {aiInsights.insights.map((insight, idx) => (
+                    <li key={idx} className="text-xs text-[var(--color-text-primary)] leading-relaxed flex items-start gap-2 bg-stone-50/50 p-2.5 rounded-lg border border-stone-100">
+                      <ArrowUpRight size={14} className="text-amber-500 shrink-0 mt-0.5" />
+                      <span>{insight}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* 売れ筋タイム診断 */}
+              {aiInsights.best_selling_time_advice && (
+                <div className="bg-amber-50/30 border border-amber-100 p-4 rounded-xl flex flex-col gap-2">
+                  <div className="flex items-center gap-1.5 text-[11px] font-bold text-amber-700 tracking-wider">
+                    <Clock size={14} />
+                    <span>おすすめ再出品タイム</span>
+                  </div>
+                  <p className="text-xs text-stone-700 leading-relaxed font-medium">
+                    {aiInsights.best_selling_time_advice}
+                  </p>
+                </div>
+              )}
+
+              {/* 価格戦略アドバイス */}
+              {aiInsights.pricing_strategy && (
+                <div className="bg-purple-50/30 border border-purple-100 p-4 rounded-xl flex flex-col gap-2">
+                  <div className="flex items-center gap-1.5 text-[11px] font-bold text-purple-700 tracking-wider">
+                    <TrendingUp size={14} />
+                    <span>値付け＆価格戦略</span>
+                  </div>
+                  <p className="text-xs text-stone-700 leading-relaxed font-medium">
+                    {aiInsights.pricing_strategy}
+                  </p>
+                </div>
+              )}
             </div>
-            <span className="text-sm font-medium text-[var(--color-brand)] line-clamp-1">{highValueItem.item_name}</span>
-            <span className="text-[10px] text-[var(--color-text-muted)]">週末の夜19-22時頃の出品がおすすめです。</span>
+
           </div>
         ) : (
-          <div className="flex flex-col gap-1 justify-center">
-            <span className="text-xs text-[var(--color-text-muted)]">現在出品待機中のアイテムはありません。</span>
+          /* 未実行（またはデータ不足）時の表示 */
+          <div className="bg-white/40 border border-stone-200 rounded-xl p-8 text-center flex flex-col items-center justify-center gap-4 border-dashed animate-fade-in-up">
+            <div className="w-12 h-12 bg-amber-50 border border-amber-200 text-amber-500 rounded-full flex items-center justify-center shadow-inner">
+              <Sparkles size={22} className="animate-pulse" />
+            </div>
+            <div className="max-w-xs">
+              <h5 className="text-xs font-bold text-[var(--color-text-primary)] tracking-widest mb-1.5">
+                AI販売診断が未実行です
+              </h5>
+              <p className="text-[10px] text-[var(--color-text-secondary)] leading-relaxed">
+                現在の全在庫データをAIコンシェルジュが分析し、具体的な売れ筋タイムや価格戦略のアドバイスを出力します。
+              </p>
+            </div>
           </div>
         )}
+
+        {/* コスト防御・更新エリア */}
+        <div className="pt-4 border-t border-stone-100/60 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-1.5 text-[10px] text-[var(--color-text-secondary)]">
+            <AlertCircle size={12} className="text-stone-400" />
+            <span>AI分析は24時間に1回まで実行できます。</span>
+          </div>
+          
+          <button
+            type="button"
+            onClick={onUpdateAnalysis}
+            disabled={isAnalyzing || timeLeft !== null || items.length === 0}
+            className="w-full sm:w-auto bg-[var(--color-text-primary)] text-white hover:opacity-90 disabled:opacity-50 disabled:hover:opacity-50 px-6 py-2.5 rounded-full font-bold tracking-widest shadow-sm flex items-center justify-center gap-2 transition-all"
+          >
+            {isAnalyzing ? (
+              <>
+                <Loader2 size={14} className="animate-spin" />
+                <span>分析中...</span>
+              </>
+            ) : timeLeft !== null ? (
+              <span>次回更新まで: {formatTimeLeft(timeLeft)}</span>
+            ) : (
+              <>
+                <Sparkles size={14} />
+                <span>AI販売診断を実行する</span>
+              </>
+            )}
+          </button>
+        </div>
+
       </div>
     </div>
   );

@@ -55,7 +55,16 @@ export default function Home() {
     value: number;
     fill: string;
   };
-  const [analytics, setAnalytics] = useState<{totalItems: number, soldCount: number, totalProfitEstimate: number, bestSellingTime?: string, markdownSuggestions?: MarkdownSuggestion[], chartData?: ChartData[]} | null>(null)
+  const [analytics, setAnalytics] = useState<{
+    totalItems: number;
+    soldCount: number;
+    totalProfitEstimate: number;
+    bestSellingTime?: string;
+    markdownSuggestions?: MarkdownSuggestion[];
+    chartData?: ChartData[];
+    aiInsights?: any;
+    lastAiAnalysisAt?: string | null;
+  } | null>(null)
 
   // モーダル状態
   const [showLimitModal, setShowLimitModal] = useState(false)
@@ -163,6 +172,36 @@ export default function Home() {
     fetchUserStatus();
     fetchRoadmapProgress();
   }, [fetchUserStatus, fetchRoadmapProgress]);
+
+  const [isAIAnalyzing, setIsAIAnalyzing] = useState(false);
+
+  const handleUpdateAIAnalysis = async () => {
+    setIsAIAnalyzing(true);
+    try {
+      const res = await fetch('/api/premium/analytics', {
+        method: 'POST',
+      });
+      const data = await res.json();
+      
+      if (!res.ok) {
+        alert(data.error || 'AI分析に失敗しました。');
+        return;
+      }
+      
+      // 最新の集計・分析結果を再ロードして反映
+      const aRes = await fetch('/api/premium/analytics');
+      const aData = await aRes.json();
+      if (aData.analytics) {
+        setAnalytics(aData.analytics);
+      }
+      alert('AIコンシェルジュ分析が更新されました！');
+    } catch (e) {
+      console.error(e);
+      alert('通信エラーが発生しました。');
+    } finally {
+      setIsAIAnalyzing(false);
+    }
+  };
 
   // アクションハンドラー
   const handleAdd = async (data: any) => {
@@ -380,7 +419,13 @@ export default function Home() {
                   />
                 )}
                 {subscriptionStatus === 'premium' && (
-                  <PremiumInsightPanel items={items} />
+                  <PremiumInsightPanel 
+                    items={items} 
+                    aiInsights={analytics?.aiInsights || null}
+                    lastAiAnalysisAt={analytics?.lastAiAnalysisAt || null}
+                    isAnalyzing={isAIAnalyzing}
+                    onUpdateAnalysis={handleUpdateAIAnalysis}
+                  />
                 )}
               </div>
             )}

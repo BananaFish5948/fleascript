@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { openai } from '@/lib/openai'
 
 export async function GET() {
   const supabase = await createClient()
@@ -23,6 +24,8 @@ export async function GET() {
   const subStatus = userData?.subscription_status || 'free'
   const preferences = userData?.preferences || {}
   const bonusSlots = preferences.bonus_slots || 0
+  const aiInsights = preferences.ai_insights || null
+  const lastAiAnalysisAt = preferences.last_ai_analysis_at || null
 
   let maxLimit = 3
   if (subStatus === 'premium') maxLimit = 500
@@ -141,7 +144,139 @@ export async function GET() {
       totalProfitEstimate,
       bestSellingTime,
       markdownSuggestions,
-      chartData
+      chartData,
+      aiInsights,
+      lastAiAnalysisAt
     }
   })
+}
+
+export async function POST() {
+  const supabase = await createClient()
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
+
+  if (authError || !user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  // プラン判定 (premiumのみアクセス可)
+  const { data: userData } = await supabase
+    .from('users')
+    .select('subscription_status, preferences')
+    .eq('id', user.id)
+    .single()
+
+  if (userData?.subscription_status !== 'premium') {
+    return NextResponse.json({ error: 'Premium Required' }, { status: 403 })
+  }
+
+  const preferences = userData?.preferences || {}
+  const lastAiAnalysisAt = preferences.last_ai_analysis_at
+
+  // 24時間二重実行チェック
+  if (lastAiAnalysisAt) {
+    const diff = Date.now() - new Date(lastAiAnalysisAt).getTime()
+    const limitDuration = 24 * 60 * 60 * 1000 // 24時間
+    if (diff < limitDuration) {
+      const hoursLeft = Math.ceil((limitDuration - diff) / (1000 * 60 * 60))
+      return NextResponse.json(
+        { error: `AI分析は24時間に1回まで実行可能です。次回更新まであと約${hoursLeft}時間です。` }, 
+        { status: 429 }
+      )
+    }
+  }
+
+  const subStatus = userData?.subscription_status || 'free'
+  const bonusSlots = preferences.bonus_slots || 0
+  let maxLimit = 3
+  if (subStatus === 'premium') maxLimit = 500
+  else if (subStatus === 'standard') maxLimit = 100
+  maxLimit += bonusSlots
+
+  // 全在庫データ取得
+  const { data, error } = await supabase
+    .from('inventory_items')
+    .select('item_name, purchase_price, target_price, postage, fee_rate, status, created_at, updated_at')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false })
+    .limit(maxLimit)
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+
+  if (data.length === 0) {
+    return NextResponse.json({ error: '分析対象の在庫データが登録されていません。先にアイテムを追加してください。' }, { status: 400 })
+  }
+
+  try {
+    // OpenAI用データテキスト作成
+    const itemDataText = data.map((item, idx) => {
+      return `[商品${idx + 1}] 商品名: ${item.item_name}, 仕入値: ${item.purchase_price}円, 目標売価: ${item.target_price}円, 送料: ${item.postage}円, 手数料率: ${item.fee_rate}%, ステータス: ${item.status === 'sold' ? '売却済' : '出品中・手元保管'}, 登録日時: ${item.created_at}`;
+    }).join('\n')
+
+    const systemPrompt = `あなたは優秀なフリマ出品の診断コンシェルジュです。
+ユーザーから渡される在庫データ（仕入価格、目標売価、送料、手数料、ステータス、登録日時など）を多角的に分析し、売上を最大化するためのアドバイスを提供してください。
+
+以下のJSONフォーマットで厳密に出力してください。出力言語は必ず「日本語」にしてください。
+
+{
+  "best_selling_time_advice": "売れ筋の時間帯や曜日のアドバイス（例：ガジェット類は金曜夜に売れやすいため、木曜夜に再出品を検討してください など）",
+  "pricing_strategy": "価格設定に関する戦略のアドバイス（例：仕入値に対して売価が高すぎるものが一部あるため、少し値下げして回転率を上げることを推奨します など）",
+  "insights": [
+    "経営全体に対するインサイト分析の箇条書き1（100文字程度）",
+    "経営全体に対するインサイト分析の箇条書き2（100文字程度）",
+    "経営全体に対するインサイト分析の箇条書き3（100文字程度）"
+  ]
+}`
+
+    const userPrompt = `以下は私の現在の在庫データ一覧です。これを分析してください。\n\n${itemDataText}`
+
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      max_tokens: 1000,
+      temperature: 0.7,
+      response_format: { type: "json_object" },
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt }
+      ]
+    }, {
+      timeout: 25000 // 25秒タイムアウト
+    })
+
+    const rawOutput = completion.choices[0]?.message?.content
+    if (!rawOutput) {
+      throw new Error("OpenAI API returned empty response.")
+    }
+
+    const parsedAI = JSON.parse(rawOutput)
+
+    // DBへのキャッシュ保存
+    const newPreferences = {
+      ...preferences,
+      ai_insights: parsedAI,
+      last_ai_analysis_at: new Date().toISOString()
+    }
+
+    const { error: updateError } = await supabase
+      .from('users')
+      .update({ preferences: newPreferences })
+      .eq('id', user.id)
+
+    if (updateError) {
+      console.error('Update preferences error:', updateError)
+      throw new Error("Failed to save AI insights to database")
+    }
+
+    return NextResponse.json({
+      success: true,
+      aiInsights: parsedAI,
+      lastAiAnalysisAt: newPreferences.last_ai_analysis_at
+    })
+
+  } catch (err: any) {
+    console.error('[POST /api/premium/analytics] OpenAI Error:', err)
+    return NextResponse.json({ error: err.message || 'AI分析に失敗しました。' }, { status: 500 })
+  }
 }
