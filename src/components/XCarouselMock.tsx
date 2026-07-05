@@ -151,10 +151,10 @@ export default function XCarouselMock() {
                 <text x="160" y="118" fill="var(--color-text-secondary)" fontSize="7" fontFamily="monospace">Week 3</text>
                 <text x="320" y="118" fill="var(--color-text-secondary)" fontSize="7" fontFamily="monospace">Week 5</text>
                 
-                <text x="330" y="10" fill="var(--color-danger)" fontSize="8" fontWeight="bold">損失スタミナ: Max</text>
+                <text x="330" y="10" fill="var(--color-danger)" fontSize="8" fontWeight="bold">失われた余白: Max</text>
               </svg>
               <p className="text-[10px] md:text-xs text-[var(--color-text-secondary)] text-center mt-2 leading-relaxed">
-                商品説明作成や配送手段の調査に費やす時間は、1ヶ月で平均 <span className="font-semibold text-[var(--color-danger)]">約5時間以上</span> の余剰スタミナを浪費します。
+                商品説明作成や配送手段の調査に費やす時間は、1ヶ月で平均 <span className="font-semibold text-[var(--color-danger)]">約5時間もの「暮らしの余白」</span> を喪失します。
               </p>
             </div>
 
@@ -196,7 +196,7 @@ export default function XCarouselMock() {
                 </div>
               </div>
               <p className="text-[10px] md:text-xs text-[var(--color-text-secondary)] text-center mt-4 max-w-sm mx-auto leading-relaxed">
-                無駄なエネルギーを1秒でコンパイル。回収したスタミナを「お気に入りの本を読む」「淹れたての珈琲を味わう」といった自分だけの豊かさへ。
+                無駄なエネルギーを1秒でコンパイル。回収した「余白の時間」を「お気に入りの本を読む」「淹れたての珈琲を味わう」といった自分だけの豊かさへ。
               </p>
             </div>
 

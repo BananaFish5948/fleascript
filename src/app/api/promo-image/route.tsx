@@ -164,10 +164,10 @@ export async function GET(req: NextRequest) {
           <div style={{ position: 'absolute', left: '50px', top: '345px', display: 'flex', color: COLORS.textSecondary, fontSize: '18px', fontFamily: 'monospace' }}>Week 1</div>
           <div style={{ position: 'absolute', left: '368px', top: '345px', display: 'flex', color: COLORS.textSecondary, fontSize: '18px', fontFamily: 'monospace' }}>Week 3</div>
           <div style={{ position: 'absolute', left: '736px', top: '345px', display: 'flex', color: COLORS.textSecondary, fontSize: '18px', fontFamily: 'monospace' }}>Week 5</div>
-          <div style={{ position: 'absolute', left: '700px', top: '25px', display: 'flex', color: COLORS.danger, fontSize: '20px', fontWeight: 'bold' }}>損失スタミナ: Max</div>
+          <div style={{ position: 'absolute', left: '700px', top: '25px', display: 'flex', color: COLORS.danger, fontSize: '20px', fontWeight: 'bold' }}>失われた余白: Max</div>
 
           <p style={{ fontSize: '24px', color: COLORS.textSecondary, textAlign: 'center', marginTop: '40px', lineHeight: 1.6 }}>
-            商品説明作成や送料計算に費やす時間は、1ヶ月で平均約5時間以上のスタミナを浪費します。
+            商品説明作成や送料計算に費やす時間は、1ヶ月で平均約5時間もの「暮らしの余白」を喪失します。
           </p>
         </div>
 
@@ -222,7 +222,7 @@ export async function GET(req: NextRequest) {
             </div>
           </div>
           <p style={{ fontSize: '24px', color: COLORS.textSecondary, textAlign: 'center', marginTop: '60px', maxWidth: '800px', lineHeight: 1.6 }}>
-            無駄なエネルギーを1秒でコンパイル。回収したスタミナを「お気に入りの本を読む」「淹れたての珈琲を味わう」といった自分だけの豊かな時間へ。
+            無駄なエネルギーを1秒でコンパイル。回収した「余白の時間」を「お気に入りの本を読む」「淹れたての珈琲を味わう」といった自分だけの豊かな時間へ。
           </p>
         </div>
 
