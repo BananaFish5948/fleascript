@@ -74,13 +74,32 @@ export async function POST(req: NextRequest) {
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001'
 
-    // 2. Stripe Customer Portal Session の作成
-    const portalSession = await stripe.billingPortal.sessions.create({
-      customer: customerId,
-      return_url: appUrl,
-    })
+    // 2. Stripe Customer Portal Session の作成 (No such customer エラーに対する自動クレンジング付き)
+    try {
+      const portalSession = await stripe.billingPortal.sessions.create({
+        customer: customerId,
+        return_url: appUrl,
+      })
+      return NextResponse.json({ url: portalSession.url })
+    } catch (stripeErr: any) {
+      if (stripeErr.message?.includes('No such customer')) {
+        console.warn(`[portal-api] Stripe customer not found (${customerId}). Resetting user subscription state in DB.`)
+        
+        // DBの無効な顧客IDをクリアし、プランを強制的に free にダウングレードする
+        await adminClient
+          .from('users')
+          .update({ 
+            stripe_customer_id: null,
+            subscription_status: 'free' 
+          })
+          .eq('id', user.id)
 
-    return NextResponse.json({ url: portalSession.url })
+        return NextResponse.json({ 
+          error: '決済情報との同期が切れていました。アカウントを安全に初期状態へリセットしました。お手数ですが、再度プランのご登録をお願いいたします。' 
+        }, { status: 400 })
+      }
+      throw stripeErr
+    }
 
   } catch (error: any) {
     console.error('[portal-api] Error:', error)

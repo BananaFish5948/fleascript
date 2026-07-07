@@ -83,24 +83,67 @@ export async function POST(req: NextRequest) {
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001'
 
-    // 4. Stripe Checkout Session の作成
-    const session = await stripe.checkout.sessions.create({
-      customer: customerId,
-      line_items: [
-        {
-          price: priceId,
-          quantity: 1,
+    // 4. Stripe Checkout Session の作成 (No such customer エラーに対する自動修復リトライ付き)
+    let session
+    try {
+      session = await stripe.checkout.sessions.create({
+        customer: customerId,
+        line_items: [
+          {
+            price: priceId,
+            quantity: 1,
+          },
+        ],
+        mode: 'subscription',
+        success_url: `${appUrl}/?upgraded=true`,
+        cancel_url: `${appUrl}/checkout?plan=${targetPlan}`,
+        client_reference_id: user.id,
+        metadata: {
+          userId: user.id,
+          plan: targetPlan,
         },
-      ],
-      mode: 'subscription',
-      success_url: `${appUrl}/?upgraded=true`,
-      cancel_url: `${appUrl}/checkout?plan=${targetPlan}`,
-      client_reference_id: user.id,
-      metadata: {
-        userId: user.id,
-        plan: targetPlan,
-      },
-    })
+      })
+    } catch (stripeErr: any) {
+      if (stripeErr.message?.includes('No such customer')) {
+        console.warn(`[checkout-api] Stripe customer not found (${customerId}). Re-creating customer for user ${user.id}.`)
+        
+        // 1. Stripe上で顧客を再作成
+        const customer = await stripe.customers.create({
+          email: user.email || undefined,
+          metadata: {
+            userId: user.id,
+          },
+        })
+        customerId = customer.id
+
+        // 2. DBの stripe_customer_id を更新
+        await adminClient
+          .from('users')
+          .update({ stripe_customer_id: customerId })
+          .eq('id', user.id)
+
+        // 3. 新しい顧客IDでセッションの作成を再試行
+        session = await stripe.checkout.sessions.create({
+          customer: customerId,
+          line_items: [
+            {
+              price: priceId,
+              quantity: 1,
+            },
+          ],
+          mode: 'subscription',
+          success_url: `${appUrl}/?upgraded=true`,
+          cancel_url: `${appUrl}/checkout?plan=${targetPlan}`,
+          client_reference_id: user.id,
+          metadata: {
+            userId: user.id,
+            plan: targetPlan,
+          },
+        })
+      } else {
+        throw stripeErr
+      }
+    }
 
     return NextResponse.json({ url: session.url })
 
