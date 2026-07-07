@@ -1,11 +1,11 @@
 # FleaScript Handover Context (For AI Agents)
 
 ## System Status
-- **Phase**: Premium Analytics & Advanced AI Insights Completed. UI Color Theme Guardrails & Pricing Transparency added. Ready for Marketing/Promotion & Deployment.
+- **Phase**: Premium Analytics & Advanced AI Insights Completed. UI Color Theme Guardrails, Pricing Transparency, and Gentle Boundary Helper (BNC) added. Ready for Marketing/Promotion & Deployment.
 - **Framework**: Next.js 16.2.10 (App Router), Tailwind CSS v4, TypeScript.
 - **Design System**: "Aesthetic / Kinfolk" design (Terracotta & Sage with Earth Tones) replacing the old app-like design. Emojis replaced with Lucide icons for a refined, premium feel.
 - **External Services**: Supabase (Database & Auth), OpenAI (`gpt-4o-mini`).
-- **Core Features**: Inventory and profit management dashboard, AI description generation, IP/User-based rate limiting, Developer Mode, Monetization Mock, and **Cost-Driven Roadmap Gauge** (showing progress without absolute numbers).
+- **Core Features**: Inventory and profit management dashboard, AI description generation, IP/User-based rate limiting, Developer Mode, Monetization Mock, **Cost-Driven Roadmap Gauge**, and **Gentle Boundary Helper (BNC)** (extracts screenshot text locally using Tesseract.js and drafts defensive responses).
 
 ## Architecture & Data Flow
 1. **Frontend**: Single-page React UI (`src/app/page.tsx`) implementing a "Switcher" pattern.
@@ -15,7 +15,8 @@
    - `GET /api/inventory`, `POST /api/inventory`: CRUD for inventory items. Checks user auth and limits (3 for free, 500 for premium).
    - `PATCH /api/inventory/[id]`, `DELETE /api/inventory/[id]`: Update and delete inventory items.
    - `POST /api/generate`: Queries OpenAI (`gpt-4o-mini`) to generate descriptions based on item data. No longer saves to DB (pure API wrapper).
-   - `GET /api/user-status`: Returns `remaining`, `isPremium`, and `isLoggedIn` based on Supabase Auth.
+   - `POST /api/analyze-chat`: Performs friction analysis and drafts defensive responses for Standard/Premium users using `gpt-4o-mini`. Uses IP suffix rate limits.
+   - `GET /api/user-status`: Returns `remaining`, `isPremium`, `subscriptionStatus`, and `isLoggedIn` based on Supabase Auth.
    - `POST /api/checkout-success-mock`, `POST /api/cancel-subscription-mock`: Mocks Stripe logic.
    - `GET /api/dev-mode`, `POST /api/toggle-premium`: Admin utility APIs.
    - `POST /api/share`: Grants bonus slots to users upon sharing.
@@ -104,6 +105,19 @@
     - **直接属性の禁止**: `fontSize` や `fontWeight` 等をタグ属性として直接指定するとパースエラーになるため、必ず `style={{ fontSize: '18px', fontWeight: 'bold' }}` のようにインライン `style` に記述すること。
     - **テキスト内 `<span>` の重なりバグ**: `<p>` や `<div>` の中に `<span>` をネストして部分的な装飾（カラー変更や太字化）を行うと、Satori内部の幅計算バグで文字がグチャグチャに重なります。必ずプレーンなテキストにするか、Flexboxで明示的に並べること。
     - **フォント読み込み形式制限**: 可変フォント（VF）や TTC コレクション形式は描画エンジンをクラッシュさせます。ローカルフォントを使用する際は、Windows標準の `yumin.ttf`（游明朝の単一TTF）などを `fs.readFileSync` で直接 `ArrayBuffer` に読み込ませて使用すること。
+22. **Tesseract.jsの動的遅延ロードとOCR中間UIによる品質防御**:
+    - BNC（穏やかな対話境界線ヘルパー）ではクライアントサイドOCR（`tesseract.js`）を使用しています。初期ロード（LCP）への悪影響を防ぐため、モーダル起動時に `import('tesseract.js')` を用いて動的に遅延ロードしてください。
+    - OCRの日本語認識精度は解像度等に依存するため、サーバー送信前にユーザーが手動で誤字を修正できるよう、編集可能な中間テキストエリア（textarea）の設置が必須です。
+23. **DBスキーマ変更不要のIPサフィックスハックによるレート制限**:
+    - BNC機能のAPI（`/api/analyze-chat`）では、既存の `ip_rate_limits` テーブルをそのまま流用し、IPアドレスキーの末尾に `_bnc` を付与した `${ip}_bnc` 形式で1日のカウントを記録します。
+    - これにより、SupabaseのDBスキーマを変更せずに、プラン別の利用制限（Standard: 10回、Premium: 30回）を安全に制御しています。
+24. **Stripe決済・プラン管理のローカル/本番ハイブリッド構成**:
+    - 開発（ローカル）環境のデバッグ負荷を下げるため、`STRIPE_SECRET_KEY` が未設定または `NODE_ENV === 'development'` の場合は、Stripeの決済画面へリダイレクトせず、バックエンドAPI（`/api/checkout`, `/api/checkout/portal`）が直接 Supabase DB を更新し、モック用のリダイレクトURL（`/?upgraded=true`, `/?canceled=true`）を即座に返却します。
+    - 本番環境では、Stripe公開鍵が設定されるため、Stripe Checkout Session や Customer Portal Session を作成して本物の Stripe へ安全にリダイレクトさせます。
+25. **Stripe Webhook における顧客IDの逆引きとRLSバイパス**:
+    - 本番環境では、Stripe Webhook (`api/webhook/stripe`) のイベント `customer.subscription.updated` や `deleted` は `customer_id` (`cus_...`) のみを保持します。そのため、DBの `users` テーブルから `stripe_customer_id = customer` となるユーザーレコードを検索して特定します。
+    - Webhook による更新処理は RLS をバイパスして安全に動作させるため、必ず `SUPABASE_SERVICE_ROLE_KEY` を用いてインスタンス化した **Admin Client** を使用し、非同期にDBを同期してください。
+
 
 ## Next Potential Steps
 - [x] Phase 3: Auth Integration, UI Refinement, Share Bonus & Roadmap Gauge.
@@ -128,10 +142,14 @@
   - Optimized Auth to Google + Magic Links (Cost Defense).
   - Refined Bottom Navigation Architecture: Segregated `InventoryList` into a dedicated 5th tab (`LIST`) to declutter the HOME dashboard.
   - Enhanced Transparency: Explicitly displayed daily remaining limits for multimodal image analysis directly inside the UI button.
+- [x] **Product Version 2.1 - Gentle Boundary Helper (BNC)**:
+  - Implemented client-side local OCR (`tesseract.js` dynamic load) + backend text analysis (`gpt-4o-mini`) hybrid flow.
+  - Placed banners in HOME and ADD tabs, restricting access to Standard/Premium plans.
+  - Applied RLS-safe IP suffix hack (`${ip}_bnc`) to enforce daily rate limits without DB schema modifications.
 - [ ] **Phase 4.3**: Promotion Strategy & Viral Copy. Invoke `@sns-marketer` (Gemika) to create copy.
 - [ ] **Phase 4.5**: Affiliate Monetization (Amazon Associates & Native Ads).
 - [ ] Production Deployment (Vercel) & Custom Domain setup.
-- [ ] Real Stripe Integration (Replace Mock).
+- [x] Real Stripe Integration (Replace Mock) - Completed via hybrid dev-mock/prod-stripe routing.
 - [x] **Future UI Improvement**: Inline Edit Profit Simulator. (Ported real-time profit/fee calculation logic from `InventoryForm.tsx` into the inline edit form to allow live adjustments.)
 - [x] **Future Feature**: Theme Customization (Implemented Stone & Espresso and Linen & Slate themes, with switchers in settings and header toggle.)
 - [x] **Future Feature**: PremiumInsightPanel Advanced Analytics (Upgraded mock logic of `PremiumInsightPanel` to a backend OpenAI gpt-4o-mini driven algorithm with 24h caching in `users.preferences`.)

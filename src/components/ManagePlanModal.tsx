@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 interface ManagePlanModalProps {
   isOpen: boolean;
@@ -10,32 +10,34 @@ interface ManagePlanModalProps {
 
 export default function ManagePlanModal({ isOpen, onClose, deviceId, onCanceled, subscriptionStatus = 'free' }: ManagePlanModalProps) {
   const [isLoading, setIsLoading] = useState(false)
-  const [confirmAction, setConfirmAction] = useState<{ type: 'cancel' | 'downgrade', targetPlan: string } | null>(null)
+  const [isDev, setIsDev] = useState(false)
+
+  useEffect(() => {
+    const isLocal = process.env.NODE_ENV === 'development' && !process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+    setIsDev(isLocal)
+  }, [])
 
   if (!isOpen) return null
 
-  const handleChangePlan = async (targetPlan: string) => {
+  const handleOpenPortal = async () => {
     setIsLoading(true)
 
     try {
-      const res = await fetch('/api/change-plan-mock', {
+      const res = await fetch('/api/checkout/portal', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ targetPlan }),
       })
 
-      if (res.ok) {
-        alert(targetPlan === 'free' ? 'プランの解約が完了しました。' : 'プランの変更が完了しました。')
-        onCanceled()
-        onClose()
+      const data = await res.json()
+      if (res.ok && data.url) {
+        window.location.href = data.url
       } else {
-        alert('処理に失敗しました。')
+        alert(data.error || 'プラン管理の起動に失敗しました。')
       }
     } catch (err) {
       alert('通信エラーが発生しました。')
     } finally {
       setIsLoading(false)
-      setConfirmAction(null)
     }
   }
 
@@ -75,66 +77,41 @@ export default function ManagePlanModal({ isOpen, onClose, deviceId, onCanceled,
             </ul>
           </div>
 
-          {!confirmAction ? (
-            <div className="space-y-3">
-              <button 
-                onClick={onClose}
-                className="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-3 px-6 rounded-xl transition-colors"
-              >
-                閉じる
-              </button>
-              
-              {subscriptionStatus === 'standard' && (
-                <button 
-                  onClick={() => window.location.href = '/checkout?plan=premium'}
-                  className="w-full bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-white font-bold py-2 px-6 rounded-xl shadow-md transition-transform hover:scale-105 mt-2"
-                >
-                  👑 Premiumへアップグレード
-                </button>
+          <div className="space-y-3">
+            <button 
+              onClick={handleOpenPortal}
+              disabled={isLoading}
+              className={`w-full bg-[var(--color-brand)] hover:bg-[var(--color-brand-light)] text-white font-bold py-3 px-6 rounded-xl shadow-md transition-colors flex justify-center items-center gap-2 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              {isLoading ? (
+                <span className="flex items-center gap-2">
+                  <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  処理中...
+                </span>
+              ) : (
+                isDev ? 'プランを解約する (Mock)' : 'お支払い・プランの管理 (Stripe)'
               )}
+            </button>
+            
+            {subscriptionStatus === 'standard' && (
+              <button 
+                onClick={() => window.location.href = '/checkout?plan=premium'}
+                className="w-full bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-white font-bold py-3 px-6 rounded-xl shadow-md transition-transform hover:scale-[1.02]"
+              >
+                👑 Premiumへアップグレード
+              </button>
+            )}
 
-              {subscriptionStatus === 'premium' && (
-                <button 
-                  onClick={() => setConfirmAction({ type: 'downgrade', targetPlan: 'standard' })}
-                  className="w-full text-orange-500 hover:text-orange-700 font-bold py-2 px-6 transition-colors text-sm underline mt-2"
-                >
-                  Standardプランへダウングレードする
-                </button>
-              )}
-
-              <button 
-                onClick={() => setConfirmAction({ type: 'cancel', targetPlan: 'free' })}
-                className="w-full text-red-500 hover:text-red-700 font-bold py-2 px-6 transition-colors text-sm underline"
-              >
-                サブスクリプションを解約する
-              </button>
-              <p className="text-xs text-gray-400 mt-2">
-                ※解約・変更は即座に反映されます（モック仕様）。
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-3 animate-fade-in-up bg-red-50 p-4 rounded-xl border border-red-100">
-              <p className="text-sm text-red-700 font-bold mb-3">
-                {confirmAction.type === 'cancel' 
-                  ? '本当に解約しますか？即座に無料プランに戻ります。' 
-                  : 'Standardプランへダウングレードしますか？'}
-              </p>
-              <button 
-                onClick={() => handleChangePlan(confirmAction.targetPlan)}
-                disabled={isLoading}
-                className={`w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition-colors flex justify-center items-center gap-2 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-              >
-                {isLoading ? '処理中...' : 'はい、実行します (Mock)'}
-              </button>
-              <button 
-                onClick={() => setConfirmAction(null)}
-                disabled={isLoading}
-                className="w-full bg-transparent text-gray-600 hover:text-gray-900 font-bold py-2 px-6 transition-colors text-sm"
-              >
-                キャンセル
-              </button>
-            </div>
-          )}
+            <button 
+              onClick={onClose}
+              className="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-3 px-6 rounded-xl transition-colors"
+            >
+              閉じる
+            </button>
+          </div>
         </div>
       </div>
     </div>

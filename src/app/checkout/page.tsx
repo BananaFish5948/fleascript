@@ -2,7 +2,6 @@
 
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useDeviceId } from '@/hooks/useDeviceId'
 import { createClient } from '@/lib/supabase/client'
 import AuthModal from '@/components/AuthModal'
 
@@ -11,13 +10,18 @@ function CheckoutContent() {
   const searchParams = useSearchParams()
   const initialPlan = searchParams.get('plan') === 'standard' ? 'standard' : 'premium'
   const [targetPlan, setTargetPlan] = useState<'standard' | 'premium'>(initialPlan)
-  const deviceId = useDeviceId()
   const supabase = createClient()
   
   const [isLoading, setIsLoading] = useState(false)
   const [isCheckingAuth, setIsCheckingAuth] = useState(true)
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [isDev, setIsDev] = useState(false)
+
+  useEffect(() => {
+    const isLocal = process.env.NODE_ENV === 'development' && !process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+    setIsDev(isLocal)
+  }, [])
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -30,8 +34,7 @@ function CheckoutContent() {
 
       // 既に指定のプランかどうかをチェック
       try {
-        const url = deviceId ? `/api/user-status?deviceId=${deviceId}` : '/api/user-status'
-        const res = await fetch(url)
+        const res = await fetch('/api/user-status')
         const data = await res.json()
         if (data.subscriptionStatus === targetPlan) {
           router.replace('/')
@@ -44,27 +47,28 @@ function CheckoutContent() {
       setIsCheckingAuth(false)
     }
     checkAuth()
-  }, [supabase, deviceId, router, targetPlan])
+  }, [supabase, router, targetPlan])
 
   const handleCheckout = async () => {
     setIsLoading(true)
+    setErrorMessage(null)
 
     try {
-      const res = await fetch('/api/checkout-success-mock', {
+      const res = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ deviceId, targetPlan }), // targetPlanを送信
+        body: JSON.stringify({ targetPlan }),
       })
 
-      if (res.ok) {
-        router.push('/?upgraded=true')
+      const data = await res.json()
+      if (res.ok && data.url) {
+        window.location.href = data.url
       } else {
-        const errorData = await res.json().catch(() => ({}));
-        setErrorMessage(errorData.error || "決済エラー（モック）が発生しました。");
+        setErrorMessage(data.error || "決済処理に失敗しました。")
         setIsLoading(false)
       }
     } catch (err: any) {
-      setErrorMessage(err.message || "通信エラーが発生しました。");
+      setErrorMessage(err.message || "通信エラーが発生しました。")
       setIsLoading(false)
     }
   }
@@ -172,85 +176,62 @@ function CheckoutContent() {
           )}
 
           <div className="space-y-4">
-            {/* Apple Pay / Google Pay Button (Mock) */}
-            <button
-              onClick={handleCheckout}
-              disabled={isLoading}
-              className={`w-full flex items-center justify-center gap-2 py-4 px-4 rounded-xl shadow-md text-base font-bold text-white bg-gray-900 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 transition-all ${
-                isLoading ? 'opacity-70 cursor-not-allowed' : 'hover:-translate-y-0.5'
-              }`}
-            >
-              {isLoading ? (
-                <span className="flex items-center gap-2">
-                  <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  処理中...
-                </span>
-              ) : (
-                <>
-                  <span className="font-semibold">Apple Pay</span> / <span className="font-semibold">Google Pay</span> で支払う（Mock）
-                </>
-              )}
-            </button>
+            {isDev ? (
+              <>
+                {/* 開発環境（Local Mock用）: Apple Pay風ボタンとクレジットカード風フォーム */}
+                <button
+                  onClick={handleCheckout}
+                  disabled={isLoading}
+                  className={`w-full flex items-center justify-center gap-2 py-4 px-4 rounded-xl shadow-md text-base font-bold text-white bg-gray-900 hover:bg-gray-800 transition-all ${
+                    isLoading ? 'opacity-70 cursor-not-allowed' : 'hover:-translate-y-0.5'
+                  }`}
+                >
+                  {isLoading ? '処理中...' : 'Apple Pay / Google Pay で支払う（Mock）'}
+                </button>
 
-            {/* Mock Credit Card Form */}
-            <div className="mt-8 border-t border-gray-200 pt-6">
-              <h3 className="text-sm font-bold text-gray-700 mb-4">💳 クレジットカードで支払う（モック）</h3>
-              <form onSubmit={(e) => { e.preventDefault(); handleCheckout(); }} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">カード番号</label>
-                  <input 
-                    type="text" 
-                    placeholder="0000 0000 0000 0000" 
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] text-sm" 
-                    required 
-                  />
-                </div>
-                <div className="flex gap-4">
-                  <div className="flex-1">
-                    <label className="block text-xs font-medium text-gray-700 mb-1">有効期限</label>
-                    <input 
-                      type="text" 
-                      placeholder="MM/YY" 
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] text-sm" 
-                      required 
-                    />
+                <div className="mt-8 border-t border-gray-200 pt-6">
+                  <h3 className="text-sm font-bold text-gray-700 mb-4">💳 クレジットカードで支払う（モック）</h3>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">カード番号</label>
+                      <input type="text" placeholder="0000 0000 0000 0000" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50" disabled />
+                    </div>
+                    <button
+                      onClick={handleCheckout}
+                      disabled={isLoading}
+                      className="w-full mt-4 flex items-center justify-center py-3 px-4 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 transition-all shadow-md animate-pulse-glow"
+                    >
+                      {isLoading ? '処理中...' : '決済する（Mock）'}
+                    </button>
                   </div>
-                  <div className="flex-1">
-                    <label className="block text-xs font-medium text-gray-700 mb-1">CVC</label>
-                    <input 
-                      type="text" 
-                      placeholder="123" 
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] text-sm" 
-                      required 
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">カード名義</label>
-                  <input 
-                    type="text" 
-                    placeholder="TARO YAMADA" 
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] text-sm" 
-                    required 
-                  />
                 </div>
                 
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full mt-4 flex items-center justify-center py-3 px-4 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all shadow-md"
-                >
-                  {isLoading ? '処理中...' : '決済する（Mock）'}
-                </button>
-              </form>
-            </div>
-            
-            <p className="text-xs text-center text-gray-400 mt-4 leading-relaxed">
-              ※本番環境では、このボタンを押すとStripeの安全な決済画面へ移動します。<br/>現在はデモ環境のため、クリックすると即座に決済成功となります。
-            </p>
+                <p className="text-xs text-center text-gray-400 mt-4 leading-relaxed">
+                  ※現在はデモ環境のため、クリックすると即座に決済成功となります。
+                </p>
+              </>
+            ) : (
+              /* 本番環境用: Stripe Checkoutリダイレクトボタン */
+              <button
+                onClick={handleCheckout}
+                disabled={isLoading}
+                className={`w-full flex items-center justify-center gap-2 py-4 px-4 rounded-xl shadow-md text-base font-bold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all ${
+                  isLoading ? 'opacity-70 cursor-not-allowed' : 'hover:-translate-y-0.5'
+                }`}
+              >
+                {isLoading ? (
+                  <span className="flex items-center gap-2">
+                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    処理中...
+                  </span>
+                ) : (
+                  <span>💳 クレジットカードで安全に支払う (Stripe)</span>
+                )}
+              </button>
+            )}
           </div>
         </div>
         

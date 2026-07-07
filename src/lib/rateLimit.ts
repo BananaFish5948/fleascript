@@ -108,3 +108,62 @@ export async function recordAnalysisResult(ip: string, success: boolean) {
       locked_until: lockedUntil
     }, { onConflict: 'ip_address,date' });
 }
+
+export async function checkBncRateLimit(
+  ip: string,
+  subscriptionStatus: string
+): Promise<{ allowed: boolean; remaining: number; lockReason?: string }> {
+  const supabase = createAdminClient();
+  const today = new Date().toISOString().slice(0, 10);
+  const bncIp = `${ip}_bnc`;
+
+  let limit = 0;
+  if (subscriptionStatus === 'premium') {
+    limit = 30;
+  } else if (subscriptionStatus === 'standard') {
+    limit = 10;
+  }
+
+  const { data: ipData } = await supabase
+    .from('ip_rate_limits')
+    .select('count')
+    .eq('ip_address', bncIp)
+    .eq('date', today)
+    .maybeSingle();
+
+  const currentCount = ipData?.count ?? 0;
+  if (currentCount >= limit) {
+    return { 
+      allowed: false, 
+      remaining: 0, 
+      lockReason: '本日の対話境界線ヘルパーの利用枠の上限に達しました。' 
+    };
+  }
+
+  return { allowed: true, remaining: limit - currentCount };
+}
+
+export async function recordBncAnalysisResult(ip: string) {
+  const supabase = createAdminClient();
+  const today = new Date().toISOString().slice(0, 10);
+  const bncIp = `${ip}_bnc`;
+
+  const { data: ipData } = await supabase
+    .from('ip_rate_limits')
+    .select('count')
+    .eq('ip_address', bncIp)
+    .eq('date', today)
+    .maybeSingle();
+
+  let count = ipData?.count ?? 0;
+  count += 1;
+
+  await supabase
+    .from('ip_rate_limits')
+    .upsert({
+      ip_address: bncIp,
+      date: today,
+      count,
+      consecutive_failures: 0
+    }, { onConflict: 'ip_address,date' });
+}
