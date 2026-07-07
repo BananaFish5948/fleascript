@@ -127,6 +127,14 @@
 29. **Stripeにおけるウォレット決済の表示優先とデバイス制限のGotchas**:
     - Stripe Checkout画面で Google Pay や Apple Pay を最上部にデフォルト表示させたい場合、Stripeダッシュボードの「設定 ➔ Payments ➔ 支払い方法」から **`Link`**（Stripeの1クリック決済）を無効化（Disabled）することで、優先順位が繰り上がり、最上部に表示される。
     - Apple Pay はiOS/Macの Safari 環境でしか表示されず、Chrome（特にWindows）では Google Pay のみが表示されるというデバイス適合仕様を考慮すること。
+30. **Stripe APIの 'No such customer' に対する自動修復リトライとクレンジング**:
+    - Supabase上の `stripe_customer_id` が Stripe 上に存在しない（環境の変更や手動削除による不整合）状態でプラン変更・決済に進もうとすると、`No such customer` エラーで決済手続きがデッドロックする。
+    - これを防ぐため、`/api/checkout` ではエラー検知時に Stripe 顧客を再作成し、DBの ID を更新した上で自動で決済セッション作成を再試行する。`/api/checkout/portal` では無効な ID をクリアしてプランを `free` に強制リセットし、安全な復旧エラーを返す。
+31. **Basic認証 (`/admin`) が本番環境で機能しない環境変数の罠**:
+    - Basic認証を実行している `src/proxy.ts` は Next.js の Edge Runtime（ミドルウェア）で動作するため、Vercelの環境変数 `ADMIN_USER` や `ADMIN_PASS` が未登録、あるいはスコープで本番環境（Production）が除外されている場合、値が `undefined` になりログインできなくなる。
+    - 切り分けのため、401 Unauthorized レスポンスのヘッダーに変数読み込み成否を示す `x-debug-auth-user-loaded` および `x-debug-auth-pass-loaded` を付与している。
+32. **Stripe Checkoutの自動決済手段表示におけるデバイス制限の罠**:
+    - Stripe Checkout画面で Google Pay などのボタンを表示させるには、カードが登録された対象ブラウザ環境（Chrome等）が必要であり、Apple Pay の場合は Stripe ダッシュボードで `fleascript.vercel.app` のドメイン登録が必須である。
 
 
 ## Next Potential Steps
@@ -156,6 +164,10 @@
   - Implemented client-side local OCR (`tesseract.js` dynamic load) + backend text analysis (`gpt-4o-mini`) hybrid flow.
   - Placed banners in HOME and ADD tabs, restricting access to Standard/Premium plans.
   - Applied RLS-safe IP suffix hack (`${ip}_bnc`) to enforce daily rate limits without DB schema modifications.
+- [x] **Stripe & Admin Panel Upgrades**:
+  - Resolved Stripe "No such customer" crash with self-healing automatic re-creation and DB reset.
+  - Added support for toggling the Standard plan in the admin dashboard (`/admin`).
+  - Added HTTP basic auth debug headers to diagnose Edge environment variable resolution issues.
 - [ ] **Phase 4.3**: Promotion Strategy & Viral Copy. Invoke `@sns-marketer` (Gemika) to create copy.
 - [ ] **Phase 4.5**: Affiliate Monetization (Amazon Associates & Native Ads).
 - [x] Production Deployment (Vercel) & Custom Domain setup (Stripe Live Mode integrated).
