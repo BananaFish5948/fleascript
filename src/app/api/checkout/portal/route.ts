@@ -44,17 +44,34 @@ export async function POST(req: NextRequest) {
 
     const adminClient = createAdminClient()
 
-    // 1. ユーザーの stripe_customer_id を取得
+    // 1. ユーザーの stripe_customer_id および現在のプランステータスを取得
     const { data: dbUser } = await adminClient
       .from('users')
-      .select('stripe_customer_id')
+      .select('stripe_customer_id, subscription_status')
       .eq('id', user.id)
       .maybeSingle()
 
     const customerId = dbUser?.stripe_customer_id
+    const currentStatus = dbUser?.subscription_status || 'free'
 
     if (!customerId) {
-      return NextResponse.json({ error: '有効なサブスクリプション情報が見つかりません。ポータルを開くには一度購入する必要があります。' }, { status: 400 })
+      // Stripe上に顧客データがないにも関わらず、プラン状態が有料(standard/premium)になっている場合、
+      // ユーザーが自力で解約できなくなるのを防ぐため、即時DBをfreeにダウングレードする（自己修復フォールバック）
+      if (currentStatus !== 'free') {
+        const { error: resetErr } = await adminClient
+          .from('users')
+          .update({ subscription_status: 'free' })
+          .eq('id', user.id)
+
+        if (resetErr) {
+          console.error('[portal-api] Fallback reset error:', resetErr.message)
+          return NextResponse.json({ error: 'プランの強制解約に失敗しました。' }, { status: 500 })
+        }
+
+        return NextResponse.json({ url: '/?canceled=true' })
+      }
+
+      return NextResponse.json({ error: '有効なサブスクリプション情報が見つかりません。' }, { status: 400 })
     }
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001'
