@@ -43,9 +43,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Stripe 決済キーが設定されていません。' }, { status: 500 })
     }
 
-    const stripe = new Stripe(stripeSecretKey, {
-      apiVersion: '2025-01-27.acronyms' as any, // 適切な API バージョン
-    })
+    const stripe = new Stripe(stripeSecretKey)
 
     const adminClient = createAdminClient()
 
