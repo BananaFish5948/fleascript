@@ -20,9 +20,16 @@ export function proxy(req: NextRequest) {
     }
     
     // 認証失敗または未認証時は401を返す
+    const expectedUser = process.env.ADMIN_USER
+    const expectedPass = process.env.ADMIN_PASS
+
     return new NextResponse('Auth Required', {
       status: 401,
-      headers: { 'WWW-Authenticate': 'Basic realm="Secure Area"' }
+      headers: { 
+        'WWW-Authenticate': 'Basic realm="Secure Area"',
+        'x-debug-auth-user-loaded': expectedUser ? 'true' : 'false',
+        'x-debug-auth-pass-loaded': expectedPass ? 'true' : 'false'
+      }
     })
   }
 
