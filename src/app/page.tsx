@@ -15,6 +15,7 @@ import CustomShareModal from '@/components/CustomShareModal'
 import ManagePlanModal from '@/components/ManagePlanModal'
 import RoadmapGauge from '@/components/RoadmapGauge'
 import MonthlyReportModal from '@/components/MonthlyReportModal'
+import GentleBoundaryHelperModal from '@/components/GentleBoundaryHelperModal'
 import { InventoryItem, InventoryStatus } from '@/types/inventory'
 import PremiumChart from '@/components/PremiumChart'
 import LandingPage from '@/components/LandingPage'
@@ -22,7 +23,7 @@ import NativeAdCard from '@/components/NativeAdCard'
 import PremiumInsightPanel from '@/components/PremiumInsightPanel'
 import { AFFILIATE_ADS } from '@/lib/affiliateData'
 import BottomNav, { TabType } from '@/components/BottomNav'
-import { Archive, Crown, Download, RefreshCw, Sparkles, AlertCircle, Palette } from 'lucide-react'
+import { Archive, Crown, Download, RefreshCw, Sparkles, AlertCircle, Palette, Smile, ArrowRight } from 'lucide-react'
 import { seoCategories } from '@/data/seoCategories'
 
 export default function Home() {
@@ -72,6 +73,7 @@ export default function Home() {
   const [showShareModal, setShowShareModal] = useState(false)
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [showReportModal, setShowReportModal] = useState(false)
+  const [showBncModal, setShowBncModal] = useState(false)
 
   // タブ状態とキーボード検知
   const [activeTab, setActiveTab] = useState<TabType>('home')
@@ -81,6 +83,15 @@ export default function Home() {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const searchParams = new URLSearchParams(window.location.search);
+      
+      // クエリパラメータに認証コード(code)がある場合は callback へリダイレクトしてセッション化させる
+      const code = searchParams.get('code');
+      if (code) {
+        const next = searchParams.get('next') || '/';
+        window.location.href = `/auth/callback?code=${code}&next=${encodeURIComponent(next)}`;
+        return;
+      }
+
       const templateId = searchParams.get('template');
       if (templateId && seoCategories[templateId]) {
         setActiveTab('add');
@@ -440,6 +451,40 @@ export default function Home() {
                   onOpenReportModal={() => setShowReportModal(true)}
                 />
                 
+                {/* 穏やかな対話境界線ヘルパーバナー */}
+                <div 
+                  onClick={() => {
+                    if (subscriptionStatus === 'standard' || subscriptionStatus === 'premium') {
+                      setShowBncModal(true);
+                    } else {
+                      window.location.href = '/checkout?plan=standard';
+                    }
+                  }}
+                  className="bg-[var(--color-bg-surface)] border border-[var(--color-border)] rounded-2xl p-5 shadow-sm hover:border-[var(--color-accent)] hover:shadow-md transition-all cursor-pointer flex items-center justify-between gap-4 animate-fade-in-up"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-[var(--color-success-bg)] rounded-xl text-[var(--color-accent)] shrink-0">
+                      <Smile size={22} strokeWidth={1.5} />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-bold text-[var(--color-text-primary)] tracking-widest flex items-center gap-2">
+                        穏やかな対話境界線ヘルパー
+                        {subscriptionStatus === 'free' && (
+                          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-[var(--color-warning-bg)] text-[var(--color-warning)] border border-[var(--color-warning)]">
+                            Standard以上
+                          </span>
+                        )}
+                      </h4>
+                      <p className="text-xs text-[var(--color-text-secondary)] mt-1.5 leading-relaxed">
+                        購入者とのやり取りスクショから摩擦リスクを判定し、穏やかに対応する防衛返答を作成します。
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-[var(--color-text-secondary)] shrink-0">
+                    <ArrowRight size={18} />
+                  </div>
+                </div>
+
                 {subscriptionStatus !== 'premium' && (
                   <NativeAdCard 
                     ad={AFFILIATE_ADS.find(a => a.id === 'ad-measure')!} 
@@ -475,6 +520,40 @@ export default function Home() {
 
             {activeTab === 'add' && (
               <div className="animate-fade-in-up flex flex-col gap-8">
+                {/* 穏やかな対話境界線ヘルパーバナー */}
+                <div 
+                  onClick={() => {
+                    if (subscriptionStatus === 'standard' || subscriptionStatus === 'premium') {
+                      setShowBncModal(true);
+                    } else {
+                      window.location.href = '/checkout?plan=standard';
+                    }
+                  }}
+                  className="bg-[var(--color-bg-surface)] border border-[var(--color-border)] rounded-2xl p-5 shadow-sm hover:border-[var(--color-accent)] hover:shadow-md transition-all cursor-pointer flex items-center justify-between gap-4 animate-fade-in-up animate-delay-100"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-[var(--color-success-bg)] rounded-xl text-[var(--color-accent)] shrink-0">
+                      <Smile size={22} strokeWidth={1.5} />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-bold text-[var(--color-text-primary)] tracking-widest flex items-center gap-2">
+                        穏やかな対話境界線ヘルパー
+                        {subscriptionStatus === 'free' && (
+                          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-[var(--color-warning-bg)] text-[var(--color-warning)] border border-[var(--color-warning)]">
+                            Standard以上
+                          </span>
+                        )}
+                      </h4>
+                      <p className="text-xs text-[var(--color-text-secondary)] mt-1.5 leading-relaxed">
+                        購入者とのやり取りスクショから摩擦リスクを判定し、穏やかに対応する防衛返答を作成します。
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-[var(--color-text-secondary)] shrink-0">
+                    <ArrowRight size={18} />
+                  </div>
+                </div>
+
                 <ShippingCalculator subscriptionStatus={subscriptionStatus} />
                 <InventoryForm 
                   onAdd={handleAdd} 
@@ -740,6 +819,12 @@ export default function Home() {
         isOpen={showReportModal}
         onClose={() => setShowReportModal(false)}
         items={items}
+      />
+
+      <GentleBoundaryHelperModal
+        isOpen={showBncModal}
+        onClose={() => setShowBncModal(false)}
+        subscriptionStatus={subscriptionStatus}
       />
     </>
   )
