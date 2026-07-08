@@ -144,7 +144,11 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
             </form>
 
             <p className="text-[10px] text-center text-gray-400 mt-6 leading-relaxed">
-              ログインすることで、利用規約およびプライバシーポリシーに同意したものとみなされます。パスワードは保存されません。
+              ログインすることで、
+              <a href="/legal/terms" target="_blank" rel="noopener noreferrer" className="underline hover:text-stone-600 mx-0.5">利用規約</a>
+              および
+              <a href="/legal/privacy" target="_blank" rel="noopener noreferrer" className="underline hover:text-stone-600 mx-0.5">プライバシーポリシー</a>
+              に同意したものとみなされます。パスワードは保存されません。
             </p>
           </>
         )}
