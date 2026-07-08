@@ -314,10 +314,10 @@ function renderXSlide(slide: string, borderOuterColor: string) {
         {/* 誘導CTAバナー */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', backgroundColor: 'rgba(166, 93, 71, 0.05)', padding: '20px 40px', borderRadius: '20px', border: `1px solid ${COLORS.brand}` }}>
           <span style={{ fontSize: '20px', fontWeight: 'bold', color: COLORS.brand, letterSpacing: '2px', marginBottom: '8px' }}>
-            【無料・登録不要】最安送料シミュレーター公開中
+            【登録不要】最安送料判定ツール公開中
           </span>
           <span style={{ fontSize: '15px', color: COLORS.textPrimary }}>
-            FleaScriptの便利ツールで送料を計算し、AIで売れる説明文を作りましょう。
+            FleaScriptの便利ツールで送料を計算し、AI商品説明文を無料体験しましょう。
           </span>
         </div>
 
@@ -547,10 +547,10 @@ function renderInstagramSlide(slide: string, borderOuterColor: string) {
         {/* 誘導CTAバナー */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', backgroundColor: 'rgba(166, 93, 71, 0.05)', padding: '30px 40px', borderRadius: '20px', border: `1px solid ${COLORS.brand}`, width: '100%', maxWidth: '800px', margin: '0 auto' }}>
           <span style={{ fontSize: '22px', fontWeight: 'bold', color: COLORS.brand, letterSpacing: '2px', marginBottom: '8px', textAlign: 'center' }}>
-            【無料・登録不要】最安送料シミュレーター公開中
+            【登録不要】最安送料判定ツール公開中
           </span>
           <span style={{ fontSize: '16px', color: COLORS.textPrimary, textAlign: 'center', lineHeight: 1.5 }}>
-            FleaScriptの便利ツールで送料を計算し、AIで売れる説明文を作りましょう。プロフィールのリンクから今すぐ体験！
+            FleaScriptの便利ツールで送料を計算し、AI商品説明文を無料体験しましょう。プロフィールのリンクから！
           </span>
         </div>
 

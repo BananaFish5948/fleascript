@@ -230,7 +230,7 @@ export default function XCarouselMock() {
               </div>
 
               <p className="text-[10px] md:text-xs text-[var(--color-text-secondary)] mt-4 max-w-xs leading-relaxed">
-                登録不要・完全無料の送料シミュレーターや、AI商品説明文生成を今すぐ体験しましょう。
+                登録不要の送料シミュレーターや、AI商品説明文の無料お試しを今すぐ体験しましょう。
               </p>
             </div>
 
