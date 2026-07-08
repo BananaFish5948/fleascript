@@ -266,29 +266,64 @@ function renderXSlide(slide: string, borderOuterColor: string) {
           border: `1px solid ${borderOuterColor}`,
         }}
       >
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, margin: '40px 0' }}>
-          <div style={{ width: '120px', height: '120px', borderRadius: '32px', backgroundColor: COLORS.brand, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff', fontSize: '64px', fontWeight: 800, boxShadow: '0 8px 30px rgba(166, 93, 71, 0.2)' }}>
-            FS
-          </div>
-          <h3 style={{ fontSize: '48px', fontWeight: 800, color: COLORS.textPrimary, margin: '24px 0 0 0' }}>
-            FleaScript
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <span style={{ color: COLORS.brand, fontSize: '24px', fontWeight: 600, letterSpacing: '4px', marginBottom: '20px' }}>
+            // Recommended Equipment
+          </span>
+          <h3 style={{ fontSize: '42px', fontWeight: 600, color: COLORS.textPrimary, margin: 0 }}>
+            フリマ出品の必需品 ➔ 一撃で送料判定
           </h3>
-          <p style={{ fontSize: '20px', color: COLORS.textSecondary, letterSpacing: '6px', textTransform: 'uppercase', margin: '8px 0 40px 0' }}>
-            フリマ出品調律ツール
-          </p>
-          
-          <div style={{ padding: '16px 40px', border: `1px solid ${COLORS.brand}`, backgroundColor: 'rgba(166, 93, 71, 0.05)', borderRadius: '100px', fontSize: '20px', fontWeight: 600, color: COLORS.brand, letterSpacing: '4px' }}>
-            事前登録受付中
+        </div>
+
+        {/* 商品紹介イラストエリア (SVG) */}
+        <div style={{ display: 'flex', width: '100%', justifyContent: 'center', gap: '40px', margin: '30px 0' }}>
+          {/* 定規の紹介カード */}
+          <div style={{ display: 'flex', flexDirection: 'column', backgroundColor: COLORS.bgSurface, padding: '30px', borderRadius: '24px', border: `1px solid ${COLORS.border}`, width: '380px', alignItems: 'center' }}>
+            <svg width="180" height="90" viewBox="0 0 180 90" style={{ marginBottom: '20px' }}>
+              <rect x="10" y="25" width="160" height="40" rx="6" fill="rgba(122, 139, 118, 0.15)" stroke={COLORS.accent} strokeWidth="2" />
+              <rect x="30" y="37" width="120" height="16" rx="3" fill="#ffffff" stroke={COLORS.accent} strokeWidth="1" />
+              <line x1="20" y1="25" x2="20" y2="35" stroke={COLORS.accent} strokeWidth="1.5" />
+              <line x1="40" y1="25" x2="40" y2="35" stroke={COLORS.accent} strokeWidth="1.5" />
+              <line x1="60" y1="25" x2="60" y2="35" stroke={COLORS.accent} strokeWidth="1.5" />
+              <line x1="80" y1="25" x2="80" y2="35" stroke={COLORS.accent} strokeWidth="1.5" />
+              <line x1="100" y1="25" x2="100" y2="35" stroke={COLORS.accent} strokeWidth="1.5" />
+              <line x1="120" y1="25" x2="120" y2="35" stroke={COLORS.accent} strokeWidth="1.5" />
+              <line x1="140" y1="25" x2="140" y2="35" stroke={COLORS.accent} strokeWidth="1.5" />
+              <line x1="160" y1="25" x2="160" y2="35" stroke={COLORS.accent} strokeWidth="1.5" />
+            </svg>
+            <span style={{ fontSize: '18px', fontWeight: 'bold', color: COLORS.textPrimary }}>厚さ測定定規</span>
+            <span style={{ fontSize: '14px', color: COLORS.textSecondary, marginTop: '8px', textAlign: 'center', lineHeight: 1.4 }}>
+              郵便局やコンビニで突き返される送料超過の失敗を防ぐ必須ツール
+            </span>
           </div>
 
-          <p style={{ fontSize: '22px', color: COLORS.textSecondary, marginTop: '40px', maxWidth: '600px', textAlign: 'center', lineHeight: 1.6 }}>
-            プロフィールの固定リンクから、最優先で余白を手に入れましょう。
-          </p>
+          {/* 専用ダンボール箱の紹介カード */}
+          <div style={{ display: 'flex', flexDirection: 'column', backgroundColor: COLORS.bgSurface, padding: '30px', borderRadius: '24px', border: `1px solid ${COLORS.border}`, width: '380px', alignItems: 'center' }}>
+            <svg width="180" height="90" viewBox="0 0 180 90" style={{ marginBottom: '20px' }}>
+              <path d="M 30 70 L 90 85 L 150 70 L 150 40 L 90 25 L 30 40 Z" fill="none" stroke={COLORS.brand} strokeWidth="2" />
+              <path d="M 30 40 L 90 55 L 150 40" fill="none" stroke={COLORS.brand} strokeWidth="1.5" />
+              <line x1="90" y1="55" x2="90" y2="85" stroke={COLORS.brand} strokeWidth="2" />
+            </svg>
+            <span style={{ fontSize: '18px', fontWeight: 'bold', color: COLORS.textPrimary }}>梱包用ダンボール箱</span>
+            <span style={{ fontSize: '14px', color: COLORS.textSecondary, marginTop: '8px', textAlign: 'center', lineHeight: 1.4 }}>
+              組み立てカンタンでテープ不要。サイズ超過を防いで利益を最大化
+            </span>
+          </div>
+        </div>
+
+        {/* 誘導CTAバナー */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', backgroundColor: 'rgba(166, 93, 71, 0.05)', padding: '20px 40px', borderRadius: '20px', border: `1px solid ${COLORS.brand}` }}>
+          <span style={{ fontSize: '20px', fontWeight: 'bold', color: COLORS.brand, letterSpacing: '2px', marginBottom: '8px' }}>
+            【無料・登録不要】最安送料シミュレーター公開中
+          </span>
+          <span style={{ fontSize: '15px', color: COLORS.textPrimary }}>
+            FleaScriptの便利ツールで送料を計算し、AIで売れる説明文を作りましょう。
+          </span>
         </div>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span style={{ fontSize: '18px', fontFamily: 'monospace', color: COLORS.textSecondary, letterSpacing: '4px' }}>
-            Get Started
+            FleaScript Tools
           </span>
           <span style={{ fontSize: '18px', fontFamily: 'monospace', color: COLORS.textSecondary }}>
             4 / 4
@@ -462,29 +497,66 @@ function renderInstagramSlide(slide: string, borderOuterColor: string) {
           border: `1px solid ${borderOuterColor}`,
         }}
       >
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, marginTop: '80px' }}>
-          <div style={{ width: '130px', height: '130px', borderRadius: '36px', backgroundColor: COLORS.brand, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff', fontSize: '72px', fontWeight: 800, boxShadow: '0 8px 30px rgba(166, 93, 71, 0.2)' }}>
-            FS
-          </div>
-          <h3 style={{ fontSize: '56px', fontWeight: 800, color: COLORS.textPrimary, margin: '30px 0 0 0' }}>
-            FleaScript
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <span style={{ color: COLORS.brand, fontSize: '24px', fontWeight: 600, letterSpacing: '4px', marginBottom: '20px' }}>
+            // Recommended Equipment
+          </span>
+          <h3 style={{ fontSize: '48px', fontWeight: 600, color: COLORS.textPrimary, margin: 0, lineHeight: 1.3 }}>
+            フリマ出品の必需品 ➔ 一撃で送料判定
           </h3>
-          <p style={{ fontSize: '22px', color: COLORS.textSecondary, letterSpacing: '6px', textTransform: 'uppercase', margin: '10px 0 60px 0' }}>
-            フリマ出品調律ツール
-          </p>
-          
-          <div style={{ padding: '18px 48px', border: `1px solid ${COLORS.brand}`, backgroundColor: 'rgba(166, 93, 71, 0.05)', borderRadius: '100px', fontSize: '22px', fontWeight: 600, color: COLORS.brand, letterSpacing: '4px', marginBottom: '60px' }}>
-            事前登録受付中
+        </div>
+
+        {/* 商品紹介イラストエリア（縦長レイアウト） */}
+        <div style={{ display: 'flex', flexDirection: 'column', width: '100%', gap: '30px', margin: '30px 0', alignItems: 'center' }}>
+          {/* 定規の紹介カード */}
+          <div style={{ display: 'flex', backgroundColor: COLORS.bgSurface, padding: '30px', borderRadius: '24px', border: `1px solid ${COLORS.border}`, width: '100%', maxWidth: '800px', alignItems: 'center', gap: '40px' }}>
+            <svg width="180" height="90" viewBox="0 0 180 90" style={{ flexShrink: 0 }}>
+              <rect x="10" y="25" width="160" height="40" rx="6" fill="rgba(122, 139, 118, 0.15)" stroke={COLORS.accent} strokeWidth="2" />
+              <rect x="30" y="37" width="120" height="16" rx="3" fill="#ffffff" stroke={COLORS.accent} strokeWidth="1" />
+              <line x1="20" y1="25" x2="20" y2="35" stroke={COLORS.accent} strokeWidth="1.5" />
+              <line x1="40" y1="25" x2="40" y2="35" stroke={COLORS.accent} strokeWidth="1.5" />
+              <line x1="60" y1="25" x2="60" y2="35" stroke={COLORS.accent} strokeWidth="1.5" />
+              <line x1="80" y1="25" x2="80" y2="35" stroke={COLORS.accent} strokeWidth="1.5" />
+              <line x1="100" y1="25" x2="100" y2="35" stroke={COLORS.accent} strokeWidth="1.5" />
+              <line x1="120" y1="25" x2="120" y2="35" stroke={COLORS.accent} strokeWidth="1.5" />
+            </svg>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <span style={{ fontSize: '20px', fontWeight: 'bold', color: COLORS.textPrimary }}>厚さ測定定規</span>
+              <span style={{ fontSize: '15px', color: COLORS.textSecondary, marginTop: '8px', lineHeight: 1.5 }}>
+                郵便局やコンビニで突き返される送料超過の失敗を防ぐ必須ツール
+              </span>
+            </div>
           </div>
 
-          <p style={{ fontSize: '24px', color: COLORS.textSecondary, textAlign: 'center', lineHeight: 1.6, maxWidth: '750px' }}>
-            プロフィールのリンクから、最優先で「余白」を手に入れましょう。
-          </p>
+          {/* 専用ダンボール箱の紹介カード */}
+          <div style={{ display: 'flex', backgroundColor: COLORS.bgSurface, padding: '30px', borderRadius: '24px', border: `1px solid ${COLORS.border}`, width: '100%', maxWidth: '800px', alignItems: 'center', gap: '40px' }}>
+            <svg width="180" height="90" viewBox="0 0 180 90" style={{ flexShrink: 0 }}>
+              <path d="M 30 70 L 90 85 L 150 70 L 150 40 L 90 25 L 30 40 Z" fill="none" stroke={COLORS.brand} strokeWidth="2" />
+              <path d="M 30 40 L 90 55 L 150 40" fill="none" stroke={COLORS.brand} strokeWidth="1.5" />
+              <line x1="90" y1="55" x2="90" y2="85" stroke={COLORS.brand} strokeWidth="2" />
+            </svg>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <span style={{ fontSize: '20px', fontWeight: 'bold', color: COLORS.textPrimary }}>梱包用ダンボール箱</span>
+              <span style={{ fontSize: '15px', color: COLORS.textSecondary, marginTop: '8px', lineHeight: 1.5 }}>
+                組み立てカンタンでテープ不要。サイズ超過を防いで利益を最大化
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* 誘導CTAバナー */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', backgroundColor: 'rgba(166, 93, 71, 0.05)', padding: '30px 40px', borderRadius: '20px', border: `1px solid ${COLORS.brand}`, width: '100%', maxWidth: '800px', margin: '0 auto' }}>
+          <span style={{ fontSize: '22px', fontWeight: 'bold', color: COLORS.brand, letterSpacing: '2px', marginBottom: '8px', textAlign: 'center' }}>
+            【無料・登録不要】最安送料シミュレーター公開中
+          </span>
+          <span style={{ fontSize: '16px', color: COLORS.textPrimary, textAlign: 'center', lineHeight: 1.5 }}>
+            FleaScriptの便利ツールで送料を計算し、AIで売れる説明文を作りましょう。プロフィールのリンクから今すぐ体験！
+          </span>
         </div>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span style={{ fontSize: '18px', fontFamily: 'monospace', color: COLORS.textSecondary, letterSpacing: '4px' }}>
-            Get Started
+            FleaScript Tools
           </span>
           <span style={{ fontSize: '18px', fontFamily: 'monospace', color: COLORS.textSecondary }}>
             4 / 4
