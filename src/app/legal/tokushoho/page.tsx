@@ -52,8 +52,8 @@ export default function TokushohoPage() {
 
           <section className="grid grid-cols-1 md:grid-cols-3 gap-4 border-b pb-6">
             <h2 className="font-bold text-gray-900">販売価格</h2>
-            <div className="md:col-span-2">
-              購入手続きの際に画面に表示されます。（例：月額300円）
+            <div className="md:col-span-2 text-stone-700">
+              購入手続きの際に画面に表示されます。（例：月額500円〜）
             </div>
           </section>
 
