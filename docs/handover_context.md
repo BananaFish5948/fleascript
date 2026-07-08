@@ -140,7 +140,14 @@
     - この際、単に `console.warn` などのログ出力をコメントアウトまたは削除するだけの「臭いものに蓋」をする修正は**絶対に禁止**とする。ログだけを消しても、Webhookリクエストが来るたびに Supabase DB への無駄な select クエリが走り続け、DB接続の枯渇やサーバー負荷を引き起こす。
     - **対策**: 存在しない顧客IDを一時的（例：5分間）に保持するインメモリキャッシュ（`invalidCustomerCache`）を導入し、DBクエリとログの両方をバイパスする設計を徹底すること。
     - **トラブルシューティング原則**: ログの洪水でコンソールが操作不能になった場合は、慌ててコード修正だけで解決しようとせず、まず `stripe.exe` などの Stripe CLI プロセスをキル、あるいは通信を遮断して「安全な静止状態」を確保してから修正を適用すること。
-
+34. **ユーザー登録・ログイン画面における利用規約の事前同意リンク（リーガル要件）**:
+    - アカウント登録時に「利用規約やプライバシーポリシーに同意したものとみなす」という旨の文言を配置する場合、ユーザーが事前に確認できるように、その文言自体に `_blank`（別タブ）で開く本物のハイパーリンク（`/legal/terms` 等）を埋め込むことが法的に必須。これがない場合、同意プロセスの法的有効性やストア審査に抵触する。
+35. **無料ツールからログイン要機能への誘導時のAuthModal自動起動ハック（UX連携）**:
+    - ログイン不要の最安送料シミュレーター（`/shipping`）の最下部などから、商品説明文作成（AI）へユーザーを流す際、単にトップページ（`/`）へ戻すだけでは離脱される。
+    - 対策として、誘導リンク先を `href="/?auth=true"` とし、トップページ側の `useEffect` で `auth` クエリパラメータを検出した際に `showAuthModal(true)` をトリガーする設計にしてある。検出後は history API でパラメータを消去し、URLをクリーンに保つ。
+36. **Satori画像生成APIのフォント適合とUnicode文字化け（豆腐）の死角**:
+    - Satoriで日本語付きバナー画像を動的に書き出す際、`yumin.ttf` などの日本語フォントを読み込ませるが、特殊な矢印記号（例：`➔`）などはフォント側がサポートしておらず、四角い「豆腐（`❑`）」に化けてレンダリングされる。
+    - 特殊記号を合成する際は、フォントに収録されている一般的な矢印（`→`）を使用するか、インラインSVGの `path` や `rect` を用いて自律的にグラフィック描画することで文字化けを完全に回避すること。
 
 ## Next Potential Steps
 - [x] Phase 3: Auth Integration, UI Refinement, Share Bonus & Roadmap Gauge.
@@ -183,7 +190,7 @@
   - Upgraded the client-side canvas engine in `MonthlyReportModal.tsx` to support Kinfolk aesthetics (Terracotta/Sage earth tones) and resolved text overlapping bugs.
   - Replaced system emojis (📊, 📦, ✨, 🚀) inside the canvas with inline SVGs preloaded via `useRef` cache pool to guarantee 100% glyph integrity and eliminate garbage collection overhead.
   - Optimized Stripe Webhook logic: Downgraded missing user sync issues to `console.warn` to prevent Vercel critical false-alarms, and integrated a non-blocking Discord/Slack chat alert notification with a 1-second timeout and URL validation to instantly release response loops and prevent Stripe retry loops.
-- [ ] **Phase 4.3**: Promotion Strategy & Viral Copy. Invoke `@sns-marketer` (Gemika) to create copy.
+- [x] **Phase 4.3**: Promotion Strategy & Viral Copy. (Satori API Slide 4 text-integrated ad graphics, X/Instagram posts, and legal agreement sync completed).
 - [ ] **Phase 4.5**: Affiliate Monetization (Amazon Associates & Native Ads).
 - [x] Production Deployment (Vercel) & Custom Domain setup (Stripe Live Mode integrated).
 - [x] Real Stripe Integration (Replace Mock) - Completed via hybrid dev-mock/prod-stripe routing.
