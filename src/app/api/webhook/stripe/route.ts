@@ -79,7 +79,7 @@ export async function POST(req: NextRequest) {
           .maybeSingle()
 
         if (userErr || !dbUser) {
-          console.error(`[stripe-webhook] customer.subscription.updated: User not found for customerId ${customerId}`)
+          console.warn(`[stripe-webhook] customer.subscription.updated: User not found for customerId ${customerId}. (Skipped update sync)`)
           break
         }
 
@@ -136,7 +136,7 @@ export async function POST(req: NextRequest) {
           .maybeSingle()
 
         if (userErr || !dbUser) {
-          console.error(`[stripe-webhook] customer.subscription.deleted: User not found for customerId ${customerId}`)
+          console.warn(`[stripe-webhook] customer.subscription.deleted: User not found for customerId ${customerId}. (Skipped downgrade sync)`)
           break
         }
 
