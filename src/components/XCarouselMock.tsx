@@ -226,11 +226,11 @@ export default function XCarouselMock() {
               </p>
               
               <div className="mt-6 px-6 py-2 border border-[var(--color-brand)]/20 bg-[var(--color-brand-dim)] rounded-full text-xs font-semibold text-[var(--color-brand)] tracking-widest">
-                事前登録受付中
+                無料お試し公開中
               </div>
 
               <p className="text-[10px] md:text-xs text-[var(--color-text-secondary)] mt-4 max-w-xs leading-relaxed">
-                プロフィールの固定リンクから、最優先で余白を手に入れましょう。
+                登録不要・完全無料の送料シミュレーターや、AI商品説明文生成を今すぐ体験しましょう。
               </p>
             </div>
 
