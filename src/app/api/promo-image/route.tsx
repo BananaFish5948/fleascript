@@ -271,7 +271,7 @@ function renderXSlide(slide: string, borderOuterColor: string) {
             // Recommended Equipment
           </span>
           <h3 style={{ fontSize: '42px', fontWeight: 600, color: COLORS.textPrimary, margin: 0 }}>
-            フリマ出品の必需品 ➔ 一撃で送料判定
+            フリマ出品の必需品 → 一撃で送料判定
           </h3>
         </div>
 
@@ -502,7 +502,7 @@ function renderInstagramSlide(slide: string, borderOuterColor: string) {
             // Recommended Equipment
           </span>
           <h3 style={{ fontSize: '48px', fontWeight: 600, color: COLORS.textPrimary, margin: 0, lineHeight: 1.3 }}>
-            フリマ出品の必需品 ➔ 一撃で送料判定
+            フリマ出品の必需品 → 一撃で送料判定
           </h3>
         </div>
 
