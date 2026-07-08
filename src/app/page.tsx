@@ -23,7 +23,7 @@ import NativeAdCard from '@/components/NativeAdCard'
 import PremiumInsightPanel from '@/components/PremiumInsightPanel'
 import { AFFILIATE_ADS } from '@/lib/affiliateData'
 import BottomNav, { TabType } from '@/components/BottomNav'
-import { Archive, Crown, Download, RefreshCw, Sparkles, AlertCircle, Palette, Smile, ArrowRight } from 'lucide-react'
+import { Archive, Crown, Download, RefreshCw, Sparkles, AlertCircle, Palette, Smile, ArrowRight, Heart, Gift } from 'lucide-react'
 import { seoCategories } from '@/data/seoCategories'
 
 export default function Home() {
@@ -777,7 +777,7 @@ export default function Home() {
                 {/* カラーテーマ設定カード */}
                 <div className="bg-[var(--color-bg-surface)] p-6 rounded-2xl border border-[var(--color-border)] shadow-sm animate-fade-in-up">
                   <h3 className="font-bold text-[var(--color-text-primary)] mb-2 flex items-center gap-1.5 tracking-wider text-sm">
-                    <span className="text-base shrink-0 select-none">🎨</span>
+                    <Palette size={16} className="text-[var(--color-brand)] shrink-0" strokeWidth={2} />
                     <span>カラーテーマ設定</span>
                   </h3>
                   <p className="text-xs text-[var(--color-text-secondary)] mb-6 leading-relaxed">
@@ -862,7 +862,7 @@ export default function Home() {
                 {/* 運営支援・応援アフィリエイトカード */}
                 <div className="bg-[var(--color-bg-surface)] p-6 rounded-2xl border border-[var(--color-border)] shadow-sm animate-fade-in-up">
                   <h3 className="font-bold text-[var(--color-text-primary)] mb-2 flex items-center gap-1.5 tracking-wider text-sm">
-                    <span className="text-base shrink-0 select-none">☕</span>
+                    <Heart size={16} className="text-[var(--color-brand)] shrink-0" strokeWidth={2} />
                     <span>FleaScriptを応援する</span>
                   </h3>
                   <p className="text-xs text-[var(--color-text-secondary)] mb-4 leading-relaxed">
@@ -874,7 +874,8 @@ export default function Home() {
                     rel="noopener noreferrer"
                     className="w-full bg-[var(--color-brand)] hover:opacity-90 text-white font-semibold text-xs tracking-widest py-3 px-6 rounded-xl shadow-md transition-opacity inline-flex items-center justify-center gap-1.5"
                   >
-                    🎁 Amazonでお買い物をして応援する
+                    <Gift size={14} className="shrink-0" strokeWidth={2} />
+                    <span>Amazonでお買い物をして応援する</span>
                   </a>
                 </div>
 
