@@ -81,7 +81,6 @@ export async function POST(req: NextRequest) {
         if (userErr || !dbUser) {
           const warnMsg = `[stripe-webhook] customer.subscription.updated: User not found for customerId ${customerId}. (Skipped update sync)`
           console.warn(warnMsg)
-          sendAlert(`⚠️ ${warnMsg}`)
           break
         }
 
@@ -140,7 +139,6 @@ export async function POST(req: NextRequest) {
         if (userErr || !dbUser) {
           const warnMsg = `[stripe-webhook] customer.subscription.deleted: User not found for customerId ${customerId}. (Skipped downgrade sync)`
           console.warn(warnMsg)
-          sendAlert(`⚠️ ${warnMsg}`)
           break
         }
 
