@@ -34,7 +34,7 @@ VALUES
     'メルカリのネコポスやゆうパケットに完全対応。組み立てカンタンでテープ不要の設計です。', 
     '約 ￥2,500', 
     'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=400&q=80', 
-    'https://www.amazon.co.jp/', 
+    'https://www.amazon.co.jp/dp/B07P85M8ZH', 
     'shipping', 
     ARRAY['ネコポス', 'ゆうパケットポスト', 'クリックポスト']
   ),
@@ -44,7 +44,7 @@ VALUES
     '少し厚みのある衣類や雑貨の発送に必須。まとめて買えば1枚あたりのコストを抑えられます。', 
     '約 ￥1,400', 
     'https://images.unsplash.com/photo-1577705998148-6da4f3963bc8?w=400&q=80', 
-    'https://www.amazon.co.jp/', 
+    'https://www.amazon.co.jp/dp/B00V5Q8DUS', 
     'shipping', 
     ARRAY['宅急便コンパクト']
   ),
@@ -54,7 +54,7 @@ VALUES
     '発送前の厚さオーバーを防止！コンビニや郵便局で突き返されるストレスをなくします。', 
     '約 ￥800', 
     'https://images.unsplash.com/photo-1544256718-3bcf237f3974?w=400&q=80', 
-    'https://www.amazon.co.jp/', 
+    'https://www.amazon.co.jp/dp/B07N8G2PZ7', 
     'dashboard', 
     NULL
   ),
@@ -64,7 +64,7 @@ VALUES
     '水濡れ防止の必須アイテム。Tシャツや書籍の梱包を美しく仕上げ、良い評価に繋がります。', 
     '約 ￥600', 
     'https://images.unsplash.com/photo-1586528116311-ad8ed716d40f?w=400&q=80', 
-    'https://www.amazon.co.jp/', 
+    'https://www.amazon.co.jp/dp/B004XIF42U', 
     'dashboard', 
     NULL
   ),
@@ -74,7 +74,7 @@ VALUES
     '商品写真のクオリティが劇的にアップ！明るく綺麗な写真で売却スピードを上げましょう。', 
     '約 ￥2,000', 
     'https://images.unsplash.com/photo-1616423640778-28d1b53229bd?w=400&q=80', 
-    'https://www.amazon.co.jp/', 
+    'https://www.amazon.co.jp/dp/B08B8D1G41', 
     'dashboard', 
     NULL
   )

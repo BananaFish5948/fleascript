@@ -19,7 +19,7 @@ export const AFFILIATE_ADS: NativeAdData[] = [
     description: 'メルカリのネコポスやゆうパケットに完全対応。組み立てカンタンでテープ不要の設計です。',
     priceText: '約 ￥2,500',
     imageUrl: 'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=400&q=80',
-    affiliateUrl: 'https://www.amazon.co.jp/',
+    affiliateUrl: 'https://www.amazon.co.jp/dp/B07P85M8ZH',
     context: 'shipping',
     sizeTarget: ['ネコポス', 'ゆうパケットポスト', 'クリックポスト']
   },
@@ -29,7 +29,7 @@ export const AFFILIATE_ADS: NativeAdData[] = [
     description: '少し厚みのある衣類や雑貨の発送に必須。まとめて買えば1枚あたりのコストを抑えられます。',
     priceText: '約 ￥1,400',
     imageUrl: 'https://images.unsplash.com/photo-1577705998148-6da4f3963bc8?w=400&q=80',
-    affiliateUrl: 'https://www.amazon.co.jp/',
+    affiliateUrl: 'https://www.amazon.co.jp/dp/B00V5Q8DUS',
     context: 'shipping',
     sizeTarget: ['宅急便コンパクト']
   },
@@ -39,7 +39,7 @@ export const AFFILIATE_ADS: NativeAdData[] = [
     description: '発送前の厚さオーバーを防止！コンビニや郵便局で突き返されるストレスをなくします。',
     priceText: '約 ￥800',
     imageUrl: 'https://images.unsplash.com/photo-1544256718-3bcf237f3974?w=400&q=80',
-    affiliateUrl: 'https://www.amazon.co.jp/',
+    affiliateUrl: 'https://www.amazon.co.jp/dp/B07N8G2PZ7',
     context: 'dashboard'
   },
   {
@@ -48,7 +48,7 @@ export const AFFILIATE_ADS: NativeAdData[] = [
     description: '水濡れ防止の必須アイテム。Tシャツや書籍の梱包を美しく仕上げ、良い評価に繋がります。',
     priceText: '約 ￥600',
     imageUrl: 'https://images.unsplash.com/photo-1586528116311-ad8ed716d40f?w=400&q=80',
-    affiliateUrl: 'https://www.amazon.co.jp/',
+    affiliateUrl: 'https://www.amazon.co.jp/dp/B004XIF42U',
     context: 'dashboard'
   },
   {
@@ -57,7 +57,7 @@ export const AFFILIATE_ADS: NativeAdData[] = [
     description: '商品写真のクオリティが劇的にアップ！明るく綺麗な写真で売却スピードを上げましょう。',
     priceText: '約 ￥2,000',
     imageUrl: 'https://images.unsplash.com/photo-1616423640778-28d1b53229bd?w=400&q=80',
-    affiliateUrl: 'https://www.amazon.co.jp/',
+    affiliateUrl: 'https://www.amazon.co.jp/dp/B08B8D1G41',
     context: 'dashboard'
   }
 ]
