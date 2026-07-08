@@ -17,36 +17,36 @@ export default function TokushohoPage() {
         <div className="space-y-6 text-sm text-gray-700">
           <section className="grid grid-cols-1 md:grid-cols-3 gap-4 border-b pb-6">
             <h2 className="font-bold text-gray-900">販売事業者</h2>
-            <div className="md:col-span-2 text-gray-400 bg-gray-50 p-3 rounded-lg border border-dashed border-gray-200">
-              [ここに事業者名・法人名を入力]
+            <div className="md:col-span-2 text-stone-700">
+              FleaScript運営事務局
             </div>
           </section>
 
           <section className="grid grid-cols-1 md:grid-cols-3 gap-4 border-b pb-6">
             <h2 className="font-bold text-gray-900">運営統括責任者</h2>
-            <div className="md:col-span-2 text-gray-400 bg-gray-50 p-3 rounded-lg border border-dashed border-gray-200">
-              [ここに代表者氏名を入力]
+            <div className="md:col-span-2 text-stone-600">
+              消費者庁「特定商取引法に関する担当」の指針に則り、請求があった場合遅滞なく開示いたします。
             </div>
           </section>
 
           <section className="grid grid-cols-1 md:grid-cols-3 gap-4 border-b pb-6">
             <h2 className="font-bold text-gray-900">所在地</h2>
-            <div className="md:col-span-2 text-gray-400 bg-gray-50 p-3 rounded-lg border border-dashed border-gray-200">
-              [ここに住所を入力]
+            <div className="md:col-span-2 text-stone-600">
+              請求があった場合遅滞なく開示いたします。
             </div>
           </section>
 
           <section className="grid grid-cols-1 md:grid-cols-3 gap-4 border-b pb-6">
             <h2 className="font-bold text-gray-900">電話番号</h2>
-            <div className="md:col-span-2 text-gray-400 bg-gray-50 p-3 rounded-lg border border-dashed border-gray-200">
-              [ここに電話番号を入力] ※「電話番号についてはお問い合わせ先メールアドレスにてご請求をいただければ、遅滞なく開示いたします。」でも可
+            <div className="md:col-span-2 text-stone-600">
+              電話番号についてはお問い合わせ先メールアドレスにてご請求をいただければ、遅滞なく開示いたします。
             </div>
           </section>
 
           <section className="grid grid-cols-1 md:grid-cols-3 gap-4 border-b pb-6">
             <h2 className="font-bold text-gray-900">メールアドレス</h2>
-            <div className="md:col-span-2 text-gray-400 bg-gray-50 p-3 rounded-lg border border-dashed border-gray-200">
-              [ここにサポートメールアドレスを入力]
+            <div className="md:col-span-2 text-stone-700 font-medium">
+              support.fleascript@gmail.com
             </div>
           </section>
 
