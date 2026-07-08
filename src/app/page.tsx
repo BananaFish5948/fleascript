@@ -777,7 +777,7 @@ export default function Home() {
                 {/* カラーテーマ設定カード */}
                 <div className="bg-[var(--color-bg-surface)] p-6 rounded-2xl border border-[var(--color-border)] shadow-sm animate-fade-in-up">
                   <h3 className="font-bold text-[var(--color-text-primary)] mb-2 flex items-center gap-1.5 tracking-wider text-sm">
-                    <Palette size={16} className="text-[var(--color-brand)] shrink-0" strokeWidth={2} />
+                    <span className="text-base shrink-0 select-none">🎨</span>
                     <span>カラーテーマ設定</span>
                   </h3>
                   <p className="text-xs text-[var(--color-text-secondary)] mb-6 leading-relaxed">
@@ -862,7 +862,7 @@ export default function Home() {
                 {/* 運営支援・応援アフィリエイトカード */}
                 <div className="bg-[var(--color-bg-surface)] p-6 rounded-2xl border border-[var(--color-border)] shadow-sm animate-fade-in-up">
                   <h3 className="font-bold text-[var(--color-text-primary)] mb-2 flex items-center gap-1.5 tracking-wider text-sm">
-                    <Crown size={16} className="text-[var(--color-warning)] shrink-0" strokeWidth={2} />
+                    <span className="text-base shrink-0 select-none">☕</span>
                     <span>FleaScriptを応援する</span>
                   </h3>
                   <p className="text-xs text-[var(--color-text-secondary)] mb-4 leading-relaxed">
