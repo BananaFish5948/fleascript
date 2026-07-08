@@ -329,7 +329,15 @@ export default function LandingPage({ onLoginClick }: LandingPageProps) {
 
       {/* SEO Template Links Section */}
       <section className="py-12 bg-stone-50 border-t border-stone-200">
-        <div className="max-w-5xl mx-auto px-4">
+        <div className="max-w-5xl mx-auto px-4 text-center">
+          <div className="mb-8">
+            <a 
+              href="/shipping" 
+              className="inline-flex items-center gap-2 text-xs font-bold text-[var(--color-brand)] border border-[var(--color-brand)]/20 bg-[var(--color-brand-dim)] px-6 py-3 rounded-full hover:bg-[var(--color-brand)] hover:text-white transition-all shadow-sm cursor-pointer"
+            >
+              🚚 最安送料シミュレーター（無料・登録不要）を使ってみる →
+            </a>
+          </div>
           <h3 className="text-xs font-bold text-stone-400 uppercase tracking-[0.2em] text-center mb-6">
             AI商品説明テンプレート一覧
           </h3>
