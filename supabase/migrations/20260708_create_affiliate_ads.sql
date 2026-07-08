@@ -36,7 +36,7 @@ VALUES
     'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=400&q=80', 
     'https://www.amazon.co.jp/s?k=%E3%83%8D%E3%82%B3%E3%83%9D%E3%82%B9+%E3%83%80%E3%83%B3%E3%83%9C%E3%83%BC%E3%83%AB', 
     'shipping', 
-    ARRAY['ネコポス', 'ゆうパケットポスト', 'クリックポスト']
+    ARRAY['ネコポス', 'ゆうパケット', 'ゆうパケットポスト', 'ゆうパケットポストmini', 'クリックポスト']
   ),
   (
     'ad-box-compact', 
@@ -46,7 +46,17 @@ VALUES
     'https://images.unsplash.com/photo-1577705998148-6da4f3963bc8?w=400&q=80', 
     'https://www.amazon.co.jp/s?k=%E5%AE%85%E6%80%A5%E4%BE%BF%E3%82%B3%E3%83%B3%E3%83%91%E3%82%AF%E3%83%88+%E5%B0%82%E7%94%A8BOX', 
     'shipping', 
-    ARRAY['宅急便コンパクト']
+    ARRAY['宅急便コンパクト', 'ゆうパケットプラス']
+  ),
+  (
+    'ad-box-60size',
+    'ダンボール箱 60サイズ (無地・組み立てカンタン) 10枚セット',
+    '3辺合計60cm以内の宅配便に対応。引っ越しや書籍、小さめの衣服などの発送に最適です。',
+    '約 ￥1,200',
+    'https://images.unsplash.com/photo-1595079676339-1534801ad6cf?w=400&q=80',
+    'https://www.amazon.co.jp/s?k=%E3%83%8D%E3%82%B3%E3%83%9D%E3%82%B9+%E3%83%80%E3%83%B3%E3%83%9C%E3%83%BC%E3%83%AB',
+    'shipping',
+    ARRAY['宅急便60サイズ', 'ゆうパック60サイズ']
   ),
   (
     'ad-measure', 
