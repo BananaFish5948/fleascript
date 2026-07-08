@@ -859,6 +859,25 @@ export default function Home() {
                   </div>
                 </div>
 
+                {/* 運営支援・応援アフィリエイトカード */}
+                <div className="bg-[var(--color-bg-surface)] p-6 rounded-2xl border border-[var(--color-border)] shadow-sm animate-fade-in-up">
+                  <h3 className="font-bold text-[var(--color-text-primary)] mb-2 flex items-center gap-1.5 tracking-wider text-sm">
+                    <Crown size={16} className="text-[var(--color-warning)] shrink-0" strokeWidth={2} />
+                    <span>FleaScriptを応援する</span>
+                  </h3>
+                  <p className="text-xs text-[var(--color-text-secondary)] mb-4 leading-relaxed">
+                    FleaScriptは完全に無料で運営されています。もしツールを気に入っていただけましたら、以下のボタンからAmazonでお買い物をしていただくことで、紹介料の一部が運営・サーバー代の支援となります（ご自身の追加負担は一切ありません）。
+                  </p>
+                  <a
+                    href={`https://www.amazon.co.jp/?tag=${process.env.NEXT_PUBLIC_AMAZON_ASSOCIATE_TAG || 'fleascript-22'}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full bg-[var(--color-brand)] hover:opacity-90 text-white font-semibold text-xs tracking-widest py-3 px-6 rounded-xl shadow-md transition-opacity inline-flex items-center justify-center gap-1.5"
+                  >
+                    🎁 Amazonでお買い物をして応援する
+                  </a>
+                </div>
+
                 <div className="mt-4">
                   <RoadmapGauge progress={roadmapProgress} />
                 </div>
