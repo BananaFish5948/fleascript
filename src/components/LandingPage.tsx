@@ -326,6 +326,25 @@ export default function LandingPage({ onLoginClick }: LandingPageProps) {
           </button>
         </div>
       </section>
+
+      {/* SEO Template Links Section */}
+      <section className="py-12 bg-stone-50 border-t border-stone-200">
+        <div className="max-w-5xl mx-auto px-4">
+          <h3 className="text-xs font-bold text-stone-400 uppercase tracking-[0.2em] text-center mb-6">
+            AI商品説明テンプレート一覧
+          </h3>
+          <div className="flex flex-wrap justify-center gap-x-6 gap-y-3.5 text-xs font-medium text-stone-500">
+            <a href="/template/smartphone" className="hover:text-[var(--color-brand)] transition-colors">📱 スマートフォン</a>
+            <a href="/template/sneaker" className="hover:text-[var(--color-brand)] transition-colors">👟 スニーカー</a>
+            <a href="/template/tradingcard" className="hover:text-[var(--color-brand)] transition-colors">🃏 トレーディングカード</a>
+            <a href="/template/bag" className="hover:text-[var(--color-brand)] transition-colors">👜 ブランドバッグ</a>
+            <a href="/template/game" className="hover:text-[var(--color-brand)] transition-colors">🎮 ゲーム機本体</a>
+            <a href="/template/book" className="hover:text-[var(--color-brand)] transition-colors">📚 本・コミック</a>
+            <a href="/template/apparel" className="hover:text-[var(--color-brand)] transition-colors">👕 洋服・古着</a>
+            <a href="/template/cosmetics" className="hover:text-[var(--color-brand)] transition-colors">💄 コスメ・香水</a>
+          </div>
+        </div>
+      </section>
       
       {/* Footer */}
       <footer className="w-full bg-stone-50 border-t border-stone-200 py-10">

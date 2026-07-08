@@ -29,6 +29,14 @@ const STATUS_OPTIONS: { value: InventoryStatus; label: string; defaultFee: numbe
 
 export default function InventoryForm({ onAdd, isLoading, disabled, subscriptionStatus = 'free', boxCapacity = 20, currentItems = [], sellerRules = '', customSignature = '', imageAnalysisRemaining, imageAnalysisMax, onAnalysisUsed, initialItemName = '' }: InventoryFormProps) {
   const [itemName, setItemName] = useState(initialItemName);
+
+  // テンプレート変更時にフォーム入力欄を同期する
+  useEffect(() => {
+    if (initialItemName) {
+      setItemName(initialItemName);
+    }
+  }, [initialItemName]);
+
   const [purchasePrice, setPurchasePrice] = useState<number | ''>('');
   const [targetPrice, setTargetPrice] = useState<number | ''>('');
   const [postage, setPostage] = useState<number | ''>('');
