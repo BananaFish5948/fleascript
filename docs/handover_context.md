@@ -177,6 +177,7 @@
   - Cleaned up the legacy anonymous `useDeviceId` hook, refactored `PremiumToggle.tsx` to align with Auth architecture, and deleted `useDeviceId.ts`.
   - Upgraded the client-side canvas engine in `MonthlyReportModal.tsx` to support Kinfolk aesthetics (Terracotta/Sage earth tones) and resolved text overlapping bugs.
   - Replaced system emojis (📊, 📦, ✨, 🚀) inside the canvas with inline SVGs preloaded via `useRef` cache pool to guarantee 100% glyph integrity and eliminate garbage collection overhead.
+  - Optimized Stripe Webhook logic: Downgraded missing user sync issues to `console.warn` to prevent Vercel critical false-alarms, and integrated a non-blocking Discord/Slack chat alert notification with a 1-second timeout and URL validation to instantly release response loops and prevent Stripe retry loops.
 - [ ] **Phase 4.3**: Promotion Strategy & Viral Copy. Invoke `@sns-marketer` (Gemika) to create copy.
 - [ ] **Phase 4.5**: Affiliate Monetization (Amazon Associates & Native Ads).
 - [x] Production Deployment (Vercel) & Custom Domain setup (Stripe Live Mode integrated).
