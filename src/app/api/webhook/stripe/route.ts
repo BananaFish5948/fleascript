@@ -79,7 +79,9 @@ export async function POST(req: NextRequest) {
           .maybeSingle()
 
         if (userErr || !dbUser) {
-          console.warn(`[stripe-webhook] customer.subscription.updated: User not found for customerId ${customerId}. (Skipped update sync)`)
+          const warnMsg = `[stripe-webhook] customer.subscription.updated: User not found for customerId ${customerId}. (Skipped update sync)`
+          console.warn(warnMsg)
+          await sendAlert(`⚠️ ${warnMsg}`)
           break
         }
 
@@ -136,7 +138,9 @@ export async function POST(req: NextRequest) {
           .maybeSingle()
 
         if (userErr || !dbUser) {
-          console.warn(`[stripe-webhook] customer.subscription.deleted: User not found for customerId ${customerId}. (Skipped downgrade sync)`)
+          const warnMsg = `[stripe-webhook] customer.subscription.deleted: User not found for customerId ${customerId}. (Skipped downgrade sync)`
+          console.warn(warnMsg)
+          await sendAlert(`⚠️ ${warnMsg}`)
           break
         }
 
@@ -165,5 +169,29 @@ export async function POST(req: NextRequest) {
   } catch (err: any) {
     console.error(`[stripe-webhook] Server internal error:`, err.message)
     return NextResponse.json({ error: 'Webhook handler failed' }, { status: 500 })
+  }
+}
+
+// 簡易アラート通知ヘルパー
+async function sendAlert(message: string) {
+  const webhookUrl = process.env.DISCORD_WEBHOOK_URL || process.env.SLACK_WEBHOOK_URL;
+  if (!webhookUrl) return;
+
+  try {
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), 3000); // 3秒でタイムアウト
+
+    await fetch(webhookUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        content: message, // Discord用
+        text: message,    // Slack用
+      }),
+      signal: controller.signal
+    });
+    clearTimeout(id);
+  } catch (e) {
+    console.warn('[stripe-webhook-alert] Alert fetch failed or timed out:', e instanceof Error ? e.message : e);
   }
 }
