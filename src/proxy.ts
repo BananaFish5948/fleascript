@@ -4,7 +4,7 @@ export function proxy(req: NextRequest) {
   const url = req.nextUrl
 
   // Admin経路とDev Mode APIへのBasic認証
-  if (url.pathname.startsWith('/admin') || url.pathname.startsWith('/api/dev-mode')) {
+  if (url.pathname.startsWith('/admin') || url.pathname.startsWith('/api/dev-mode') || url.pathname.startsWith('/api/admin/')) {
     const basicAuth = req.headers.get('authorization')
     if (basicAuth) {
       const authValue = basicAuth.split(' ')[1]
@@ -49,6 +49,7 @@ export const config = {
     '/api/generate',
     '/api/feedback',
     '/api/dev-mode',
+    '/api/admin/:path*',
     '/api/analyze-image',
     '/api/analyze-chat',
     '/admin/:path*',

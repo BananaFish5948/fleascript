@@ -25,6 +25,25 @@ export default function ShippingCalculator({ subscriptionStatus = 'free' }: Ship
   const [weight, setWeight] = useState<number>(500);
   const [methods, setMethods] = useState<ShippingMethod[]>(FALLBACK_SHIPPING_METHODS);
   const [showSettings, setShowSettings] = useState(false);
+  const [affiliateAds, setAffiliateAds] = useState<any[]>(AFFILIATE_ADS);
+
+  // アフィリエイト広告の動的取得
+  useEffect(() => {
+    const fetchAffiliateAds = async () => {
+      try {
+        const res = await fetch('/api/affiliate');
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            setAffiliateAds(data);
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to fetch affiliate ads in calculator:', err);
+      }
+    };
+    fetchAffiliateAds();
+  }, []);
 
   // GitHub Pagesからのハイブリッド同期（IndexedDB/LocalStorage）
   useEffect(() => {
@@ -173,7 +192,8 @@ export default function ShippingCalculator({ subscriptionStatus = 'free' }: Ship
         {bestMethod && (
           <NativeAdCard 
             ad={
-              AFFILIATE_ADS.find(a => a.sizeTarget?.includes(bestMethod.name)) 
+              affiliateAds.find(a => a.sizeTarget?.includes(bestMethod.name)) 
+              || affiliateAds.find(a => a.id === 'ad-measure')
               || AFFILIATE_ADS.find(a => a.id === 'ad-measure')!
             }
             subscriptionStatus={subscriptionStatus} 

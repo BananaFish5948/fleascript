@@ -4,6 +4,11 @@ import Stripe from 'stripe'
 
 export const dynamic = 'force-dynamic'
 
+// 存在しない顧客IDのキャッシュ（5分間、DB負荷とログ洪水を防止）
+const INVALID_CUSTOMER_CACHE_MS = 5 * 60 * 1000
+const invalidCustomerCache = new Map<string, number>()
+
+
 export async function POST(req: NextRequest) {
   const sig = req.headers.get('stripe-signature')
   if (!sig) {
@@ -71,6 +76,12 @@ export async function POST(req: NextRequest) {
         const customerId = subscription.customer as string
         const status = subscription.status
 
+        // キャッシュに存在し、有効期限内であればDB照会とログをスキップ
+        const lastChecked = invalidCustomerCache.get(customerId)
+        if (lastChecked && (Date.now() - lastChecked < INVALID_CUSTOMER_CACHE_MS)) {
+          break
+        }
+
         // 顧客IDからデータベース内のユーザーIDを特定
         const { data: dbUser, error: userErr } = await adminClient
           .from('users')
@@ -79,7 +90,9 @@ export async function POST(req: NextRequest) {
           .maybeSingle()
 
         if (userErr || !dbUser) {
-          const warnMsg = `[stripe-webhook] customer.subscription.updated: User not found for customerId ${customerId}. (Skipped update sync)`
+          // キャッシュに登録し、警告ログは最初の1回のみ出力
+          invalidCustomerCache.set(customerId, Date.now())
+          const warnMsg = `[stripe-webhook] customer.subscription.updated: User not found for customerId ${customerId}. Bypass cache activated. (Skipped update sync)`
           console.warn(warnMsg)
           break
         }
@@ -129,6 +142,12 @@ export async function POST(req: NextRequest) {
         const subscription = event.data.object as Stripe.Subscription
         const customerId = subscription.customer as string
 
+        // キャッシュに存在し、有効期限内であればDB照会とログをスキップ
+        const lastChecked = invalidCustomerCache.get(customerId)
+        if (lastChecked && (Date.now() - lastChecked < INVALID_CUSTOMER_CACHE_MS)) {
+          break
+        }
+
         // 顧客IDからユーザーを特定
         const { data: dbUser, error: userErr } = await adminClient
           .from('users')
@@ -137,7 +156,9 @@ export async function POST(req: NextRequest) {
           .maybeSingle()
 
         if (userErr || !dbUser) {
-          const warnMsg = `[stripe-webhook] customer.subscription.deleted: User not found for customerId ${customerId}. (Skipped downgrade sync)`
+          // キャッシュに登録し、警告ログは最初の1回のみ出力
+          invalidCustomerCache.set(customerId, Date.now())
+          const warnMsg = `[stripe-webhook] customer.subscription.deleted: User not found for customerId ${customerId}. Bypass cache activated. (Skipped downgrade sync)`
           console.warn(warnMsg)
           break
         }

@@ -135,6 +135,11 @@
     - 切り分けのため、401 Unauthorized レスポンスのヘッダーに変数読み込み成否を示す `x-debug-auth-user-loaded` および `x-debug-auth-pass-loaded` を付与している。
 32. **Stripe Checkoutの自動決済手段表示におけるデバイス制限の罠**:
     - Stripe Checkout画面で Google Pay などのボタンを表示させるには、カードが登録された対象ブラウザ環境（Chrome等）が必要であり、Apple Pay の場合は Stripe ダッシュボードで `fleascript.vercel.app` のドメイン登録が必須である。
+33. **Stripe Webhook のログ・DBクエリの洪水（Log Pollution）とインメモリ防御壁の重要性（重大な反省点）**:
+    - 開発中のDBリセット等により、Stripeのテスト環境に残った顧客IDから Webhook イベントが毎秒のように連発して飛んでくる現象が発生することがある。
+    - この際、単に `console.warn` などのログ出力をコメントアウトまたは削除するだけの「臭いものに蓋」をする修正は**絶対に禁止**とする。ログだけを消しても、Webhookリクエストが来るたびに Supabase DB への無駄な select クエリが走り続け、DB接続の枯渇やサーバー負荷を引き起こす。
+    - **対策**: 存在しない顧客IDを一時的（例：5分間）に保持するインメモリキャッシュ（`invalidCustomerCache`）を導入し、DBクエリとログの両方をバイパスする設計を徹底すること。
+    - **トラブルシューティング原則**: ログの洪水でコンソールが操作不能になった場合は、慌ててコード修正だけで解決しようとせず、まず `stripe.exe` などの Stripe CLI プロセスをキル、あるいは通信を遮断して「安全な静止状態」を確保してから修正を適用すること。
 
 
 ## Next Potential Steps

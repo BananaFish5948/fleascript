@@ -22,7 +22,7 @@ export default function DevLogs() {
         .select('id, message, published_at')
         .eq('status', 'published')
         .order('published_at', { ascending: false })
-        .limit(3)
+        .limit(30)
       
       if (data) {
         setLogs(data)
@@ -48,7 +48,10 @@ export default function DevLogs() {
           <span>開発日記（最近のカイゼン）</span>
         </h3>
         
-        <div className="space-y-4 relative z-10">
+        <div 
+          className="space-y-4 relative z-10 max-h-[320px] overflow-y-auto pr-2"
+          style={{ scrollbarWidth: 'thin', scrollbarColor: 'var(--color-border) transparent' }}
+        >
           {logs.map((log, index) => (
             <div key={log.id} className={index !== 0 ? 'pt-4 border-t border-[var(--color-border)]/50' : ''}>
               <div className="text-[11px] text-[var(--color-text-muted)] mb-1 font-medium">

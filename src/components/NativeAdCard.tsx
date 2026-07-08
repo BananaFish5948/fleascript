@@ -16,6 +16,23 @@ export default function NativeAdCard({ ad, subscriptionStatus, className = '', f
     return null
   }
 
+  // AmazonアソシエイトIDを動的に付与するロジック
+  const targetUrl = (() => {
+    const url = ad.affiliateUrl
+    const amazonTag = process.env.NEXT_PUBLIC_AMAZON_ASSOCIATE_TAG
+    if (amazonTag && (url.includes('amazon.co.jp') || url.includes('amzn.to'))) {
+      try {
+        const urlObj = new URL(url)
+        urlObj.searchParams.set('tag', amazonTag)
+        return urlObj.toString()
+      } catch {
+        const separator = url.includes('?') ? '&' : '?'
+        return `${url}${separator}tag=${amazonTag}`
+      }
+    }
+    return url
+  })()
+
   return (
     <div className={`relative overflow-hidden rounded-2xl bg-[var(--color-bg-surface)] border ${subscriptionStatus === 'premium' ? 'border-[var(--color-brand)]/50' : 'border-[var(--color-border)]'} shadow-[var(--shadow-card)] hover:border-[var(--color-brand)] transition-all group ${className}`}>
       {/* "おすすめ (PR)" badge */}
@@ -24,7 +41,7 @@ export default function NativeAdCard({ ad, subscriptionStatus, className = '', f
       </div>
       
       <a 
-        href={ad.affiliateUrl} 
+        href={targetUrl} 
         target="_blank" 
         rel="noopener noreferrer"
         className="flex flex-col sm:flex-row p-4 gap-4 items-center sm:items-stretch h-full relative"

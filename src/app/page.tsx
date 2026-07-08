@@ -82,6 +82,25 @@ export default function Home() {
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [showReportModal, setShowReportModal] = useState(false)
   const [showBncModal, setShowBncModal] = useState(false)
+  const [affiliateAds, setAffiliateAds] = useState<any[]>(AFFILIATE_ADS)
+
+  // アフィリエイト広告データの動的取得
+  useEffect(() => {
+    const fetchAffiliateAds = async () => {
+      try {
+        const res = await fetch('/api/affiliate')
+        if (res.ok) {
+          const data = await res.json()
+          if (Array.isArray(data) && data.length > 0) {
+            setAffiliateAds(data)
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to fetch affiliate ads from API, using fallback data:', err)
+      }
+    }
+    fetchAffiliateAds()
+  }, [])
 
   // タブ状態とキーボード検知
   const [activeTab, setActiveTab] = useState<TabType>('home')
@@ -552,7 +571,7 @@ export default function Home() {
 
                 {subscriptionStatus !== 'premium' && (
                   <NativeAdCard 
-                    ad={AFFILIATE_ADS.find(a => a.id === 'ad-measure')!} 
+                    ad={affiliateAds.find(a => a.id === 'ad-measure') || AFFILIATE_ADS.find(a => a.id === 'ad-measure')!} 
                     subscriptionStatus={subscriptionStatus} 
                   />
                 )}

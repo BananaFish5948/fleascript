@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { cookies } from 'next/headers'
 import DevModeToggle from '@/components/DevModeToggle'
 import PremiumToggle from '@/components/PremiumToggle'
+import AdminAffiliateManager from '@/components/AdminAffiliateManager'
 
 // Dynamic rendering for admin dashboard
 export const dynamic = 'force-dynamic'
@@ -149,6 +150,9 @@ export default async function AdminDashboard() {
           </div>
 
         </div>
+        
+        {/* アフィリエイト広告管理パネル */}
+        <AdminAffiliateManager />
         
       </div>
     </div>

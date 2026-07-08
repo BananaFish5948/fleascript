@@ -34,6 +34,9 @@ export default function PrivacyPage() {
 
           <h2 className="font-bold text-lg text-gray-900 mt-6">第3条（個人情報の第三者提供）</h2>
           <p>当方は、あらかじめユーザーの同意を得ることなく、第三者に個人情報を提供することはありません。ただし、個人情報保護法その他の法令で認められる場合を除きます。なお、テキスト生成のためにOpenAI等の外部APIにデータを送信しますが、オプトアウト設定により学習利用はされません。</p>
+
+          <h2 className="font-bold text-lg text-gray-900 mt-6">第4条（アフィリエイトプログラムについて）</h2>
+          <p>FleaScriptは、Amazon.co.jpを宣伝しリンクすることによってサイトが紹介料を獲得できる手段を提供することを目的に設定されたアフィリエイトプログラムである、Amazonアソシエイト・プログラムの参加者です。</p>
         </div>
 
         <div className="mt-12 text-center">
