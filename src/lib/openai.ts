@@ -1,5 +1,9 @@
 import OpenAI from 'openai'
 
+if (!process.env.OPENAI_API_KEY && process.env.NODE_ENV === 'production') {
+  console.error('[FATAL] OPENAI_API_KEY is not set in production environment.')
+}
+
 export const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || 'dummy_key_for_build',
 })

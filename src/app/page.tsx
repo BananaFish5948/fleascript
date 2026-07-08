@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import SummaryCard from '@/components/SummaryCard'
@@ -27,6 +27,14 @@ import { Archive, Crown, Download, RefreshCw, Sparkles, AlertCircle, Palette, Sm
 import { seoCategories } from '@/data/seoCategories'
 
 export default function Home() {
+  const isMountedRef = useRef(true)
+  useEffect(() => {
+    isMountedRef.current = true
+    return () => {
+      isMountedRef.current = false
+    }
+  }, [])
+
   const [items, setItems] = useState<InventoryItem[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -135,34 +143,91 @@ export default function Home() {
   }, []);
 
   const fetchUserStatus = useCallback(async () => {
+    if (!isMountedRef.current) return;
     setIsAuthLoading(true);
-    try {
-      const res = await fetch(`/api/user-status`);
-      const data = await res.json();
-      if (data.isLoggedIn !== undefined) setIsLoggedIn(data.isLoggedIn);
-      if (data.remaining !== undefined) setRemaining(data.remaining);
-      if (data.maxLimit !== undefined) setMaxLimit(data.maxLimit);
-      if (data.isPremium !== undefined) setIsPremium(data.isPremium);
-      if (data.subscriptionStatus !== undefined) setSubscriptionStatus(data.subscriptionStatus);
-      if (data.preferences !== undefined) setPreferences(data.preferences);
-      if (data.imageAnalysisRemaining !== undefined) setImageAnalysisRemaining(data.imageAnalysisRemaining);
-      if (data.imageAnalysisMax !== undefined) setImageAnalysisMax(data.imageAnalysisMax);
-      
-      if (data.isLoggedIn) {
-        await fetchInventory();
-        if (data.subscriptionStatus === 'premium') {
-          try {
-            const aRes = await fetch('/api/premium/analytics');
-            const aData = await aRes.json();
-            if (aData.analytics) setAnalytics(aData.analytics);
-          } catch(e) {
-            console.error(e);
+    
+    // Stripeから戻ってきた直後(/?upgraded=true)かどうかを検出
+    const isUpgradedParam = typeof window !== 'undefined' && 
+      new URLSearchParams(window.location.search).get('upgraded') === 'true';
+
+    let retryCount = 0;
+    const maxRetries = 3;
+    const retryInterval = 1500; // 1.5秒
+
+    const performFetch = async (): Promise<boolean> => {
+      try {
+        const res = await fetch(`/api/user-status`);
+        if (!res.ok) return false;
+        
+        const data = await res.json();
+        
+        if (!isMountedRef.current) return true; // アンマウント時は処理中断(リトライ不要)
+
+        // データを反映
+        if (data.isLoggedIn !== undefined) setIsLoggedIn(data.isLoggedIn);
+        if (data.remaining !== undefined) setRemaining(data.remaining);
+        if (data.maxLimit !== undefined) setMaxLimit(data.maxLimit);
+        if (data.isPremium !== undefined) setIsPremium(data.isPremium);
+        if (data.subscriptionStatus !== undefined) setSubscriptionStatus(data.subscriptionStatus);
+        if (data.preferences !== undefined) setPreferences(data.preferences);
+        if (data.imageAnalysisRemaining !== undefined) setImageAnalysisRemaining(data.imageAnalysisRemaining);
+        if (data.imageAnalysisMax !== undefined) setImageAnalysisMax(data.imageAnalysisMax);
+        
+        if (data.isLoggedIn) {
+          await fetchInventory();
+          if (data.subscriptionStatus === 'premium') {
+            try {
+              const aRes = await fetch('/api/premium/analytics');
+              if (aRes.ok) {
+                const aData = await aRes.json();
+                if (isMountedRef.current && aData.analytics) setAnalytics(aData.analytics);
+              }
+            } catch(e) {
+              console.error(e);
+            }
           }
         }
+        
+        // upgraded=true のリダイレクト時、反映がまだfreeプランのままであれば、同期未完了としてリトライ対象(false)とする
+        if (isUpgradedParam && data.subscriptionStatus === 'free') {
+          return false;
+        }
+        
+        return true; // 正常にアップグレードされたか、そもそもupgradedパラメータが無い場合はリトライ不要
+      } catch (e) {
+        console.error("Failed to fetch user status", e);
+        return false;
       }
-    } catch (e) {
-      console.error("Failed to fetch user status", e);
-    } finally {
+    };
+
+    // 初回フェッチ
+    let success = await performFetch();
+    
+    // 同期が未完了で、リトライ回数が上限に達していない場合ループ
+    while (!success && retryCount < maxRetries) {
+      retryCount++;
+      console.log(`[Stripe Sync] Webhook sync pending... Retrying in ${retryInterval}ms (Attempt ${retryCount}/${maxRetries})`);
+      await new Promise(resolve => setTimeout(resolve, retryInterval));
+      if (!isMountedRef.current) return;
+      success = await performFetch();
+    }
+
+    // パラメータの後処理
+    if (isUpgradedParam) {
+      if (typeof window !== 'undefined') {
+        const url = new URL(window.location.href);
+        url.searchParams.delete('upgraded');
+        window.history.replaceState({}, '', url.pathname + url.search);
+      }
+      
+      if (success) {
+        alert("🎉 プランのアップグレードが正常に完了しました！");
+      } else {
+        alert("⚠️ 決済の反映に少し時間がかかっています。反映されない場合は、数分後にページを再読み込みしてください。");
+      }
+    }
+
+    if (isMountedRef.current) {
       setIsAuthLoading(false);
     }
   }, [fetchInventory]);

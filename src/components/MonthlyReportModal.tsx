@@ -16,6 +16,11 @@ export default function MonthlyReportModal({ isOpen, onClose, items }: MonthlyRe
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  
+  // Canvasアセット画像キャッシュ用の参照
+  const boxImgRef = useRef<HTMLImageElement | null>(null);
+  const leafImgRef = useRef<HTMLImageElement | null>(null);
+
   const [stats, setStats] = useState({
     monthlyProfit: 0,
     freedSpace: 0,
@@ -56,8 +61,43 @@ export default function MonthlyReportModal({ isOpen, onClose, items }: MonthlyRe
   }, [isOpen, items]);
 
   useEffect(() => {
-    if (isOpen) {
+    if (!isOpen) return;
+    
+    // すでにインスタンス作成済みの場合は再生成せず即時描画
+    if (boxImgRef.current && leafImgRef.current) {
       drawCanvas();
+      return;
+    }
+
+    if (typeof window !== 'undefined') {
+      let boxLoaded = false;
+      let leafLoaded = false;
+
+      const checkAndDraw = () => {
+        if (boxLoaded && leafLoaded) {
+          drawCanvas();
+        }
+      };
+
+      const boxImg = new Image();
+      boxImg.onload = () => {
+        boxLoaded = true;
+        checkAndDraw();
+      };
+      boxImg.src = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23A05E4C' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z'/><polyline points='3.27 6.96 12 12.01 20.73 6.96'/><line x1='12' y1='22.08' x2='12' y2='12'/></svg>";
+      boxImgRef.current = boxImg;
+
+      const leafImg = new Image();
+      leafImg.onload = () => {
+        leafLoaded = true;
+        checkAndDraw();
+      };
+      leafImg.src = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2373795C' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 3.58-1 9.58A7 7 0 0 1 11 20z'/><path d='M19 2c-3 3-7 5.58-11 7'/></svg>";
+      leafImgRef.current = leafImg;
+      
+      if (boxImg.complete) boxLoaded = true;
+      if (leafImg.complete) leafLoaded = true;
+      checkAndDraw();
     }
   }, [isOpen, stats]);
 
@@ -71,26 +111,26 @@ export default function MonthlyReportModal({ isOpen, onClose, items }: MonthlyRe
     canvas.width = 1080;
     canvas.height = 1080;
 
-    // 背景描画（シンプルなグラデーション）
+    // 背景描画（Kinfolk風のエクリュ〜グレージュ系グラデーション）
     const gradient = ctx.createLinearGradient(0, 0, 1080, 1080);
-    gradient.addColorStop(0, '#fdfbfb');
-    gradient.addColorStop(1, '#ebedee');
+    gradient.addColorStop(0, '#FAF8F5');
+    gradient.addColorStop(1, '#EFECE6');
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, 1080, 1080);
 
-    // 装飾の円
+    // 装飾の円 (セージグリーン＆テラコッタ)
     ctx.beginPath();
     ctx.arc(900, 200, 300, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(59, 130, 246, 0.1)';
+    ctx.fillStyle = 'rgba(115, 121, 92, 0.15)'; // セージグリーン調の透過
     ctx.fill();
 
     ctx.beginPath();
     ctx.arc(150, 950, 400, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(245, 158, 11, 0.1)';
+    ctx.fillStyle = 'rgba(160, 94, 76, 0.12)'; // テラコッタ調の透過
     ctx.fill();
 
     // 中央のカード背景
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
+    ctx.shadowColor = 'rgba(44, 43, 41, 0.08)';
     ctx.shadowBlur = 40;
     ctx.shadowOffsetY = 20;
     ctx.fillStyle = '#ffffff';
@@ -99,39 +139,54 @@ export default function MonthlyReportModal({ isOpen, onClose, items }: MonthlyRe
     ctx.shadowColor = 'transparent';
 
     // タイトルテキスト
-    ctx.fillStyle = '#1e293b';
-    ctx.font = 'bold 50px sans-serif';
+    ctx.fillStyle = '#2C2B29'; // オフブラック
+    ctx.font = 'bold 48px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText(`${stats.monthStr}のフリマ成果`, 540, 340);
+    ctx.fillText(`${stats.monthStr}のフリマ成果`, 540, 345);
 
-    // 利益
-    ctx.fillStyle = '#f59e0b';
-    ctx.font = 'bold 120px sans-serif';
-    ctx.fillText(`¥ ${Math.floor(stats.monthlyProfit).toLocaleString()}`, 540, 500);
-    ctx.fillStyle = '#64748b';
+    // 利益 (フォントサイズを下げ、Y座標を上にあげて被りを解消)
+    ctx.fillStyle = '#A05E4C'; // テラコッタ
+    ctx.font = 'bold 100px sans-serif';
+    ctx.fillText(`¥ ${Math.floor(stats.monthlyProfit).toLocaleString()}`, 540, 470);
+    
+    // ラベル (Y座標を下げて十分な余白を確保)
+    ctx.fillStyle = '#73795C'; // セージ/オリーブ
     ctx.font = 'bold 30px sans-serif';
-    ctx.fillText('獲得した純利益', 540, 560);
+    ctx.fillText('獲得した純利益', 540, 545);
 
-    // サブステータス
-    ctx.font = 'bold 40px sans-serif';
-    ctx.fillStyle = '#334155';
+    // サブステータス (Y座標を再配分しフォントサイズを微調整して重なりを防止)
+    ctx.font = 'bold 36px sans-serif';
+    
+    // 1. 売却数のアイコン(テラコッタ色の箱)を描画
+    const boxImg = boxImgRef.current;
+    if (boxImg) {
+      ctx.drawImage(boxImg, 240, 665, 42, 42);
+    }
+
     ctx.textAlign = 'left';
-    ctx.fillText(`📦 売却した数:`, 240, 700);
+    ctx.fillStyle = '#2C2B29';
+    ctx.fillText(`売却した数:`, 300, 700);
     ctx.textAlign = 'right';
-    ctx.fillStyle = '#10b981';
+    ctx.fillStyle = '#73795C';
     ctx.fillText(`${stats.itemsSold} 個`, 840, 700);
 
+    // 2. 解放スペースのアイコン(オリーブグリーンの葉)を描画
+    const leafImg = leafImgRef.current;
+    if (leafImg) {
+      ctx.drawImage(leafImg, 240, 745, 42, 42);
+    }
+
     ctx.textAlign = 'left';
-    ctx.fillStyle = '#334155';
-    ctx.fillText(`✨ 部屋の解放スペース:`, 240, 780);
+    ctx.fillStyle = '#2C2B29';
+    ctx.fillText(`部屋の解放スペース:`, 300, 780);
     ctx.textAlign = 'right';
-    ctx.fillStyle = '#3b82f6';
+    ctx.fillStyle = '#73795C';
     ctx.fillText(`約 ${stats.freedSpace} ㎡`, 840, 780);
 
     // フッター
     ctx.textAlign = 'center';
-    ctx.fillStyle = '#94a3b8';
-    ctx.font = 'bold 30px sans-serif';
+    ctx.fillStyle = '#9C9B98';
+    ctx.font = 'bold 28px sans-serif';
     ctx.fillText('Generated by FleaScript', 540, 1000);
   };
 
@@ -194,8 +249,8 @@ export default function MonthlyReportModal({ isOpen, onClose, items }: MonthlyRe
         </button>
         
         <div className="p-6 overflow-y-auto">
-          <h2 className="text-xl font-bold text-gray-800 mb-4 text-center flex items-center justify-center gap-2">
-            <span>📊 {stats.monthStr}の成果レポート</span>
+          <h2 className="text-xl font-bold text-[var(--color-text-primary)] mb-4 text-center flex items-center justify-center gap-2">
+            <span>🪴 {stats.monthStr}の成果レポート</span>
           </h2>
           
           {/* Canvas（非表示にしてプレビューはimgタグ等で表示することも可能だが、今回は縮小して表示） */}
@@ -211,12 +266,12 @@ export default function MonthlyReportModal({ isOpen, onClose, items }: MonthlyRe
               <button 
                 onClick={handleShare}
                 disabled={isGenerating || isUploading}
-                className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:opacity-90 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg transition-transform hover:scale-[1.02] flex items-center justify-center gap-2 disabled:opacity-50"
+                className="w-full bg-[var(--color-brand)] hover:opacity-90 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg transition-transform hover:scale-[1.02] flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
               >
                 {isGenerating || isUploading ? (
                   <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 ) : (
-                  <span>🚀 画像の共有URLを発行する</span>
+                  <span>🔗 画像の共有URLを発行する</span>
                 )}
               </button>
             ) : (

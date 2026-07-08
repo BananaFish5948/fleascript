@@ -11,19 +11,25 @@ export async function GET() {
 
   const { data: userData } = await supabase
     .from('users')
-    .select('subscription_status')
+    .select('subscription_status, preferences')
     .eq('id', user.id)
     .single()
 
-  if (userData?.subscription_status !== 'premium') {
+  const subStatus = userData?.subscription_status || 'free'
+  if (subStatus !== 'premium') {
     return NextResponse.json({ error: 'Premium Required' }, { status: 403 })
   }
 
+  const preferences = userData?.preferences || {}
+  const bonusSlots = (preferences as any).bonus_slots || 0
+  const maxLimit = 500 + bonusSlots
+
   const { data, error } = await supabase
     .from('inventory_items')
-    .select('*')
+    .select('id, item_name, purchase_price, target_price, status, location_tag, created_at')
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
+    .limit(maxLimit)
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })

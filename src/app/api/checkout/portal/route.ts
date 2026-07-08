@@ -35,7 +35,8 @@ export async function POST(req: NextRequest) {
 
     // 【本番環境（Stripeポータル連携）】
     if (!stripeSecretKey) {
-      return NextResponse.json({ error: 'Stripe 決済キーが設定されていません。' }, { status: 500 })
+      console.error('[portal-api] STRIPE_SECRET_KEY is not set in environment variables.')
+      return NextResponse.json({ error: '決済サービスが一時的に利用できません。しばらく経ってから再度お試しください。' }, { status: 503 })
     }
 
     const stripe = new Stripe(stripeSecretKey)

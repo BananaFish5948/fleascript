@@ -1,30 +1,25 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useDeviceId } from '@/hooks/useDeviceId'
 
 export default function PremiumToggle() {
-  const deviceId = useDeviceId()
   const [status, setStatus] = useState<'free' | 'standard' | 'premium' | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
-    if (deviceId) {
-      fetch(`/api/user-status?deviceId=${deviceId}`)
-        .then(res => res.json())
-        .then(data => setStatus(data.subscriptionStatus || 'free'))
-        .catch(console.error)
-    }
-  }, [deviceId])
+    fetch('/api/user-status')
+      .then(res => res.json())
+      .then(data => setStatus(data.subscriptionStatus || 'free'))
+      .catch(console.error)
+  }, [])
 
   const handleStatusChange = async (newStatus: 'free' | 'standard' | 'premium') => {
-    if (!deviceId) return
     setIsLoading(true)
     try {
       const res = await fetch('/api/toggle-premium', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ deviceId, status: newStatus }),
+        body: JSON.stringify({ status: newStatus }),
       })
       if (res.ok) {
         setStatus(newStatus)

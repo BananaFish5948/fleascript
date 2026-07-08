@@ -45,5 +45,12 @@ export function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/api/generate', '/api/feedback', '/api/dev-mode', '/admin/:path*'],
+  matcher: [
+    '/api/generate',
+    '/api/feedback',
+    '/api/dev-mode',
+    '/api/analyze-image',
+    '/api/analyze-chat',
+    '/admin/:path*',
+  ],
 }

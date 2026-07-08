@@ -168,6 +168,15 @@
   - Resolved Stripe "No such customer" crash with self-healing automatic re-creation and DB reset.
   - Added support for toggling the Standard plan in the admin dashboard (`/admin`).
   - Added HTTP basic auth debug headers to diagnose Edge environment variable resolution issues.
+- [x] **Technical Audit, Security, & Canvas Upgrades (July 2026)**:
+  - Resolved CRITICAL rate limit bypass issue by adding `/api/analyze-image` and `/api/analyze-chat` to the Edge Middleware `proxy.ts` matcher.
+  - Implemented Stripe synced polling (max 3 retries at 1.5s interval) on `fetchUserStatus` upon upgraded param redirects (`/?upgraded=true`) with component unmount safety guards (`isMountedRef`).
+  - Added RLS and plan slot size constraints (`.limit(maxLimit)`) to `/api/premium/export` CSV extraction, and restricted column retrieval to prevent AI stock text leakage.
+  - Secured Stripe Checkout and Portal error pages by replacing raw config key errors with user-friendly fallback error messages.
+  - Added a startup production environment API key validation warning to `openai.ts`.
+  - Cleaned up the legacy anonymous `useDeviceId` hook, refactored `PremiumToggle.tsx` to align with Auth architecture, and deleted `useDeviceId.ts`.
+  - Upgraded the client-side canvas engine in `MonthlyReportModal.tsx` to support Kinfolk aesthetics (Terracotta/Sage earth tones) and resolved text overlapping bugs.
+  - Replaced system emojis (📊, 📦, ✨, 🚀) inside the canvas with inline SVGs preloaded via `useRef` cache pool to guarantee 100% glyph integrity and eliminate garbage collection overhead.
 - [ ] **Phase 4.3**: Promotion Strategy & Viral Copy. Invoke `@sns-marketer` (Gemika) to create copy.
 - [ ] **Phase 4.5**: Affiliate Monetization (Amazon Associates & Native Ads).
 - [x] Production Deployment (Vercel) & Custom Domain setup (Stripe Live Mode integrated).
