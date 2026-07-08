@@ -17,9 +17,18 @@ export default function CustomShareModal({ isOpen, onClose, referralCode }: Cust
   if (!isOpen) return null;
 
   const shareUrl = "https://fleascript.vercel.app";
-  const shareText = referralCode 
-    ? `送料で損してない？AIがフリマ出品と利益計算を1秒で終わらせる神ツール『FleaScript』📦✨\n私の招待コード【${referralCode}】を入れると、無料でAI作成枠が追加でもらえるよ！\n${shareUrl}`
-    : `送料で損してない？AIがフリマ出品と利益計算を1秒で終わらせる神ツール『FleaScript』📦✨\n${shareUrl}`;
+  const shareText = useState(() => {
+    if (!referralCode) {
+      return `送料で損してない？AIがフリマ出品と利益計算を1秒で終わらせる神ツール『FleaScript』📦✨\n${shareUrl}`;
+    }
+    const templates = [
+      (code: string, url: string) => `送料で損してない？AIがフリマ出品と利益計算を1秒で終わらせる神ツール『FleaScript』📦✨\n私の招待コード【${code}】を入れると、無料でAI作成枠が追加でもらえるよ！\n${url}`,
+      (code: string, url: string) => `フリマの出品文を考えるのが毎回しんどい人に超おすすめ！\nAIが最安送料の計算から説明文作成まで全自動でやってくれる無料ツール『FleaScript』。私のコード【${code}】で無料枠が増えます🎁\n${url}`,
+      (code: string, url: string) => `メルカリやヤフオクの出品時間を90%削れる便利ツール『FleaScript』がすごい。私の招待コード【${code}】を登録時に入れるだけで、AIの利用枠が無料でプラスされます！\n${url}`
+    ];
+    const randomIndex = Math.floor(Math.random() * templates.length);
+    return templates[randomIndex](referralCode, shareUrl);
+  })[0];
 
   const trackShare = async (): Promise<{ success: boolean; alreadyClaimed?: boolean; error?: string }> => {
     try {

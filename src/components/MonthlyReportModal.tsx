@@ -303,7 +303,14 @@ export default function MonthlyReportModal({ isOpen, onClose, items }: MonthlyRe
 
                 <button 
                   onClick={() => {
-                    const text = `今月のフリマ成果！📦✨\n\n画像はこちら: ${shareUrl}\n\nFleaScriptで管理中！\nhttps://fleascript.vercel.app`;
+                    const templates = [
+                      (url: string) => `今月のフリマ売上・利益をFleaScriptで集計完了！📦✨\n送料と利益が1秒で視覚化されて、出品のモチベが上がります。AI出品文も作れるのが本当に神ツール。\n成果レポート: ${url}\n#FleaScript`,
+                      (url: string) => `メルカリの梱包と出品の「めんどくさい」から解放された！FleaScriptで今月の利益レポートを作成しました☕\n送料で損したくない人は一度使ってみてほしい。\n集計レポート: ${url}\n#FleaScript`,
+                      (url: string) => `フリマ出品をハックする無料の相棒『FleaScript』で今月の売上を振り返り。💰\n送料シミュレーターもログイン不要で使えてめちゃくちゃ便利です。\n私のフリマ成果: ${url}\n#FleaScript`,
+                      (url: string) => `【今月のフリマ成果】梱包と利益計算をスマートに調律。FleaScriptなら、売れるAI商品説明文も1秒で作れます。🎨\n成果画像: ${url}\n#FleaScript`
+                    ];
+                    const randomIndex = Math.floor(Math.random() * templates.length);
+                    const text = templates[randomIndex](shareUrl);
                     window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
                   }}
                   className="w-full bg-[#1DA1F2] hover:bg-[#1a8cd8] text-white font-bold py-3 px-4 rounded-xl shadow-sm transition-transform hover:scale-[1.02] flex items-center justify-center gap-2"
@@ -313,7 +320,14 @@ export default function MonthlyReportModal({ isOpen, onClose, items }: MonthlyRe
 
                 <button 
                   onClick={() => {
-                    const text = `今月のフリマ成果！📦✨\n\n画像はこちら: ${shareUrl}\n\nFleaScriptで管理中！\nhttps://fleascript.vercel.app`;
+                    const templates = [
+                      (url: string) => `今月のフリマ売上・利益をFleaScriptで集計完了！📦✨\n送料と利益が1秒で視覚化されて、出品のモチベが上がります。AI出品文も作れるのが本当に神ツール。\n成果レポート: ${url}\n#FleaScript`,
+                      (url: string) => `メルカリの梱包と出品の「めんどくさい」から解放された！FleaScriptで今月の利益レポートを作成しました☕\n送料で損したくない人は一度使ってみてほしい。\n集計レポート: ${url}\n#FleaScript`,
+                      (url: string) => `フリマ出品をハックする無料の相棒『FleaScript』で今月の売上を振り返り。💰\n送料シミュレーターもログイン不要で使えてめちゃくちゃ便利です。\n私のフリマ成果: ${url}\n#FleaScript`,
+                      (url: string) => `【今月のフリマ成果】梱包と利益計算をスマートに調律。FleaScriptなら、売れるAI商品説明文も1秒で作れます。🎨\n成果画像: ${url}\n#FleaScript`
+                    ];
+                    const randomIndex = Math.floor(Math.random() * templates.length);
+                    const text = templates[randomIndex](shareUrl);
                     window.open(`https://threads.net/intent/post?text=${encodeURIComponent(text)}`, '_blank');
                   }}
                   className="w-full bg-black hover:bg-gray-800 text-white font-bold py-3 px-4 rounded-xl shadow-sm transition-transform hover:scale-[1.02] flex items-center justify-center gap-2"
