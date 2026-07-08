@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
         if (userErr || !dbUser) {
           const warnMsg = `[stripe-webhook] customer.subscription.updated: User not found for customerId ${customerId}. (Skipped update sync)`
           console.warn(warnMsg)
-          await sendAlert(`⚠️ ${warnMsg}`)
+          sendAlert(`⚠️ ${warnMsg}`)
           break
         }
 
@@ -140,7 +140,7 @@ export async function POST(req: NextRequest) {
         if (userErr || !dbUser) {
           const warnMsg = `[stripe-webhook] customer.subscription.deleted: User not found for customerId ${customerId}. (Skipped downgrade sync)`
           console.warn(warnMsg)
-          await sendAlert(`⚠️ ${warnMsg}`)
+          sendAlert(`⚠️ ${warnMsg}`)
           break
         }
 
@@ -175,11 +175,12 @@ export async function POST(req: NextRequest) {
 // 簡易アラート通知ヘルパー
 async function sendAlert(message: string) {
   const webhookUrl = process.env.DISCORD_WEBHOOK_URL || process.env.SLACK_WEBHOOK_URL;
-  if (!webhookUrl) return;
+  // URLの簡易バリデーション (httpで始まらないダミー値等は即座にスキップ)
+  if (!webhookUrl || !webhookUrl.startsWith('http')) return;
 
   try {
     const controller = new AbortController();
-    const id = setTimeout(() => controller.abort(), 3000); // 3秒でタイムアウト
+    const id = setTimeout(() => controller.abort(), 1000); // 1秒タイムアウトに短縮
 
     await fetch(webhookUrl, {
       method: 'POST',
